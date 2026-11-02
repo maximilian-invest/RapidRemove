@@ -6,7 +6,10 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
-import { useExpressOn } from "@/lib/express-status";
+import { useExpressOn, useDurations } from "@/lib/express-status";
+import { maxDays } from "@/lib/durations";
+/* Balkenlänge „Typische Dauer": im Verhältnis zur längsten Standard-Dauer (mind. 18 %). */
+const durBarW = (t, d) => Math.max(18, Math.round((maxDays(t) / Math.max(maxDays(d.fresh), maxDays(d.other))) * 100)) + "%";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -1849,6 +1852,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [tempoOn, setTempoOn] = React.useState(false);
   // Admin-Schalter (20.10.2026): Express aus → Option „Gerade nicht verfügbar …", Auswahl zurücksetzen.
   const xAvail = useExpressOn() !== false;
+  const dur = useDurations(); // Löschdauer Standard je Preisstufe (Admin → Express & Löschdauer)
   React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
   const [protection, setProtection] = React.useState(R ? (R.protection ?? null) : "monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
@@ -3874,8 +3878,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             ) : null}
             <div className="bpx-cmp bpr-fade" style={{ animationDelay: ".16s" }}>
               <div className="h"><LClock />{xp.cmpH}</div>
-              <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}{rq.n99 ? " · " + money(rl, PRICE_V2_OTHER) : ""}</span><div className="bar"><i style={{ width: "100%" }} /></div><b>{xp.cmpStdV}</b></div>
-              {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, PRICE_V2_FRESH)}</span><div className="bar"><i style={{ width: "35%" }} /></div><b>{xp.d99}</b></div> : null}
+              <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}{rq.n99 ? " · " + money(rl, PRICE_V2_OTHER) : ""}</span><div className="bar"><i style={{ width: durBarW(dur.other, dur) }} /></div><b>{xp.cmpStdV}</b></div>
+              {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, PRICE_V2_FRESH)}</span><div className="bar"><i style={{ width: durBarW(dur.fresh, dur) }} /></div><b>{xp.d99}</b></div> : null}
               {xAvail ? <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xwk ? xp.cmpXBy(fmtXDueShort(expressDueMs(), t.code)) : xp.cmpXV(EXPRESS_HOURS)}</b></div> : null}
             </div>
             <p className="bpr-fpn bpx-swn"><LInfo /><span>{xAvail ? xp.startNote + (xwk ? " " + xp.xWk : "") + " " : ""}{rq.n99 ? xp.only(rq.n99) : ""}</span></p>

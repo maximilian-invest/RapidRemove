@@ -6,6 +6,7 @@
    Produkt primär außerhalb DACH („du"-Ton); deutsche Fassung (Sie-Form) ist
    enthalten — für manuell angelegte Aufträge aus DACH.
    Die Sprache wählt der Admin nach dem Land des Kunden. */
+import { fillDeep } from "../durations";
 import * as React from "react";
 import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, CtaButton, brand, type MailLang } from "./components";
@@ -76,8 +77,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `ein kurzes Update: Wir haben mit der Bearbeitung ${n === 1 ? "der unten angeführten Bewertung" : `der ${n} unten angeführten Bewertungen`} begonnen. Ihr Auftrag ist nun aktiv in Bearbeitung.`,
     listH: "Woran wir arbeiten",
     nextH: "Wie es weitergeht",
-    next1: "Eine Löschung dauert meist 1–2 Wochen, manchmal geht es schneller, in Einzelfällen dauert es etwas länger.",
-    next1v2: "Bewertungen bis 4 Wochen alt mit Text sind meist in 1–2 Wochen gelöscht, alle anderen meist in 1–2 Wochen – manchmal geht es schneller, in Einzelfällen dauert es etwas länger.",
+    next1: "Eine Löschung dauert meist {DA}, manchmal geht es schneller, in Einzelfällen dauert es etwas länger.",
+    next1v2: "Bewertungen bis 4 Wochen alt mit Text sind meist in {DF} gelöscht, alle anderen meist in {DO} – manchmal geht es schneller, in Einzelfällen dauert es etwas länger.",
     next2: "Sie müssen nichts weiter tun – wir melden uns, sobald es Neuigkeiten gibt.",
     next3: "Sie bezahlen nur für Bewertungen, die wir tatsächlich löschen – automatisch abgebucht von Ihrer hinterlegten Zahlungsart am Tag der Löschung, die Rechnung kommt per E-Mail.",
     next4: "Jede Bewertung wird einzeln bearbeitet, daher kann die Dauer bis zur Löschung von Bewertung zu Bewertung unterschiedlich sein. Deshalb buchen wir jede gelöschte Bewertung unter Umständen separat ab – wundern Sie sich also nicht, wenn Sie für jede Bewertung eine eigene Rechnung erhalten.",
@@ -101,8 +102,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `quick update: we've begun working on ${n === 1 ? "the review" : `the ${n} reviews`} below. Your case is now actively in progress.`,
     listH: "What we're working on",
     nextH: "What happens next",
-    next1: "Removals usually take 1–2 weeks – sometimes faster, occasionally a little longer.",
-    next1v2: "Reviews up to 4 weeks old with text are usually removed within 1–2 weeks, all others usually within 1–2 weeks – sometimes faster, occasionally a little longer.",
+    next1: "Removals usually take {DA} – sometimes faster, occasionally a little longer.",
+    next1v2: "Reviews up to 4 weeks old with text are usually removed within {DF}, all others usually within {DO} – sometimes faster, occasionally a little longer.",
     next2: "You don't have to do anything — we'll get in touch as soon as there's news.",
     next3: "You only pay for reviews we actually remove – charged automatically to your saved payment method on the day of removal, with the invoice sent by email.",
     next4: "Every review is handled individually, so removal times can differ from review to review. That's why we may charge each removed review separately – so don't be surprised if you receive a separate invoice for each one.",
@@ -126,8 +127,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `una breve actualización: hemos empezado a trabajar en ${n === 1 ? "la reseña" : `las ${n} reseñas`} de abajo. Tu caso está ya en curso.`,
     listH: "En lo que estamos trabajando",
     nextH: "Qué pasa ahora",
-    next1: "Las eliminaciones suelen tardar 1–2 semanas; a veces es más rápido y en casos puntuales algo más.",
-    next1v2: "Las reseñas de hasta 4 semanas con texto suelen eliminarse en 1–2 semanas; todas las demás, normalmente en 1–2 semanas (a veces más rápido, en casos puntuales algo más).",
+    next1: "Las eliminaciones suelen tardar {DA}; a veces es más rápido y en casos puntuales algo más.",
+    next1v2: "Las reseñas de hasta 4 semanas con texto suelen eliminarse en {DF}; todas las demás, normalmente en {DO} (a veces más rápido, en casos puntuales algo más).",
     next2: "No tienes que hacer nada: te avisamos en cuanto haya novedades.",
     next3: "Solo pagas por las reseñas que realmente eliminemos: se cobra automáticamente a tu método de pago guardado el día de la eliminación y la factura te llega por correo.",
     next4: "Cada reseña se tramita por separado, así que el tiempo de eliminación puede variar de una a otra. Por eso es posible que cobremos cada reseña eliminada por separado: no te sorprendas si recibes una factura para cada una.",
@@ -151,8 +152,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `petit point : nous avons commencé à travailler sur ${n === 1 ? "l'avis" : `les ${n} avis`} ci-dessous. Ton dossier est maintenant en cours.`,
     listH: "Ce sur quoi nous travaillons",
     nextH: "La suite",
-    next1: "Une suppression prend en général 1 à 2 semaines, parfois moins, dans certains cas un peu plus.",
-    next1v2: "Les avis de moins de 4 semaines avec texte sont en général supprimés en 1 à 2 semaines, tous les autres en 1 à 2 semaines – parfois moins, dans certains cas un peu plus.",
+    next1: "Une suppression prend en général {DA}, parfois moins, dans certains cas un peu plus.",
+    next1v2: "Les avis de moins de 4 semaines avec texte sont en général supprimés en {DF}, tous les autres en {DO} – parfois moins, dans certains cas un peu plus.",
     next2: "Tu n'as rien à faire — nous te recontactons dès qu'il y a du nouveau.",
     next3: "Tu ne paies que les avis réellement supprimés – débités automatiquement sur ton moyen de paiement enregistré le jour de la suppression, avec la facture par e-mail.",
     next4: "Chaque avis est traité individuellement, le délai de suppression peut donc varier d'un avis à l'autre. C'est pourquoi il se peut que nous débitions chaque avis supprimé séparément – ne sois donc pas surpris de recevoir une facture pour chacun.",
@@ -176,8 +177,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `un breve aggiornamento: abbiamo iniziato a lavorare su ${n === 1 ? "la recensione" : `le ${n} recensioni`} qui sotto. Il tuo caso è ora in corso.`,
     listH: "Su cosa stiamo lavorando",
     nextH: "Cosa succede ora",
-    next1: "Di solito una rimozione richiede 1–2 settimane, a volte meno, in singoli casi un po' di più.",
-    next1v2: "Le recensioni fino a 4 settimane con testo vengono di solito rimosse in 1–2 settimane, tutte le altre in 1–2 settimane – a volte meno, in singoli casi un po' di più.",
+    next1: "Di solito una rimozione richiede {DA}, a volte meno, in singoli casi un po' di più.",
+    next1v2: "Le recensioni fino a 4 settimane con testo vengono di solito rimosse in {DF}, tutte le altre in {DO} – a volte meno, in singoli casi un po' di più.",
     next2: "Non devi fare nulla: ti scriviamo appena ci sono novità.",
     next3: "Paghi solo le recensioni che rimuoviamo davvero: l'addebito avviene automaticamente sul metodo di pagamento salvato il giorno della rimozione e la fattura arriva via e-mail.",
     next4: "Ogni recensione viene gestita singolarmente, quindi i tempi di rimozione possono variare dall'una all'altra. Per questo potremmo addebitare ogni recensione rimossa separatamente: non stupirti se ricevi una fattura per ciascuna.",
@@ -201,8 +202,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `een korte update: we zijn gestart met ${n === 1 ? "de review" : `de ${n} reviews`} hieronder. Je zaak is nu in behandeling.`,
     listH: "Waar we aan werken",
     nextH: "Wat er nu gebeurt",
-    next1: "Een verwijdering duurt meestal 1–2 weken, soms sneller, in enkele gevallen iets langer.",
-    next1v2: "Reviews tot 4 weken oud met tekst zijn meestal binnen 1–2 weken verwijderd, alle andere meestal binnen 1–2 weken – soms sneller, in enkele gevallen iets langer.",
+    next1: "Een verwijdering duurt meestal {DA}, soms sneller, in enkele gevallen iets langer.",
+    next1v2: "Reviews tot 4 weken oud met tekst zijn meestal binnen {DF} verwijderd, alle andere meestal binnen {DO} – soms sneller, in enkele gevallen iets langer.",
     next2: "U hoeft niets te doen — we nemen contact op zodra er nieuws is.",
     next3: "U betaalt alleen voor reviews die we daadwerkelijk verwijderen – automatisch afgeschreven van uw opgeslagen betaalmethode op de dag van verwijdering, met de factuur per e-mail.",
     next4: "Elke review wordt afzonderlijk behandeld, dus de verwijdertijd kan per review verschillen. Daarom kunnen we elke verwijderde review apart afschrijven – het kan dus zijn dat u per review een aparte factuur ontvangt.",
@@ -226,8 +227,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `uma atualização rápida: começámos a trabalhar ${n === 1 ? "na avaliação" : `nas ${n} avaliações`} abaixo. O teu caso está agora em curso.`,
     listH: "No que estamos a trabalhar",
     nextH: "O que acontece agora",
-    next1: "Uma remoção demora normalmente 1–2 semanas, por vezes menos, em casos pontuais um pouco mais.",
-    next1v2: "As avaliações com até 4 semanas e com texto costumam ser removidas em 1–2 semanas; todas as outras, normalmente em 1–2 semanas (por vezes menos, em casos pontuais um pouco mais).",
+    next1: "Uma remoção demora normalmente {DA}, por vezes menos, em casos pontuais um pouco mais.",
+    next1v2: "As avaliações com até 4 semanas e com texto costumam ser removidas em {DF}; todas as outras, normalmente em {DO} (por vezes menos, em casos pontuais um pouco mais).",
     next2: "Não precisas de fazer nada — entramos em contacto assim que houver novidades.",
     next3: "Só pagas pelas avaliações que removermos de facto – cobradas automaticamente no método de pagamento guardado no dia da remoção, com a fatura por e-mail.",
     next4: "Cada avaliação é tratada individualmente, por isso o tempo de remoção pode variar de uma para outra. Assim, podemos cobrar cada avaliação removida em separado – não estranhes se receberes uma fatura para cada uma.",
@@ -251,8 +252,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `進捗のご連絡です。以下の口コミ${n}件について、削除の作業を開始しました。現在対応中です。`,
     listH: "対応中の口コミ",
     nextH: "今後の流れ",
-    next1: "削除には通常1〜2週間かかります（早まることも、まれに少し長くなることもあります）。",
-    next1v2: "投稿4週間以内・本文ありの口コミは通常1〜2週間、それ以外は通常1〜2週間で削除されます（早まることも、まれに少し長くなることもあります）。",
+    next1: "削除には通常{DA}かかります（早まることも、まれに少し長くなることもあります）。",
+    next1v2: "投稿4週間以内・本文ありの口コミは通常{DF}、それ以外は通常{DO}で削除されます（早まることも、まれに少し長くなることもあります）。",
     next2: "お客様に必要な手続きはありません。進展があり次第ご連絡します。",
     next3: "お支払いは実際に削除できた口コミの分のみです。削除当日にご登録のお支払い方法へ自動で請求し、請求書をメールでお送りします。",
     next4: "口コミは1件ずつ個別に対応するため、削除までの期間は口コミごとに異なる場合があります。そのため、削除できた口コミごとに個別に請求し、1件ずつ請求書をお送りすることがあります。あらかじめご了承ください。",
@@ -276,8 +277,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `en kort uppdatering: vi har börjat arbeta med ${n === 1 ? "omdömet" : `de ${n} omdömena`} nedan. Ditt ärende är nu igång.`,
     listH: "Det här arbetar vi med",
     nextH: "Så går det vidare",
-    next1: "En borttagning tar oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre.",
-    next1v2: "Omdömen upp till 4 veckor gamla med text tas oftast bort inom 1–2 veckor, alla andra oftast inom 1–2 veckor – ibland snabbare, i enstaka fall något längre.",
+    next1: "En borttagning tar oftast {DA}, ibland snabbare, i enstaka fall något längre.",
+    next1v2: "Omdömen upp till 4 veckor gamla med text tas oftast bort inom {DF}, alla andra oftast inom {DO} – ibland snabbare, i enstaka fall något längre.",
     next2: "Du behöver inte göra något — vi hör av oss så snart det finns nyheter.",
     next3: "Du betalar bara för omdömen som vi faktiskt tar bort – beloppet dras automatiskt från din sparade betalningsmetod samma dag som borttagningen, och fakturan kommer via mejl.",
     next4: "Varje omdöme hanteras för sig, så tiden till borttagning kan variera mellan omdömena. Därför kan vi debitera varje borttaget omdöme separat – bli inte förvånad om du får en faktura per omdöme.",
@@ -301,8 +302,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `en kort opdatering: vi er gået i gang med ${n === 1 ? "anmeldelsen" : `de ${n} anmeldelser`} nedenfor. Din sag er nu i gang.`,
     listH: "Det arbejder vi med",
     nextH: "Sådan går det videre",
-    next1: "En fjernelse tager som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere.",
-    next1v2: "Anmeldelser op til 4 uger gamle med tekst fjernes som regel inden for 1–2 uger, alle andre som regel inden for 1–2 uger – nogle gange hurtigere, i enkelte tilfælde lidt længere.",
+    next1: "En fjernelse tager som regel {DA}, nogle gange hurtigere, i enkelte tilfælde lidt længere.",
+    next1v2: "Anmeldelser op til 4 uger gamle med tekst fjernes som regel inden for {DF}, alle andre som regel inden for {DO} – nogle gange hurtigere, i enkelte tilfælde lidt længere.",
     next2: "Du skal ikke gøre noget — vi vender tilbage, så snart der er nyt.",
     next3: "Du betaler kun for anmeldelser, vi faktisk fjerner – beløbet trækkes automatisk fra din gemte betalingsmetode på fjernelsesdagen, og fakturaen kommer på mail.",
     next4: "Hver anmeldelse behandles for sig, så tiden til fjernelse kan variere fra anmeldelse til anmeldelse. Derfor kan vi trække betaling for hver fjernet anmeldelse separat – bliv derfor ikke overrasket, hvis du modtager en faktura for hver enkelt.",
@@ -326,8 +327,8 @@ export const T: Record<string, Entry> = {
     p1: (n) => `en kort oppdatering: vi har begynt å jobbe med ${n === 1 ? "omtalen" : `de ${n} omtalene`} nedenfor. Saken din er nå i gang.`,
     listH: "Dette jobber vi med",
     nextH: "Slik går det videre",
-    next1: "En fjerning tar vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger.",
-    next1v2: "Omtaler opptil 4 uker gamle med tekst fjernes vanligvis innen 1–2 uker, alle andre vanligvis innen 1–2 uker – noen ganger raskere, i enkelte tilfeller litt lenger.",
+    next1: "En fjerning tar vanligvis {DA}, noen ganger raskere, i enkelte tilfeller litt lenger.",
+    next1v2: "Omtaler opptil 4 uker gamle med tekst fjernes vanligvis innen {DF}, alle andre vanligvis innen {DO} – noen ganger raskere, i enkelte tilfeller litt lenger.",
     next2: "Du trenger ikke gjøre noe — vi tar kontakt så snart det er nytt.",
     next3: "Du betaler kun for omtaler vi faktisk fjerner – beløpet trekkes automatisk fra den lagrede betalingsmetoden din samme dag som fjerningen, og fakturaen kommer på e-post.",
     next4: "Hver omtale behandles for seg, så tiden til fjerning kan variere fra omtale til omtale. Derfor kan vi trekke betaling for hver fjernede omtale separat – ikke bli overrasket om du får en faktura per omtale.",
@@ -353,7 +354,8 @@ export function subject(p: BearbeitungGestartetReviewsProps): string {
 }
 
 export default function BearbeitungGestartetReviews({ lang = "en", name = "", items = [], urls = [], per = "", currency = "", orderId = "", declined = 0, prepay, software, dashUrl, _overrides }: BearbeitungGestartetReviewsProps = {}) {
-  const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
+  // Löschdauer {DF}/{DO}/{DA} = Stand aus Admin → Express & Löschdauer (renderTemplate lädt ihn vor dem Rendern).
+  const t = fillDeep({ ...(T[lang] || T.en), ...(_overrides || {}) } as Entry, lang);
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
   const cur = reviewCurrency(currency, per);

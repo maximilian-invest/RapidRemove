@@ -300,7 +300,7 @@ const I18N = {
       chip: "GDPR-compliant · EU servers · 100% legal",
       h1a: "Bad Google reviews? We remove them.",
       h1b: "Or the whole profile.",
-      lead: "Fake, revenge or policy-violating reviews taken down in 1–5 days. Want out of Google Maps entirely? We delete your Business Profile, every review included.",
+      lead: "Fake, revenge or policy-violating reviews taken down in {DA}. Want out of Google Maps entirely? We delete your Business Profile, every review included.",
       trust: ["4.9", "260+ reviews", "As seen on heise.de", "No upfront payment", "1,000+ profiles removed"],
       assure: ["No success, no cost", "No access to your account", "Reply usually in minutes"],
       cardEyebrow: "Check for free",

@@ -19,7 +19,7 @@ import { PRICES } from "@/lib/pricing";
       chip: "Conforme al RGPD · Servidores en la UE · 100 % legal",
       h1a: "¿Reseñas negativas en Google? Las eliminamos.",
       h1b: "O el perfil entero.",
-      lead: "Reseñas falsas, de venganza o que incumplen las políticas de Google, retiradas en 1–5 días. ¿Quieres salir de Google Maps por completo? Eliminamos tu perfil de empresa con todas sus reseñas.",
+      lead: "Reseñas falsas, de venganza o que incumplen las políticas de Google, retiradas en {DA}. ¿Quieres salir de Google Maps por completo? Eliminamos tu perfil de empresa con todas sus reseñas.",
       trust: ["4,9", "260+ opiniones", "Conocidos por heise.de", "Sin pago por adelantado", "Más de 1.000 perfiles eliminados"],
       assure: ["Sin éxito, sin coste", "Sin acceso a tu cuenta", "Respuesta en minutos"],
       cardEyebrow: "Compruebe gratis",

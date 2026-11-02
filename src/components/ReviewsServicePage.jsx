@@ -17,7 +17,8 @@ import { LangContext, useLang } from "@/lib/lang-context";
 import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
-import { RVW } from "@/lib/reviews-copy";
+import { rvwCopy } from "@/lib/reviews-copy";
+import { useDurations } from "@/lib/express-status";
 import { vatNote, vatLine } from "@/lib/pricing";
 
 /* Seitentexte: src/lib/reviews-copy.js (plain-Modul — auch Server-Code liest
@@ -74,9 +75,10 @@ function RvwDemo({ r }) {
   );
 }
 
-export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo, guides = [] }) {
+export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo, guides = [], dur }) {
   const { t } = useLang();
-  const r = RVW[t.code] || RVW.en;
+  const d = useDurations(dur); // Löschdauer (Admin → Express & Löschdauer); dur = Stand beim Rendern auf dem Server
+  const r = rvwCopy(t.code, d);
   const [open, setOpen] = React.useState(0);
   useReveal();
   React.useEffect(() => { window.scrollTo({ top: 0 }); }, []);
@@ -288,7 +290,7 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
    Bewertungs-Eingabe (?start=reviews) — gleiche Zieladresse wie der
    Announcement-Banner. Der Sprachumschalter springt für Sprachen ohne diese
    Seite (Deutsch) auf die jeweilige Startseite statt auf einen toten Slug. */
-export function ReviewsRoute({ initialLang = "en", guides = [] }) {
+export function ReviewsRoute({ initialLang = "en", guides = [], dur }) {
   const { lang, t, setLang, nav, base } = useRouteShell(initialLang, "reviews");
   const start = () => nav(pagePath("wizard", lang) + "?start=reviews");
   const switchLang = (l) => {
@@ -298,7 +300,7 @@ export function ReviewsRoute({ initialLang = "en", guides = [] }) {
   };
   return (
     <LangContext.Provider value={{ lang, t, setLang: switchLang }}>
-      <ReviewsServicePage {...base} onStart={start} guides={guides} />
+      <ReviewsServicePage {...base} onStart={start} guides={guides} dur={dur} />
     </LangContext.Provider>
   );
 }

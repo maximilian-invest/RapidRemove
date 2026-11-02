@@ -112,7 +112,7 @@ export function expressDueMs(startMs = Date.now()) {
   const p = vieParts(startMs);
   return vieToUtc(p.y, p.m, p.d + ((3 - p.wd + 7) % 7), 0, 0);
 }
-/** Zeiträume Standard (Kundenanzeige): 179er (frisch) meist 1–2 Wochen, 250er meist 1–2 Wochen. */
+/** Veraltet – Kundenanzeige kommt aus src/lib/durations.js (Admin → Express & Löschdauer). */
 export const STD_DAYS = { fresh: [3, 5], other: [1, 2] };
 export const listPriceV2 = (it) => {
   const d = Number(it && it.days);

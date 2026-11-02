@@ -1,4 +1,6 @@
 "use client";
+import { fillDur } from "@/lib/durations";
+import { useDurations } from "@/lib/express-status";
 import React from "react";
 import { asset } from "@/lib/base";
 import { pagePath } from "@/lib/page-routes";
@@ -136,6 +138,7 @@ function HeroPressBadge({ lang }) {
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
+  const dur = useDurations(); // Löschdauer aus Admin → Express & Löschdauer ({DA} im Hero-Text)
   // Schweizer Besucher auf der deutschen Seite: Bewertungen sind dort löschbar
   // (DE/AT nicht) – Kartentitel nennt dann auch die Bewertungen.
   const [isCH, setIsCH] = React.useState(false);
@@ -194,7 +197,7 @@ function Hero({ onStart }) {
               <span className="pay-after"><span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}</span>
             </span>
           </div>
-          <p className="lead hs hs3">{t.hero.lead}</p>
+          <p className="lead hs hs3">{fillDur(t.hero.lead, lang, dur)}</p>
 
           <div className="hero-proof hs hs5">
             <div style={{ width: "100%" }}>

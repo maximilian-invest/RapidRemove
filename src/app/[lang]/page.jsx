@@ -5,6 +5,7 @@ import { I18N } from "@/lib/i18n";
 import { NON_DEFAULT_LOCALES, localeUrl, hreflangMap, OG_LOCALE, OG_IMAGE } from "@/lib/locales-meta";
 import { magCardsFor } from "@/lib/articles/catalog";
 import { requireKnownParams } from "@/lib/route-guard";
+import { fillDur } from "@/lib/durations";
 
 // Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
 export const dynamicParams = true;
@@ -17,7 +18,7 @@ export function generateMetadata({ params }) {
   const { lang } = params;
   const t = I18N[lang] || I18N.en;
   const title = t.seoHomeTitle || `${(t.hero.h1a + " " + t.hero.h1b).replace(/–/g, "").replace(/\s+/g, " ").trim()} — RapidRemove`;
-  const desc = t.seoHomeDesc || t.hero.lead;
+  const desc = t.seoHomeDesc || fillDur(t.hero.lead, lang); // Fallback: Hero-Text mit Standard-Löschdauer
   return {
     title,
     description: desc,

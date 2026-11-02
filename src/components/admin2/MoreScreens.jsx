@@ -3,13 +3,14 @@
 import React from "react";
 import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, FlaskConical, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
-  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle, Banknote,
+  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle, Banknote, Timer,
 } from "lucide-react";
 import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket, SERVICE_L } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
-import { monitorShotUrl, testPurgeApi, expressStatus, expressSet } from "@/lib/admin-api";
+import { monitorShotUrl, testPurgeApi, expressStatus, expressSet, durationsSet } from "@/lib/admin-api";
+import { normDur, normTier, fmtTier, fillDur, durKey, DUR_DEFAULT, DUR_MAX } from "@/lib/durations";
 import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
 import PayoutsScreen from "./Payouts";
@@ -179,6 +180,7 @@ export { MS, fmtDT };
 export function Account({ ctx }) {
   const { moreSub, setMoreSub, logout } = ctx;
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
+  if (moreSub === "express") return <ExpressDurScreen ctx={ctx} />;
   if (moreSub === "tests") return <TestsScreen ctx={ctx} />;
   if (moreSub === "partner") return <PartnersScreen ctx={ctx} />;
   if (moreSub === "pstats") return <PartnerStatsScreen ctx={ctx} />;
@@ -217,7 +219,7 @@ function SettingsScreen({ ctx }) {
     <>
       <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
-      <ExpressToggle ctx={ctx} />
+      <ExpressDurRow ctx={ctx} />
       <AutoMaster ctx={ctx} />
       <RoutesBlock ctx={ctx} />
       <div className="sec3"><h2>PayPal / Wise −10 %</h2></div>
@@ -259,6 +261,95 @@ function AutoMaster({ ctx }) {
           <span className={"tg" + (on ? " on" : "")}><i /></span>
         </button>
       </div>
+    </>
+  );
+}
+
+/* Menüpunkt „Express & Löschdauer" in den Einstellungen (02.11.2026) – Zusammenfassung, Tippen öffnet die Seite. */
+function ExpressDurRow({ ctx }) {
+  const { setMoreSub } = ctx;
+  const [st, setSt] = React.useState(null);
+  React.useEffect(() => { expressStatus().then((j) => setSt({ on: j.on !== false, dur: normDur(j.dur) })).catch(() => setSt(null)); }, []);
+  const sum = st ? `Express ${st.on ? "an" : "aus"} · Standard ${fmtTier(st.dur.fresh, "de")} / ${fmtTier(st.dur.other, "de")}` : "…";
+  return (
+    <>
+      <div className="info" style={{ marginTop: 4 }}>
+        <button type="button" className="ir" onClick={() => setMoreSub("express")}>
+          <span className="ico"><Timer /></span><span className="t"><b>Express & Löschdauer</b><span>{sum}</span></span>
+          <ChevronRight />
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* Seite „Express & Löschdauer": Express an/aus + Löschdauer Standard je Preisstufe. Die Dauer steht überall, wo Kunden sie sehen:
+   Website (Startseite, Landingpage inkl. FAQ/JSON-LD, Ratgeber-Hinweis), Bestellprozess, Kunden-Dashboard, Mails, Chatbot.
+   Express-Frist (30 Std. / Wochenend-Regel) bleibt fest – sie hängt an Abrechnung und Partner-Timer. */
+const DUR_TIERS = [
+  ["fresh", "179 · bis 4 Wochen, mit Text", "Meist in {DF} gelöscht"],
+  ["other", "250 · alle anderen Bewertungen", "Meist in {DO} gelöscht"],
+];
+const DUR_PRESETS = [{ min: 1, max: 2, unit: "w" }, { min: 7, max: 14, unit: "d" }, { min: 7, max: 21, unit: "d" }, { min: 2, max: 4, unit: "w" }];
+function ExpressDurScreen({ ctx }) {
+  const { setMoreSub, toast } = ctx;
+  const [saved, setSaved] = React.useState(null); // normDur vom Server
+  const [f, setF] = React.useState(null); // Formular: { fresh: { min, max, unit }, other: … } – min/max als Text
+  const [busy, setBusy] = React.useState(false);
+  const toForm = (d) => ({ fresh: { ...d.fresh, min: String(d.fresh.min), max: String(d.fresh.max) }, other: { ...d.other, min: String(d.other.min), max: String(d.other.max) } });
+  React.useEffect(() => { expressStatus().then((j) => { const d = normDur(j.dur); setSaved(d); setF(toForm(d)); }).catch(() => { setSaved(null); setF(null); }); }, []);
+  const set = (k, patch) => setF((x) => ({ ...x, [k]: { ...x[k], ...patch } }));
+  const tier = (k) => (f ? normTier(f[k]) : null);
+  const valid = !!(f && tier("fresh") && tier("other"));
+  const next = valid ? { fresh: tier("fresh"), other: tier("other") } : null;
+  const dirty = !!(next && saved && durKey(next) !== durKey(saved));
+  const save = async () => {
+    if (!next) return;
+    setBusy(true);
+    try { const j = await durationsSet(next); const d = normDur(j.dur); setSaved(d); setF(toForm(d)); toast(`Gespeichert · ${fmtTier(d.fresh, "de")} / ${fmtTier(d.other, "de")}`); }
+    catch (e) { toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
+  const isDefault = saved && durKey(saved) === durKey(normDur(DUR_DEFAULT));
+  return (
+    <>
+      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub("settings")}><ArrowLeft /></button></div>
+      <div className="ttl">Express & Löschdauer</div>
+      <ExpressToggle ctx={ctx} />
+      <div className="sec3"><h2>Löschdauer Standard</h2></div>
+      <p className="sh">So lange steht es für Kunden überall: Website, Bestellprozess, Kunden-Dashboard, Mails und Chatbot – in allen Sprachen. Laufende Aufträge und Express (30 Std.) ändern sich dadurch nicht. Die Website zeigt Änderungen nach spätestens 1 Minute.</p>
+      {!f ? <div className="aempty"><b>{saved === null ? "Lädt …" : "Konnte nicht laden"}</b></div> : DUR_TIERS.map(([k, label, sample]) => {
+        const t = tier(k);
+        const bad = !t;
+        return (
+          <div key={k} className="card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+              <b style={{ fontSize: 15 }}>{label}</b>
+              <div className="seg2">{[["d", "Tage"], ["w", "Wochen"]].map(([u, l]) => <button key={u} type="button" className={f[k].unit === u ? "on" : ""} onClick={() => set(k, { unit: u })}>{l}</button>)}</div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <label className="pfld" style={{ margin: 0 }}><span>von</span><input type="number" inputMode="numeric" min={1} max={DUR_MAX} value={f[k].min} onChange={(e) => set(k, { min: e.target.value })} /></label>
+              <label className="pfld" style={{ margin: 0 }}><span>bis</span><input type="number" inputMode="numeric" min={1} max={DUR_MAX} value={f[k].max} onChange={(e) => set(k, { max: e.target.value })} /></label>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+              {DUR_PRESETS.map((p) => {
+                const on = t && durKey({ fresh: t, other: t }) === durKey({ fresh: p, other: p });
+                return <button key={durKey({ fresh: p, other: p })} type="button" onClick={() => set(k, { min: String(p.min), max: String(p.max), unit: p.unit })}
+                  style={{ height: 30, padding: "0 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: on ? "var(--ink,#111)" : "#f0f0f2", color: on ? "#fff" : "var(--g3)" }}>{fmtTier(p, "de")}</button>;
+              })}
+            </div>
+            <p style={{ fontSize: 13, margin: "12px 0 0", color: bad ? "var(--danger)" : "var(--g3)" }}>
+              {bad ? `Bitte ganze Zahlen 1–${DUR_MAX}, „bis“ mindestens so groß wie „von“.` : <>Kunden sehen: <b style={{ color: "var(--ink,#111)" }}>„{fillDur(sample, "de", { fresh: t, other: t })}“</b> · EN „{fmtTier(t, "en")}“</>}
+            </p>
+          </div>
+        );
+      })}
+      {f ? (
+        <div className="ctas2">
+          <button type="button" className="cta gh" disabled={busy || isDefault} onClick={() => setF(toForm(normDur(DUR_DEFAULT)))}>Standard (1–2 Wochen)</button>
+          <button type="button" className="cta" disabled={busy || !dirty} onClick={save}><Check />{busy ? "Speichert …" : dirty ? "Speichern" : "Gespeichert"}</button>
+        </div>
+      ) : null}
     </>
   );
 }

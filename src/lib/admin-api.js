@@ -774,3 +774,5 @@ export const pricingNewOrder = (on) => adminPost("/admin/pricing/new-order", { o
 /* Express-Löschung an/aus (20.10.2026) – Status öffentlich, Schalten nur Admin. */
 export const expressStatus = async () => { const r = await fetch(OPS + "/express-status", { cache: "no-store" }); return r.json(); };
 export const expressSet = (on) => adminPost("/admin/express", { on });
+/* Löschdauer Standard je Preisstufe (02.11.2026): dur = { fresh, other } je { min, max, unit "d"|"w" }. */
+export const durationsSet = (dur) => adminPost("/admin/durations", { dur });

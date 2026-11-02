@@ -18,7 +18,7 @@ import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@
 import { pagePath } from "@/lib/page-routes";
 import { reviewQuote, vatNote, listPriceV2, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue } from "@/lib/express-copy";
-import { useExpressOn } from "@/lib/express-status";
+import { useExpressOn, useDurations } from "@/lib/express-status";
 import { searchProfiles } from "@/lib/places";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -1307,6 +1307,7 @@ function ChangedSheet({ open, items, onDone, onOpen }) {
 
 export default function CustomerDashboard() {
   useAutoUpdate(); // nach einem Deploy automatisch die neue Version laden (Home-Bildschirm-App)
+  useDurations(); // Löschdauer aus Admin → Express & Löschdauer laden (Texte über xpCopy)
   const [token, setToken] = React.useState(null); // null = noch nicht gelesen
   const [data, setData] = React.useState(null);
   const [loadErr, setLoadErr] = React.useState("");

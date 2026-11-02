@@ -4,7 +4,7 @@
    gibt es nicht in DACH) und direkt vor dem ersten Abschnitt platziert.
    Die Texte kommen 1:1 aus den freigegebenen Landingpage-Texten (RVW), der
    Link führt auf die Landingpage der jeweiligen Sprache. */
-import { RVW } from "@/lib/reviews-copy";
+import { rvwCopy } from "@/lib/reviews-copy";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { vatNote } from "@/lib/pricing";
 
@@ -22,9 +22,10 @@ export const REVIEWS_PROMO_SLUGS = new Set([
   "was-kostet-eine-schlechte-google-bewertung",
 ]);
 
-export function withReviewsPromo(deSlug, lang, blocks) {
+/** dur = Löschdauer (Admin → Express & Löschdauer, getDurationsServer); ohne = Standardwerte. */
+export function withReviewsPromo(deSlug, lang, blocks, dur) {
   if (lang === "de" || !REVIEWS_PROMO_SLUGS.has(deSlug) || !pageHasLocale("reviews", lang)) return blocks;
-  const r = RVW[lang] || RVW.en;
+  const r = rvwCopy(lang, dur);
   const block = {
     t: "cta",
     title: `${r.eyebrow}: ${r.h1}`,

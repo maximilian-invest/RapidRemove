@@ -9,6 +9,7 @@ import {
 } from "@/lib/articles/catalog";
 import { authorFor, roleFor, authorPathFor } from "@/lib/authors";
 import { withReviewsPromo } from "@/lib/articles/reviews-promo";
+import { getDurationsServer } from "@/lib/durations-server";
 import { HUB_SLUG, hubHreflang, hubLangUrls } from "@/lib/articles/hubs";
 import { HUBS } from "@/lib/articles/hub-data";
 import { requireKnownParams } from "@/lib/route-guard";
@@ -48,7 +49,7 @@ export function generateMetadata({ params }) {
   };
 }
 
-export default function Page({ params }) {
+export default async function Page({ params }) {
   requireKnownParams(generateStaticParams(), params);
   const { lang, aslug2 } = params;
   const ui = uiFor(lang);
@@ -73,7 +74,7 @@ export default function Page({ params }) {
     meta: { ...r.t.meta, date: dateFor(r.deSlug), author: author.name, authorRole: roleFor(author, lang), authorHref: authorPathFor(author, lang) },
     dek: r.t.dek,
     // Bewertungs-Ratgeber (nicht de): Service-Hinweis aufs neue Produkt einfügen.
-    blocks: withReviewsPromo(r.deSlug, lang, r.t.blocks),
+    blocks: withReviewsPromo(r.deSlug, lang, r.t.blocks, await getDurationsServer()),
     faq: r.t.faq,
     category: r.t.category || r.de.category,
     iconKey: r.de.iconKey,

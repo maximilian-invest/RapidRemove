@@ -8,7 +8,8 @@ import { Impressum, Datenschutz } from "@/components/Legal";
 import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
 import { ReviewsRoute } from "@/components/ReviewsServicePage";
-import { RVW } from "@/lib/reviews-copy";
+import { rvwCopy } from "@/lib/reviews-copy";
+import { getDurationsServer } from "@/lib/durations-server";
 import { PRICE_V2_FRESH, PRICE_V2_OTHER } from "@/lib/pricing";
 import Kontakt from "@/components/Kontakt";
 import ReportPage from "@/components/ReportPage";
@@ -69,7 +70,7 @@ export function generateMetadata({ params }) {
   return {};
 }
 
-export default function Page({ params }) {
+export default async function Page({ params }) {
   requireKnownParams(generateStaticParams(), params);
   if (params.aslug === magazineSlug(params.lang)) {
     const cards = magCardsFor(params.lang);
@@ -97,7 +98,8 @@ export default function Page({ params }) {
   if (key === "reviews") {
     // Bewertungs-Landingpage: Service- + FAQ- + Breadcrumb-Schema (die FAQ steht
     // sichtbar auf der Seite; Fragen/Antworten kommen aus denselben Texten).
-    const r = RVW[params.lang] || RVW.en;
+    const dur = await getDurationsServer(); // Löschdauer aus Admin → Express & Löschdauer (Seite max. 60 s alt)
+    const r = rvwCopy(params.lang, dur);
     const m = pageMeta(key, params.lang);
     const url = pageUrl(key, params.lang);
     const jsonLd = {
@@ -121,7 +123,7 @@ export default function Page({ params }) {
     return (
       <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <ReviewsRoute initialLang={params.lang} guides={REVIEW_GUIDES.map((k) => {
+        <ReviewsRoute initialLang={params.lang} dur={dur} guides={REVIEW_GUIDES.map((k) => {
           const t = tFor(params.lang, k); const href = localizedPath(params.lang, k);
           return t && href ? { href, title: t.meta.title } : null;
         }).filter(Boolean)} />

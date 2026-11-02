@@ -3,6 +3,7 @@
    legt sie über ihre Default-Texte. Ohne DB / ohne gespeicherten Override rendert exakt wie
    zuvor – deshalb ist der Umstieg auf renderTemplate() an allen Sendewegen unkritisch.
    Liefert HTML UND den (ggf. überschriebenen) Betreff zurück. */
+import { loadDurations } from "./durations";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
@@ -23,6 +24,7 @@ export async function renderTemplate(key: string, props: Record<string, unknown>
     const all = await getTemplateOverrides(key);
     _overrides = all[lang];
   } catch { /* DB nicht verfügbar → Code-Defaults */ }
+  await loadDurations().catch(() => undefined); // Löschdauer für {DF}/{DO}/{DA} in Bewertungs-Mails
   const html = await render(React.createElement(t.component, { ...props, _overrides } as Record<string, unknown>));
   const subject = (_overrides && typeof _overrides.subject === "string" && _overrides.subject.trim())
     ? _overrides.subject
