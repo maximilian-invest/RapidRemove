@@ -150,6 +150,9 @@ function ProfRing({ st }) {
 }
 const isProf = (o) => o && o.kind === "profile" && o.profileOrder;
 const profOpen = (o) => isProf(o) && (["new", "working"].includes(o.profileOrder.status) || o.profileOrder.open > 0);
+// Aktiv = es passiert noch was oder der Kunde muss etwas tun. Alles andere ist „abgeschlossen“ (nur unter Aufträge → Abgeschlossen).
+const ordActive = (o, autopay) => (isProf(o) ? profOpen(o) : (!o.items.length || o.items.some((x) => OPEN.includes(x.status))))
+  || !!o.priceHold || (o.deposits || []).length > 0 || startPhases(o, autopay).length > 0;
 /* Alles, was schon gelöscht ist (für den Erfolgs-Moment): Bewertungen + Profil-Löschungen. */
 const removedKeys = (d) => d.orders.flatMap((o) => (isProf(o)
   ? (o.profileOrder.status === "removed" ? [{ k: o.id + "#p", at: o.profileOrder.doneAt, biz: o.business, prof: true }] : [])
@@ -1667,6 +1670,8 @@ export default function CustomerDashboard() {
   const sheetG = payGroups.find((g) => g.via === payVia) || payGroups.find((g) => g.via !== "card") || null;
   const ppUrlOf = (g) => `https://www.paypal.me/${PAYPAL_ME}/${g ? g.amount : 0}${String(payCur).toUpperCase()}`;
   const deposits = orders.flatMap((o) => (o.deposits || []).map((d) => ({ ...d, o })));
+  const homeOrders = orders.filter((o) => ordActive(o, data.autopay));
+  const doneOrders = orders.filter((o) => !ordActive(o, data.autopay));
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
 
   const acts = [
@@ -1889,10 +1894,10 @@ export default function CustomerDashboard() {
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
-          <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>
-          {orders.length ? (
+          <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
+          {homeOrders.length ? (
             <div className="carousel">
-              {orders.map((o) => {
+              {homeOrders.map((o) => {
                 if (isProf(o)) {
                   const p = o.profileOrder;
                   return (
@@ -1914,7 +1919,8 @@ export default function CustomerDashboard() {
                 );
               })}
             </div>
-          ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
+          ) : <div className="empty"><img src={IMG.rocket} alt="" />{T(orders.length ? "allDone" : "noOrders")}</div>}
+          {doneOrders.length ? <button className="ar-btn done-btn" onClick={() => { setOfilter("done"); goTab("orders"); }}><span className="ico"><CheckCircle2 /></span><b>{T("doneN", { n: doneOrders.length })}</b><ChevronRight /></button> : null}
           {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         </div>
         <aside className="hr">
@@ -1934,7 +1940,7 @@ export default function CustomerDashboard() {
   );
 
   const OrdersV = () => {
-    const F = { all: () => true, open: (o) => (isProf(o) ? profOpen(o) : o.items.some((x) => OPEN.includes(x.status))), done: (o) => (isProf(o) ? !profOpen(o) : !o.items.some((x) => OPEN.includes(x.status))) };
+    const F = { all: () => true, open: (o) => ordActive(o, data.autopay), done: (o) => !ordActive(o, data.autopay) };
     const l = orders.filter(F[ofilter]);
     return (
       <>

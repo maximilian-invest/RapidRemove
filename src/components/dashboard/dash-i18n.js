@@ -70,7 +70,7 @@ export const EN = {
   prepayTitle: { one: "Software removal · {n} review without text", other: "Software removal · {n} reviews without text" },
   prepaySub: "Charged only once removed · if it doesn't work, you pay nothing", payAmount: "Pay {amount}",
   // Orders
-  orders: "Orders", f_all: "All", f_open: "Active", f_done: "Completed", noOrdersHere: "No orders here.",
+  orders: "Orders", f_all: "All", f_open: "Active", f_done: "Completed", noOrdersHere: "No orders here.", allDone: "No active orders – everything's done.", doneN: "Completed orders ({n})",
   // Payments
   payments: "Payments", history: "History", h_software: "Specialist removal", h_deposit: "Software removal", h_invoice: "Removal",
   hReviews: { one: "{n} review", other: "{n} reviews" }, noPayments: "No payments yet.",
