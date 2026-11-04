@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Img, Section } from "@react-email/components";
 import { EmailShell, P, CtaButton, brand, type MailLang } from "./components";
+import { DASH_HOST } from "../dashUrl";
 
 type L = { subj: string; title: string; hi: (n: string) => string; p: string; f: [string, string][]; btn: string; note: string; later: string; sign: string };
 const T: Record<string, L> = {
@@ -70,7 +71,7 @@ export default function DashInvite({ lang = "en", name = "", url }: { lang?: str
       <CtaButton href={url} full>{t.btn}</CtaButton>
       <div style={{ height: 10 }} />
       <P muted>{t.note}</P>
-      <P muted>{t.later}</P>
+      <P muted>{t.later.split("rapid-remove.com/my-reviews").join(DASH_HOST)}</P>
       <P>{t.sign}</P>
     </EmailShell>
   );

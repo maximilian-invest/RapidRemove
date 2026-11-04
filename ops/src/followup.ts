@@ -20,6 +20,7 @@
  * Protokoll: Tabelle cust_followups + Auftrags-Events (Admin „Verlauf"/Mahnungs-Historie) + Dashboard-Aktivität.
  */
 import * as React from "react";
+import { DASH_URL } from "./dashUrl";
 import { render } from "@react-email/render";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
@@ -380,7 +381,7 @@ export function registerFollowupRoutes(app: FastifyInstance, adminOk: (t: unknow
     const lang = MAIL_LANGS.includes(String(b.lang)) ? String(b.lang) : "de";
     const kind = String(b.kind || "pay");
     const props: ErinnerungProps = {
-      lang, name: String(b.name || "Maria Muster"), dashUrl: "https://www.rapid-remove.com/my-reviews",
+      lang, name: String(b.name || "Maria Muster"), dashUrl: DASH_URL,
       pay: kind === "pay" || kind === "pay2" ? { stage: kind === "pay2" ? 2 : 1, amount: fmtReviewMoney(358, "eur"), n: 2 } : null,
       // Vorschau: Software-Preis wie bei neuen Aufträgen (Preismodell 2: 250); optional b.swPrice (z. B. 300 für Bestandsaufträge).
       sw: kind === "sw" || kind === "combo" ? { n: 1, price: fmtReviewMoney(Number(b.swPrice) > 0 ? Number(b.swPrice) : PRICE_V2_OTHER, "eur") } : null,

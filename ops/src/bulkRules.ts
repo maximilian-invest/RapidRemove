@@ -10,6 +10,7 @@
  *
  * Auftragsfelder (orders.raw): bulk, pricing (Konditionen), bulkSw { key: { at, code } }, priceHold { … } | null, priceChanges [ … ]. */
 import * as React from "react";
+import { DASH_URL } from "./dashUrl";
 import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
@@ -54,7 +55,7 @@ export async function isBulkOrder(orderId: string | null | undefined): Promise<b
 
 async function mail(o: { email: string; name: string | null; lang: string | null }, props: Omit<React.ComponentProps<typeof BulkHinweis>, "url" | "lang" | "name">): Promise<void> {
   const lang = o.lang === "de" ? "de" : "en";
-  const p = { ...props, lang, name: o.name || "", url: `${SITE_URL}/my-reviews${props.orderId ? `?order=${encodeURIComponent(props.orderId)}` : ""}` };
+  const p = { ...props, lang, name: o.name || "", url: `${DASH_URL}${props.orderId ? `?order=${encodeURIComponent(props.orderId)}` : ""}` };
   await sendMail({ to: o.email, subject: bulkHinweisSubject(p), html: await render(React.createElement(BulkHinweis, p)), replyTo: process.env.MAIL_REPLY_TO }).catch(() => {});
 }
 

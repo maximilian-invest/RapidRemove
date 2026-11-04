@@ -43,6 +43,7 @@ const DUP_TXT = {
   no: { t: "Du har allerede bestilt denne omtalen", p: (o) => `Vi jobber allerede med den i bestillingen din ${o} – du trenger ikke bestille på nytt.`, l: "Åpne dashbordet mitt" },
 };
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@/lib/consents";
+import { dashHref } from "@/lib/portal";
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -2432,9 +2433,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       setProcessing(false);
       if (r && r.error === "already_ordered") { setDupOrder(r); return; }
       // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
-      if (r && r.autologin) { try { window.location.href = "/my-reviews#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
+      if (r && r.autologin) { try { window.location.href = dashHref("/my-reviews") + "#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       // Bestehendes Konto (Einzelbewertungen): auch ins Dashboard – eingeloggt sofort, sonst Login mit Hinweis auf den Mail-Link.
-      if (r && r.ok && (revFlow || r.dash) && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
+      if (r && r.ok && (revFlow || r.dash) && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = dashHref("/my-reviews?from=order&order=" + encodeURIComponent(orderId)); return; } catch (e) { /* Danke-Seite */ } }
       setStep(6);
     }, 2400);
   };
@@ -2900,7 +2901,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div role="alert" style={{ background: "#fff4e0", color: "#5c3a00", borderRadius: 16, padding: "14px 16px", margin: "0 0 18px", fontSize: 14.5, lineHeight: 1.45 }}>
               <b style={{ display: "block", fontSize: 15.5, marginBottom: 4 }}>{D.t}</b>
               {D.p((dupOrder.orders || []).join(", "))}{" "}
-              <a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")} style={{ fontWeight: 700, color: "#5c3a00", textDecoration: "underline" }}>{D.l}</a>
+              <a href={dashHref("/my-reviews") + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")} style={{ fontWeight: 700, color: "#5c3a00", textDecoration: "underline" }}>{D.l}</a>
             </div>
           ); })() : null}
           <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
@@ -3731,7 +3732,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <h1 className="bpr-h1 bpr-fade">{w.s5.h}</h1>
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.coSub}</p>
             {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
-              <div className="bpr-alert" role="alert"><b>{D.t}</b>{D.p((dupOrder.orders || []).join(", "))}{" "}<a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")}>{D.l}</a></div>
+              <div className="bpr-alert" role="alert"><b>{D.t}</b>{D.p((dupOrder.orders || []).join(", "))}{" "}<a href={dashHref("/my-reviews") + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")}>{D.l}</a></div>
             ); })() : null}
             <form id="bpr-co" className="bpr-form bpr-fade" style={{ animationDelay: ".08s" }} onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
               <label className={"bpr-fl" + (errors.name ? " err" : "")}><input value={contact.name} onChange={set("name")} placeholder=" " type="text" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" /><span>{bp.f.name}</span>{errors.name ? <div className="emsg">{errors.name}</div> : null}</label>
