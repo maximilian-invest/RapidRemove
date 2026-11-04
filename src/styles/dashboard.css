@@ -996,7 +996,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rep-hero{margin-bottom:26px}
 .rra .rep-ring svg{width:100%;height:100%}
 .rra .rep-ring i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:30px;font-weight:800;color:#6b6b6b}
-.rra .hero .v.rep-v{font-size:26px;letter-spacing:-.8px;line-height:1.12;margin:6px 0}
+.rra .hero .v.rep-v{font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.2;margin:6px 0}
 .rra .rep-row{flex-direction:column;align-items:stretch;gap:10px}
 .rra .rep-row .pill-btn{justify-content:center;height:52px;font-size:17px}
 .rra .rep-row .pill-btn svg{width:18px;height:18px}
@@ -1028,7 +1028,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rep-sw-q{width:30px;height:30px}
 .rra .rep-sw-n{font-size:16px}
 .rra .hero.rep-hero{padding:30px 28px}
-.rra .hero .v.rep-v{font-size:40px;letter-spacing:-1.4px;line-height:1.08;margin:6px 0 8px}
+.rra .hero .v.rep-v{font-size:28px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin:6px 0 8px}
 .rra .rep-ring i{font-size:46px}
 .rra .rep-row{flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;margin-top:22px}
 .rra .rep-row .pill-btn{height:56px}

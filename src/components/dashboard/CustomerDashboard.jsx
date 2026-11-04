@@ -28,7 +28,7 @@ import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import PaySheet from "./PaySheet";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
-import { isRepPreview, RepSwitch, RepHero, RepTeaser, RepServices } from "./RepPreview";
+import { isRepPreview, RepHero, RepTeaser, RepServices } from "./RepPreview";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -1943,14 +1943,13 @@ export default function CustomerDashboard() {
 
   /* Reputations-Dashboard als Startseite (Vorschau ohne Funktion, nur für isRepPreview) */
   const repSoon = () => showToast("Reputations-Scan kommt bald");
-  const repBiz = (orders.find((o) => o.business) || {}).business || data.name || "Ihr Unternehmen";
   const HomeRepV = () => (
     <>
       <div className="hhead">
         <div><h1>{firstName ? T("hi", { name: firstName }) : T("hiNoName")}</h1></div>
         <span className="av">{ini}</span>
       </div>
-      <RepSwitch name={repBiz} onClick={repSoon} />
+      {/* Firmen-Wechsler (RepSwitch) erst nach dem ersten Scan */}
       <div className="hg">
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
@@ -2350,7 +2349,7 @@ export default function CustomerDashboard() {
           <div className="brand"><img src="/assets/rapidremove-icon.png" alt="" />RapidRemove</div>
           {TABS.map(([k, I, l]) => (
             <button key={k} className={"tb" + (tab === k ? " on" : "")} onClick={() => goTab(k)}>
-              <I /><span>{l}</span>{k === "home" && sw.length ? <span className="bd">{sw.length}</span> : null}
+              <I /><span>{l}</span>{k === "home" && sw.length ? <span className="bd">{sw.length}</span> : null}{k === "orders" && repPrev && homeOrders.length ? <span className="bd">{homeOrders.length}</span> : null}
             </button>
           ))}
           <div className="side-user"><span className="av">{ini}</span><span><b>{data.name || data.email}</b><span>{data.email}</span></span></div>

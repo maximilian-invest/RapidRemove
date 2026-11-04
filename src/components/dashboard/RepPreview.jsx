@@ -26,10 +26,9 @@ export function RepHero({ onScan }) {
       </span>
       <div className="k">Reputations-Score</div>
       <div className="v rep-v">Erfahren Sie mehr über Ihre Online-Reputation</div>
-      <div className="s">In 2 Minuten sehen Sie, was Kunden über Sie finden: bei Google, in KIs, Foren und Presse.</div>
+      <div className="s">Wir prüfen Ihre Reputation ganzheitlich: Google- und Bing-Suchergebnisse, Social Media, Foren, Presse, ChatGPT &amp; Co. und vieles mehr.</div>
       <div className="row rep-row">
         <button type="button" className="pill-btn" onClick={onScan}>Jetzt kostenlos scannen<ArrowRight /></button>
-        <span className="rep-note">Erster Scan gratis · nur öffentliche Infos</span>
       </div>
     </div>
   );
