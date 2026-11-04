@@ -28,6 +28,7 @@ import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import PaySheet from "./PaySheet";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
+import { isRepPreview, RepSwitch, RepHero, RepTeaser, RepServices } from "./RepPreview";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -1638,6 +1639,7 @@ export default function CustomerDashboard() {
   const removedN = all.filter((r) => r.status === "removed").length;
   const remaining = all.filter((r) => OPEN.includes(r.status) && !["verify", "paygate", "reasons"].includes(r.status)).length; // wartende zählen nicht als „in Bearbeitung"
   const firstName = String(data.name || "").trim().split(/\s+/)[0] || "";
+  const repPrev = isRepPreview(data.email); // Reputations-Dashboard (Vorschau, nur Design)
   const ini = initials(data.name, data.email);
   const sw = all.filter((r) => r.status === "software");
   const swOrders = new Set(sw.map((r) => r.o.id)).size;
@@ -1922,6 +1924,65 @@ export default function CustomerDashboard() {
           ) : <div className="empty"><img src={IMG.rocket} alt="" />{T(orders.length ? "allDone" : "noOrders")}</div>}
           {doneOrders.length ? <button className="ar-btn done-btn" onClick={() => { setOfilter("done"); goTab("orders"); }}><span className="ico"><CheckCircle2 /></span><b>{T("doneN", { n: doneOrders.length })}</b><ChevronRight /></button> : null}
           {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+        </div>
+        <aside className="hr">
+          <div className="sec"><h2>{T("activity")}</h2></div>
+          <div className="act">
+            {acts.length ? acts.map((a) => (
+              <button key={a.k} className="ai-row" onClick={() => setSheet({ orderId: a.s.o.id, key: a.s.key })}>
+                <span className={"ico " + a.c}><a.I /></span>
+                <span className="t"><b>{a.t}</b><span>{(a.sub ? a.sub + " · " : "") + (a.s.name || T("googleReview")) + " · " + a.s.o.business}</span></span>
+                <span className="tm">{a.tm}</span>
+              </button>
+            )) : <div className="empty" style={{ padding: "16px 0" }}>{T("activityEmpty")}</div>}
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+
+  /* Reputations-Dashboard als Startseite (Vorschau ohne Funktion, nur für isRepPreview) */
+  const repSoon = () => showToast("Reputations-Scan kommt bald");
+  const repBiz = (orders.find((o) => o.business) || {}).business || data.name || "Ihr Unternehmen";
+  const HomeRepV = () => (
+    <>
+      <div className="hhead">
+        <div><h1>{firstName ? T("hi", { name: firstName }) : T("hiNoName")}</h1></div>
+        <span className="av">{ini}</span>
+      </div>
+      <RepSwitch name={repBiz} onClick={repSoon} />
+      <div className="hg">
+        <div className="hl">
+          {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
+          {orders.filter((o) => o.priceHold).map((o) => <AlertBtn key={"ph" + o.id} title={T("phT")} sub={(orders.length > 1 ? (o.business || "#" + o.id) + " · " : "") + phTxt(o.priceHold)} onClick={() => setDetailId(o.id)} />)}
+          {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
+          {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
+          {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
+          <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
+          {all.length && (due.length || swOnly) ? <Hero /> : null}
+          {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
+          <RepHero onScan={repSoon} />
+          <div className="sec"><h2>Ihr Überblick</h2></div>
+          <RepTeaser />
+          <div className="sec rep-sec"><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
+          <div className="rep-ords">
+            {homeOrders.length ? homeOrders.map((o) => {
+              const prof = isProf(o);
+              const n = prof ? 0 : o.items.length, r = prof ? 0 : o.items.filter((x) => x.status === "removed").length;
+              const sub = prof ? (o.profileOrder.open > 0 ? T("pOpen", { amount: net(money(o.profileOrder.open, o.cur)) }) : T("pst_" + o.profileOrder.status))
+                : o.items.some((x) => x.status === "software") ? T("actionNeeded") : T("inProgressN", { n: o.items.filter((x) => OPEN.includes(x.status)).length });
+              return (
+                <button key={o.id} className="orow" onClick={() => setDetailId(o.id)}>
+                  {prof ? <ProfRing st={o.profileOrder.status} /> : <Ring r={r} n={n} />}
+                  <span className="t"><b>{o.business || T("orderN", { id: o.id })}</b><span>{sub}</span></span>
+                  <ChevronRight />
+                </button>
+              );
+            }) : <div className="rep-none">{T(orders.length ? "allDone" : "noOrders")}</div>}
+          </div>
+          {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+          <div className="sec rep-sec"><h2>Mehr für Ihren Ruf</h2></div>
+          <RepServices onClick={repSoon} />
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -2283,7 +2344,7 @@ export default function CustomerDashboard() {
       {adminView ? <div className="impbar"><span><b>Admin-Ansicht</b> · {data.name || data.email} · nicht getrackt</span><button type="button" onClick={endAdminView}>Beenden</button></div> : null}
       <div className="app">
         <main className="screen" ref={mainRef}>
-          <div className="tabin" key={tab}>{tab === "home" ? HomeV() : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}</div>
+          <div className="tabin" key={tab}>{tab === "home" ? (repPrev ? HomeRepV() : HomeV()) : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}</div>
         </main>
         <nav className="tabbar">
           <div className="brand"><img src="/assets/rapidremove-icon.png" alt="" />RapidRemove</div>
