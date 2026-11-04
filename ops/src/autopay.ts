@@ -24,6 +24,7 @@ import { notifyTeam } from "./notify";
 import { logCustEvent } from "./custTrack";
 import { notifyPartner } from "./partnerNotify";
 import { notifyCustomer } from "./custPush";
+import { isDashReturnUrl } from "./dashUrl";
 import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -561,7 +562,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
           ON CONFLICT (email) DO UPDATE SET mode=EXCLUDED.mode, customer=EXCLUDED.customer, pm=NULL, label=NULL, pm_type=NULL, last_error=NULL, updated_at=now()`, [si.email, k.mode, c.id]);
         row = await rowOf(si.email);
       }
-      const base = String(b.returnUrl || "").startsWith(SITE_URL) || /^http:\/\/localhost:\d+\//.test(String(b.returnUrl || "")) ? String(b.returnUrl).split("?")[0] : DASH_URL;
+      const base = isDashReturnUrl(String(b.returnUrl || "")) ? String(b.returnUrl).split("?")[0] : DASH_URL;
       const params: Record<string, unknown> = {
         mode: "setup", customer: row!.customer, currency: cur, locale: "auto",
         billing_address_collection: "required", // vollständige Rechnungsadresse → landet auf jeder Abbuchungs-Rechnung

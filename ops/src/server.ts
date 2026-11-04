@@ -41,6 +41,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
+import { PORTAL_URL } from "./dashUrl";
 import { createAutologin, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
@@ -86,11 +87,15 @@ const DUE_MAHN: Record<string, string> = { de: "umgehend", en: "now", es: "ahora
 // CORS: erlaubt den Browser-POST der Marketing-Site auf den öffentlichen /order-Endpunkt.
 // SITE_ORIGIN optional auf die Site-URL setzen; sonst "*" (Endpunkt ist nicht credentialed).
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "*";
+// Erlaubte Browser-Origins: SITE_ORIGIN (auch kommagetrennt) + Kunden-Portal (PORTAL_URL).
+const CORS_ALLOW: Set<string> | null = SITE_ORIGIN.trim() === "*" ? null
+  : new Set([...SITE_ORIGIN.split(","), PORTAL_URL].map((x) => x.trim().replace(/\/+$/, "")).filter(Boolean));
 // Öffentliche Site-URL (für Links in E-Mails, z. B. Fragebogen-Seite). NICHT SITE_ORIGIN nehmen (kann "*" sein).
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 const FORM_FIELDS = ["verified", "smsOk", "payment48"];
 app.addHook("onRequest", async (req, reply) => {
-  reply.header("Access-Control-Allow-Origin", SITE_ORIGIN);
+  const origin = String(req.headers.origin || "");
+  reply.header("Access-Control-Allow-Origin", !CORS_ALLOW ? "*" : (CORS_ALLOW.has(origin) ? origin : SITE_ORIGIN.split(",")[0].trim()));
   reply.header("Vary", "Origin");
   reply.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   reply.header("Access-Control-Allow-Headers", "Content-Type");

@@ -24,7 +24,8 @@ import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARG
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
-export const DASH_URL = `${SITE_URL}/my-reviews`;
+import { DASH_URL } from "./dashUrl";
+export { DASH_URL };
 
 export async function initCustomerTables(): Promise<void> {
   if (!pool) return;

@@ -50,7 +50,26 @@ function kickRefresh(): Promise<void> {
 // falls eine Regel mit so einer Quelle angelegt würde.
 const PROTECTED = /^\/(admin|auftrag|api|partner|my-reviews)(\/|$)/i;
 
+// Kunden-Portal (portal.rapid-remove.com): zeigt nur das Kunden-Dashboard.
+// „/" → /my-reviews; Dateien (Service-Worker, Icons …) laufen durch; alle anderen
+// Seiten gehen per 301 auf www, damit die Website nicht doppelt im Index landet.
+const PORTAL_HOST = /^portal\./i;
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
+
+function portal(req: NextRequest, host: string): NextResponse {
+  const p = req.nextUrl.pathname;
+  const noindex = (res: NextResponse) => { res.headers.set("X-Robots-Tag", "noindex, nofollow"); return res; };
+  if (p === "/" || p === "") {
+    // Absolute Adresse über den öffentlichen Host bauen (hinter dem Railway-Proxy kann nextUrl intern sein).
+    return noindex(NextResponse.redirect(`https://${host}/my-reviews${req.nextUrl.search}`, 302));
+  }
+  if (/^\/my-reviews(\/|$)/i.test(p) || /\.[a-z0-9]{2,8}$/i.test(p)) return noindex(NextResponse.next());
+  return NextResponse.redirect(SITE + p + req.nextUrl.search, 301);
+}
+
 export async function middleware(req: NextRequest) {
+  const host = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "").split(",")[0].trim();
+  if (PORTAL_HOST.test(host)) return portal(req, host);
   if (!OPS) return NextResponse.next();
   if (PROTECTED.test(req.nextUrl.pathname)) return NextResponse.next();
 

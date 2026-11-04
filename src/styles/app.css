@@ -86,6 +86,12 @@ section{position:relative;}
 .nav-tel{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;color:var(--fg);text-decoration:none;white-space:nowrap;padding:7px 12px;border:1px solid var(--hairline);border-radius:999px;background:#fff;flex:none;}
 .nav-tel svg{color:var(--primary);flex:none;}
 .nav-tel:hover{border-color:var(--orange-200);color:var(--primary);}
+/* Login ins Kunden-Dashboard (portal.rapid-remove.com) */
+.nav-login{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px;color:var(--fg);text-decoration:none;white-space:nowrap;padding:7px 12px;border:1px solid var(--hairline);border-radius:999px;background:#fff;flex:none;}
+.nav-login svg{flex:none;}
+.nav-login:hover{border-color:var(--orange-200);color:var(--primary);}
+@media(max-width:560px){.nav-right .nav-login{display:none;}}
+.sheet-panel a.sheet-login{display:flex;align-items:center;gap:10px;text-decoration:none;}
 /* WhatsApp-Symbol neben der Telefonnummer */
 .nav-wa{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--hairline);border-radius:999px;background:#fff;flex:none;text-decoration:none;transition:border-color var(--dur),background var(--dur);}
 .nav-wa svg{color:#25d366;}

@@ -14,6 +14,7 @@ import { consentLabel } from "@/components/Consent";
 import { trackContact } from "@/lib/metaPixel";
 import SiteChat from "@/components/SiteChat";
 import { reviewsBlocked } from "@/lib/reviews-product";
+import { dashHref, LOGIN_LABEL } from "@/lib/portal";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -435,6 +436,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active 
           <div className="nav-right">
             <NavTel />
             <LangToggle />
+            <a className="nav-login" href={dashHref("/my-reviews")} aria-label={LOGIN_LABEL[t.code] || "Log in"}><Icon.user size={15} /><span>{LOGIN_LABEL[t.code] || "Log in"}</span></a>
             <button className={"btn btn-primary sm" + (resume ? " nav-cta-resume" : "")} onClick={ctaClick}><span className="ico">{resume ? <Icon.arrowRight size={17} /> : <Icon.search size={17} />}</span>{ctaLabel}</button>
             <button className="nav-burger" onClick={() => setOpen(true)} aria-label="Menu"><Icon.menu /></button>
           </div>
@@ -462,6 +464,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active 
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
+          <a href={dashHref("/my-reviews")} className="sheet-login"><Icon.user size={18} /> {LOGIN_LABEL[t.code] || "Log in"}</a>
           <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => { setOpen(false); ctaClick(); }}>{resume ? <Icon.arrowRight size={18} /> : <Icon.search size={18} />}{ctaLabel}</button>
         </div>
       </div>
