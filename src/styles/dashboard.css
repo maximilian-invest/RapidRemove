@@ -1293,3 +1293,5 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-ans-t{font-size:13px;line-height:1.45;color:#3d3d3d;margin-top:8px;white-space:pre-line}
 .rra .rp-ki-sum{font-size:12px;color:var(--g3)}
 .rra .rp-ringwrap .rp-ring{width:100%!important;height:100%!important}
+.rra .rp-gl{display:inline-block;margin-top:4px;font-size:12px;font-weight:700}
+.rra .rp-gl.y{color:#15803d}.rra .rp-gl.n{color:#b45309}.rra .rp-gl.u{color:#9a9a9a;font-weight:600}

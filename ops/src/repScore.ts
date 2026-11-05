@@ -289,17 +289,18 @@ const DIRS = /herold\.at|gelbeseiten|dasoertliche|firmenabc|wko\.at|firmen\.wko|
 const PRESS = /forbes|journal|zeitung|zeitschrift|news|nachrichten|kurier|krone\.at|derstandard|diepresse|orf\.at|heute\.at|kleinezeitung|tips\.at|meinbezirk|trend\.at|gewinn\.at|leadersnet|profil\.at|falter\.at|salzburg24|vol\.at|noen\.at|bezirksblaetter|magazin|presse|wirtschaft(?!skammer)|immobilien-?(magazin|redaktion|brief)|handelsblatt|spiegel\.de|welt\.de|faz\.net|sueddeutsche|focus\.de|t-online|merkur|blick\.ch|nzz\.ch|bz-|report|kurier|businessart|economy|regional|lokal|bote|anzeiger|rundschau|tagblatt|echo\b|post\.at|online\.at\/artikel/i;
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
 
+type Social = { net: string; url: string; followers?: string; inGoogle?: boolean | null };
 type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null;
   ki: { name: string; known: boolean; sent: string; quote: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string }[] }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
-  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: { net: string; url: string }[];
+  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean;
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
 const W = { search: 25, reviews: 20, press: 15, ki: 15, social: 10, web: 15 } as const;
 type AreaKey = keyof typeof W;
-type Fix = { negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean };
+type Fix = { negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
 
 function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   const self = c.items.filter((x) => x.about !== "other");
@@ -341,6 +342,8 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   const ns = fix.social ? Math.max(3, nets.size) : nets.size;
   let social = ns === 0 ? 2 : ns === 1 ? 5 : ns === 2 ? 7 : 9;
   if (c.web.ok && c.social.length) social += 1;
+  // Randinfo: Profile auch im Google-Profil sichtbar → kleiner Bonus (nur wenn Google das Profil gezeigt hat)
+  if (c.kgSeen && c.social.length && (fix.gLink || c.social.every((x) => x.inGoogle))) social += 0.5;
   // Website & SEO
   let web = 2;
   if (c.web.url) {
@@ -372,6 +375,8 @@ export function evaluate(c: Ctx): J {
   if (c.reviews.unanswered > 0) todos.push({ key: "answer", title: `${c.reviews.unanswered} von ${c.reviews.total} neuesten Bewertungen ohne Antwort`, who: "selbst", action: "antworten", points: gain({ answer: true }), area: "reviews" });
   const kiBad = c.ki.filter((k) => !k.known || k.sent !== "pos");
   if (kiBad.length) todos.push({ key: "ki", title: kiBad.every((k) => !k.known) ? `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "kennen" : "kennt"} Sie noch kaum` : `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "antworten" : "antwortet"} nicht positiv über Sie`, who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
+  const notLinked = c.kgSeen ? c.social.filter((x) => x.inGoogle === false) : [];
+  if (notLinked.length) todos.push({ key: "glink", title: `${notLinked.map((x) => x.net).join(", ")} im Google Business Profil verlinken`, who: "selbst", action: "glink", points: gain({ gLink: true }), area: "social" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
   if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} SEO-Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
@@ -383,7 +388,7 @@ export function evaluate(c: Ctx): J {
     { key: "search", name: "Google- & Bing-Suche", text: () => "Was Kunden sehen, wenn sie Ihren Namen bei Google oder Bing suchen.", items: pick((x) => x.src !== "news") },
     { key: "ki", name: "KI-Antworten", text: () => "Was KI-Assistenten antworten, wenn jemand nach Ihnen fragt.", items: [] },
     { key: "reviews", name: "Bewertungen", text: () => "Ihre Sterne auf Google und anderen Bewertungsplattformen.", items: pick((x) => x.type === "review") },
-    { key: "social", name: "Social Media", text: () => "Ihre Profile in sozialen Netzwerken.", items: c.social.map((s) => ({ title: s.net, link: s.url, src: "web", sent: "pos", type: "social", host: host(s.url) })) },
+    { key: "social", name: "Social Media", text: () => "Ihre Profile in sozialen Netzwerken.", items: c.social.map((s) => ({ title: s.net, link: s.url, src: "web", sent: "pos", type: "social", host: host(s.url), followers: s.followers || "", inGoogle: c.kgSeen ? !!s.inGoogle : null })) },
     { key: "web", name: "Website & SEO", text: () => "Ladezeit, Technik und Auffindbarkeit Ihrer Website.", items: [] },
   ];
   const areas = AREAS.map((x) => { const s10 = Math.max(0, Math.min(10, Math.round(a[x.key] - 0.1))); return { key: x.key, name: x.name, score10: s10, status: status10(s10), text: x.text(a[x.key]), items: x.items }; })
@@ -493,8 +498,21 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const [au, hp] = site ? await Promise.all([siteAudit(site), homepage(site)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
     if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
     await say(76, "Suche Facebook-, Instagram-, LinkedIn- und YouTube-Profile");
-    const social = [...hp.social];
+    const social: Social[] = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
+    // Profile, die Google im Firmenprofil (Knowledge Panel, Bereich „Profile“) zeigt
+    const kg = gPages[0]?.knowledge_graph as J | undefined;
+    const kgLinks: string[] = (Array.isArray(kg?.profiles) ? kg!.profiles : []).map((x: J) => String(x.link || "")).filter(Boolean);
+    const kgSeen = !!kg && (Array.isArray(kg.profiles) || !!kg.title);
+    for (const l of kgLinks) for (const [net, re] of SOCIAL) if (re.test(l.replace(/^https?:\/\//, "")) && !social.some((s) => s.net === net)) social.push({ net, url: l });
+    for (const s0 of social) {
+      const re = SOCIAL.find(([n]) => n === s0.net)?.[1];
+      s0.inGoogle = kgSeen ? kgLinks.some((l) => !!re && re.test(l.replace(/^https?:\/\//, ""))) : null;
+      // Follower aus den Such-Snippets (z. B. „1.234 Follower“, „2,3 Tsd. Abonnenten“)
+      const hit = items.find((x) => !!re && re.test(x.link.replace(/^https?:\/\//, "")) && /follower|abonnent|gefällt|likes|fans/i.test(x.snippet + " " + x.title));
+      const m = hit && (hit.snippet + " " + hit.title).match(/([\d.,]+\s?(?:Tsd\.?|Mio\.?|K|M)?)\s*(Follower|Abonnent(?:en|innen)?|„Gefällt mir“-Angaben|Gefällt-mir|Likes|Fans)/i);
+      if (m) s0.followers = `${m[1].trim()} ${/abonn/i.test(m[2]) ? "Abonnenten" : /gef|like|fan/i.test(m[2]) ? "Likes" : "Follower"}`;
+    }
     await say(78, social.length ? `Gefunden: ${[...new Set(social.map((x) => x.net))].join(", ")} · frage jetzt ChatGPT, Claude & Perplexity` : "Frage jetzt ChatGPT, Claude & Perplexity");
     // Fester Fragenkatalog – so wie echte Kunden fragen. Jede KI bekommt jede Frage einzeln.
     const inCity = city ? ` in ${city}` : "";
@@ -556,7 +574,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
-      web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      kgSeen, web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

@@ -209,8 +209,8 @@ function Chart({ history }) {
     </div>
   );
 }
-const TODO_ICON = { neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, web: Globe };
-const TODO_COL = { neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
+const TODO_ICON = { neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
+const TODO_COL = { neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
 
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp }) {
   const r = loc.latest;
@@ -360,6 +360,20 @@ function RepArea({ a, r, onBack, onAsk }) {
           })()}
           {(r.ki || []).filter((x) => !x.answers).map((x) => <div key={x.name} className="rp-ki big"><span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>{x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}</div>)}
           <p className="rp-note">Gefragt wurden ChatGPT, Claude und Perplexity – jeweils mit den gleichen 5 Fragen, so wie Kunden fragen.</p>
+        </section>
+      ) : a.key === "social" ? (
+        <section className="rp-list">
+          <div className="rp-box-h"><b>Ihre Profile</b><span>{a.items.length} gefunden</span></div>
+          {a.items.length ? a.items.map((x, i) => (
+            <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
+              <i style={{ background: "#16a34a" }} />
+              <span className="rp-t"><b>{x.title}</b><span>{x.host}{x.followers ? " · " + x.followers : ""}</span>
+                <span className={"rp-gl " + (x.inGoogle === true ? "y" : x.inGoogle === false ? "n" : "u")}>{x.inGoogle === true ? "✓ im Google-Profil sichtbar" : x.inGoogle === false ? "✕ nicht im Google-Profil verlinkt" : "Google-Profil: nicht feststellbar"}</span>
+              </span>
+              <ExternalLink />
+            </a>
+          )) : <div className="rp-empty"><Users />Keine Social-Media-Profile gefunden.</div>}
+          <p className="rp-note">„Im Google-Profil sichtbar“ heißt: Das Profil steht rechts in Ihrem Google-Firmeneintrag unter „Profile“.</p>
         </section>
       ) : a.key === "web" ? (
         <section className="rp-list">
