@@ -611,7 +611,7 @@ function WebArea({ r }) {
               <div><b style={{ color: m.kb > 4096 ? "#e23b3b" : m.kb > 1640 ? "#d97706" : "#16a34a" }}>{mb}</b><span>Datenmenge{m.requests ? ` · ${m.requests} Dateien` : ""}</span></div>
             </div>
           ), "⚡", "#9a9a9a")}
-          {tile("seo", "SEO-Grundlagen", `${ok.filter((c) => c.ok).length} von ${ok.length} erfüllt`, null, null, (
+          {tile("seo", "Grundlagen", `${ok.filter((c) => c.ok).length} von ${ok.length} erfüllt`, null, null, (
             <>
               {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
                 <CheckRow key={c.key} c={c} />

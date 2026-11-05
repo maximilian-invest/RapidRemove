@@ -438,7 +438,8 @@ export async function siteAudit(url: string): Promise<Audit> {
     console.warn("Rep-Scan Website-Browser", (e as Error).message);
     try { const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(15_000), headers: { "user-agent": "Mozilla/5.0 (compatible; RapidRemoveScan/1.0)" } }); html = await res.text(); finalUrl = res.url || url; } catch { /* */ }
   }
-  const checks = html ? seoChecks(html, finalUrl, robotsOk, sitemapOk) : [];
+  const KEEP = new Set(["https", "viewport", "index", "title", "desc", "schema"]);
+  const checks = html ? seoChecks(html, finalUrl, robotsOk, sitemapOk).filter((c) => KEEP.has(c.key)) : [];
   const seo = checks.length ? Math.round((checks.filter((c) => c.ok).length / checks.length) * 100) : null;
   const ps = await pageSpeed(url);
   if (ps) return { perf: ps.perf, seo, metrics: { ...ps.metrics, kb: ps.metrics.kb ?? metrics?.kb ?? null, requests: metrics?.requests ?? null }, checks, finalUrl, html, src: "google" };
@@ -560,7 +561,7 @@ export type Ctx = {
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
-const W = { search: 25, reviews: 20, press: 15, ki: 15, social: 10, web: 15 } as const;
+const W = { search: 30, reviews: 20, press: 15, ki: 15, social: 10, web: 10 } as const;
 type AreaKey = keyof typeof W;
 type Fix = { rank?: boolean; gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
 
@@ -665,7 +666,7 @@ export function evaluate(c: Ctx): J {
   const notLinked = c.kgSeen ? c.social.filter((x) => x.inGoogle === false) : [];
   if (notLinked.length) todos.push({ key: "glink", title: `${notLinked.map((x) => x.net).join(", ")} im Google Business Profil verlinken`, who: "selbst", action: "glink", points: gain({ gLink: true }), area: "social" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
-  if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} SEO-Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
+  if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
   const kChecked = (c.kws || []).filter(kwOk);
   const weak = kChecked.filter((k) => kwVal(k) < 6);
   if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${kChecked.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
@@ -683,7 +684,7 @@ export function evaluate(c: Ctx): J {
     { key: "ki", name: "KI-Antworten", text: () => "Was KI-Assistenten antworten, wenn jemand nach Ihnen fragt.", items: [] },
     { key: "reviews", name: "Bewertungen", text: () => "Ihre Sterne auf Google und anderen Bewertungsplattformen.", items: pick((x) => x.type === "review") },
     { key: "social", name: "Social Media", text: () => "Ihre Profile in sozialen Netzwerken.", items: c.social.map((s) => ({ title: s.net, link: s.url, src: "web", sent: "pos", type: "social", host: host(s.url), followers: s.followers || "", inGoogle: c.kgSeen ? !!s.inGoogle : null })) },
-    { key: "web", name: "Ranking & Website", text: () => "Wo Sie bei Google und Maps erscheinen, wenn Kunden nach Ihren Leistungen suchen.", items: [] },
+    { key: "web", name: "Website", text: () => "Wie Ihre Website auf Kunden wirkt: erreichbar, sicher, schnell, gut dargestellt.", items: [] },
   ];
   // Fakten je Bereich: was geprüft wurde und was herauskam – auch wenn nichts Auffälliges gefunden wurde
   const own1 = self.find((x) => x.src === "google" && x.type === "own");
@@ -701,7 +702,8 @@ export function evaluate(c: Ctx): J {
       { label: "Geprüft", value: `${c.items.filter((x) => x.src === "google").length} Google-Treffer (Seite 1–5) · ${c.items.filter((x) => x.src === "bing").length} Bing-Treffer` },
     ],
     press: [
-      { label: "Geprüft", value: "Google News, Google Seite 1–5 und Erwähnungen im ganzen Netz" },
+      { label: "Geprüft", value: "Google News, Google Seite 1–5, verlinkende Seiten und Erwähnungen im ganzen Netz" },
+      ...(c.backlinks ? [{ label: "Domains, die auf Sie verlinken", value: `${c.backlinks.domains.toLocaleString("de-AT")} · Stärke ${c.backlinks.rank}/100` }] : []),
       { label: "Artikel & Beiträge", value: pressAll.length ? `${pressAll.length} gefunden` : "keine gefunden", tone: pressAll.length ? "good" : undefined },
       { label: "Davon kritisch", value: String(pressAll.filter((x) => x.sent === "neg").length), tone: pressAll.some((x) => x.sent === "neg") ? "bad" : "good" },
     ],
@@ -724,7 +726,6 @@ export function evaluate(c: Ctx): J {
       const p1 = ks.filter((k) => k.g != null && k.g <= 10).length;
       const mineN = ks.reduce((a2, k) => a2 + (k.mine ? k.mine.length : 0), 0), topN = ks.reduce((a2, k) => a2 + (k.top || 0), 0);
       return [
-        ...(c.backlinks ? [{ label: "Domains, die auf Sie verlinken", value: `${c.backlinks.domains.toLocaleString("de-AT")} · Stärke ${c.backlinks.rank}/100` }] : []),
         ...(ks.some((k) => k.vol != null) ? [{ label: "Suchen pro Monat (alle Begriffe)", value: `≈ ${ks.reduce((a2, k) => a2 + (k.vol || 0), 0).toLocaleString("de-AT")}` }] : []),
         ...(ks.some((k) => k.mine) ? [{ label: "Plätze auf Seite 1, die Ihnen gehören oder Sie nennen", value: `${mineN} von ${topN}`, tone: mineN >= topN * 0.3 ? "good" as const : "bad" as const }] : []),
         { label: "Website auf Seite 1", value: `${p1} von ${ks.length}`, tone: p1 >= ks.length / 2 ? "good" as const : "bad" as const },
@@ -800,7 +801,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 12;
+    const CACHE_V = 13;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -915,7 +916,8 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
     const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
     let kwVol = new Map<string, number>();
-    const kwPromise: Promise<Kw[]> = cache && Array.isArray(cache.kws) && cache.kws.length ? Promise.resolve(cache.kws as Kw[]) : (async () => {
+    // Ranking bei Suchbegriffen (SEO) ist abgeschaltet – wir sind Reputation, nicht SEO. Nur mit REP_KEYWORDS=1.
+    const kwPromise: Promise<Kw[]> = process.env.REP_KEYWORDS !== "1" ? Promise.resolve([] as Kw[]) : cache && Array.isArray(cache.kws) && cache.kws.length ? Promise.resolve(cache.kws as Kw[]) : (async () => {
       const g0 = loc.gbp as J | undefined;
       const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, g0?.district && `Bezirk: ${g0.district}`, g0?.state && `Bundesland/Region: ${g0.state}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
         ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
