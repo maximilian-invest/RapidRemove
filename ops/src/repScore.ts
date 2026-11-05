@@ -149,6 +149,21 @@ async function askChatGPT(prompt: string): Promise<string> {
   }
   return "";
 }
+/** Perplexity (Sonar, sucht immer im Web). Modell: PERPLEXITY_MODEL, Standard sonar. */
+async function askPerplexity(prompt: string): Promise<string> {
+  const key = (process.env.PERPLEXITY_API_KEY || "").trim();
+  if (!key) return "";
+  try {
+    const res = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST", signal: AbortSignal.timeout(90_000),
+      headers: { "content-type": "application/json", authorization: "Bearer " + key },
+      body: JSON.stringify({ model: process.env.PERPLEXITY_MODEL || "sonar", messages: [{ role: "user", content: prompt }], max_tokens: 500 }),
+    });
+    const j = (await res.json().catch(() => ({}))) as J;
+    if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); return ""; }
+    return String(j.choices?.[0]?.message?.content || "").replace(/\[\d+\]/g, "").trim();
+  } catch (e) { console.warn("Rep-Scan Perplexity", (e as Error).message); return ""; }
+}
 function parseJson(t: string): J | null {
   const s = t.replace(/^```(?:json)?/m, "").replace(/```\s*$/m, "");
   const a = s.indexOf("{"), b = s.lastIndexOf("}");
@@ -476,19 +491,21 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       { key: "besser", q: `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
     ];
     const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
-    const [claudeAns, gptAns] = await Promise.all([
+    const [claudeAns, gptAns, pplxAns] = await Promise.all([
       Promise.all(QUESTIONS.map((x) => askClaude(SYS, x.q, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; }))),
       Promise.all(QUESTIONS.map((x) => askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen."))),
+      Promise.all(QUESTIONS.map((x) => askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen."))),
     ]);
     const kiText = claudeAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${claudeAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
+    const pplxText = pplxAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${pplxAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
     const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
     await setStep(scanId, 86, "Treffer einordnen");
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
-      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
       `Regeln: "about":"other" wenn der Treffer klar ein anderes Unternehmen/eine andere Person meint. "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
       { maxTokens: 6000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
@@ -516,6 +533,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const ki = [
       ...(gptText ? [mk("ChatGPT", gptAns, cls?.gpt)] : []),
       ...(kiText ? [mk("Claude", claudeAns, cls?.ki)] : []),
+      ...(pplxText ? [mk("Perplexity", pplxAns, cls?.pplx)] : []),
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
