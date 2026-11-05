@@ -103,6 +103,20 @@ function useSmooth(target) {
   }, [target]);
   return v;
 }
+export function RepFailed({ loc, rep, showToast }) {
+  const [busy, setBusy] = React.useState(false);
+  return (
+    <div className="rp-mini-scan rp-failed" role="status">
+      <span className="rp-fail-i">!</span>
+      <div className="rp-ms-t">
+        <span className="rp-ms-k">{loc.name}</span>
+        <b className="rp-fail-t">Scan wurde unterbrochen</b>
+        <span className="rp-fail-s">Bitte einfach neu starten – dauert 3–5 Minuten.</span>
+      </div>
+      <button type="button" className="rp-mini" disabled={busy} onClick={async () => { setBusy(true); try { await rep.scan({ locationId: loc.id }); } catch (e) { showToast("Scan konnte nicht gestartet werden", true); } setBusy(false); }}>{busy ? <Loader className="spin" /> : "Neu starten"}</button>
+    </div>
+  );
+}
 export function RepRunning({ loc }) {
   const target = Math.max(2, Math.min(99, loc.scan.progress || 0));
   const p = useSmooth(target);
@@ -236,7 +250,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp }) {
         {multi ? <button type="button" className="rp-back" onClick={onBack} aria-label="Alle Standorte"><ArrowLeft /></button> : null}
         <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
       </div>
-      {running ? <RepRunning loc={loc} /> : null}
+      {running ? <RepRunning loc={loc} /> : loc.scan && loc.scan.status === "error" && (!loc.latest || new Date(loc.scan.at) > new Date(loc.latest.scannedAt || 0)) ? <RepFailed loc={loc} rep={rep} showToast={showToast} /> : null}
       <div className="rp-kpis">
         <div className="rp-kpi dark">
           <span className="rp-kpi-l">Reputations-Score</span>
