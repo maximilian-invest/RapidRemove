@@ -15,6 +15,7 @@ import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
 import { customerSessionInfo } from "./customers";
 import { notifyTeam } from "./notify";
+import { withBrowserPage } from "./linkProbe";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type J = Record<string, any>;
@@ -145,26 +146,94 @@ function parseJson(t: string): J | null {
   try { return JSON.parse(s.slice(a, b + 1)); } catch { return null; }
 }
 
-async function pageSpeed(url: string): Promise<{ perf: number | null; seo: number | null }> {
-  // Ohne Schlüssel teilt man sich ein globales Kontingent (meist 429) → eigenen Key nutzen (PAGESPEED_KEY, sonst der Google-Maps-Key).
-  const keys = [process.env.PAGESPEED_KEY, process.env.GOOGLE_MAPS_API_KEY, ""].map((k) => (k || "").trim()).filter((k, i, a) => a.indexOf(k) === i);
-  for (const key of keys) {
-    const p = new URLSearchParams({ url, strategy: "mobile" });
-    p.append("category", "performance"); p.append("category", "seo");
-    if (key) p.set("key", key);
-    try {
-      const res = await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + p.toString(), { signal: AbortSignal.timeout(80_000) });
-      const j = (await res.json().catch(() => ({}))) as J;
-      if (!res.ok) { console.warn("Rep-Scan PageSpeed", key ? "mit Key" : "ohne Key", res.status, String(j.error?.message || "").slice(0, 140)); continue; }
-      const c = j.lighthouseResult?.categories || {};
-      const sc = (x: J | undefined) => (x && typeof x.score === "number" ? Math.round(x.score * 100) : null);
-      return { perf: sc(c.performance), seo: sc(c.seo) };
-    } catch (e) { console.warn("Rep-Scan PageSpeed", (e as Error).message); }
-  }
-  return { perf: null, seo: null };
-}
 const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
   .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
+
+/* ---------------- Website-Check (eigener Browser, kein Fremd-Kontingent) ----------------
+ * Ladezeit: Seite im Handy-Modus mit gedrosselter Leitung (wie Google: ~1,6 Mbit/s, 150 ms, 4× langsamere CPU) laden,
+ * Erster Inhalt (FCP), Hauptinhalt (LCP), Layout-Sprünge (CLS) und Datenmenge messen → 0–100.
+ * SEO: 11 nachvollziehbare Grundlagen-Checks am fertigen HTML → Anteil erfüllt = 0–100. */
+type Check = { key: string; label: string; ok: boolean; detail: string };
+type Audit = { perf: number | null; seo: number | null; metrics: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null; requests: number | null } | null; checks: Check[]; finalUrl: string; html: string };
+const lin = (v: number, good: number, mid: number, bad: number) => (v <= good ? 100 : v <= mid ? 100 - ((v - good) / (mid - good)) * 50 : v >= bad ? 0 : 50 - ((v - mid) / (bad - mid)) * 50);
+function perfScore(m: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null }): number | null {
+  const parts: [number, number][] = [];
+  if (m.fcp != null) parts.push([lin(m.fcp / 1000, 1.8, 3, 6), 15]);
+  if (m.lcp != null) parts.push([lin(m.lcp / 1000, 2.5, 4, 8), 40]);
+  if (m.cls != null) parts.push([lin(m.cls, 0.1, 0.25, 0.5), 15]);
+  if (m.kb != null) parts.push([lin(m.kb / 1024, 1.6, 4, 8), 30]);
+  if (!parts.length) return null;
+  const w = parts.reduce((x, [, k]) => x + k, 0);
+  return Math.round(parts.reduce((x, [v, k]) => x + v * k, 0) / w);
+}
+function seoChecks(html: string, finalUrl: string, robotsOk: boolean | null, sitemapOk: boolean | null): Check[] {
+  const h = html.slice(0, 800_000);
+  const title = decode((h.match(/<title[^>]*>([\s\S]{0,300}?)<\/title>/i)?.[1] || "").replace(/\s+/g, " ").trim());
+  const metaC = (name: string) => decode(h.match(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]*content=["']([^"']*)`, "i"))?.[1] || h.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:name|property)=["']${name}["']`, "i"))?.[1] || "").trim();
+  const desc = metaC("description");
+  const robots = metaC("robots").toLowerCase();
+  const h1 = (h.match(/<h1[\s>]/gi) || []).length;
+  const imgs = h.match(/<img\b[^>]*>/gi) || [];
+  const withAlt = imgs.filter((t) => /\balt=["'][^"']+["']/i.test(t)).length;
+  const ld = [...h.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]).join(" ");
+  const ldBiz = /"@type"\s*:\s*"?(\[?[^"\]]*)?(LocalBusiness|Organization|Dentist|Restaurant|Store|ProfessionalService|MedicalBusiness|RealEstateAgent|Hotel|LegalService|AutoDealer|HomeAndConstructionBusiness|[A-Za-z]+Business)/i.test(ld);
+  const C = (key: string, label: string, ok: boolean, detail: string): Check => ({ key, label, ok, detail });
+  const out = [
+    C("https", "Sichere Verbindung (https)", /^https:/i.test(finalUrl), /^https:/i.test(finalUrl) ? "ja" : "Seite läuft ohne https"),
+    C("title", "Seitentitel", title.length >= 10 && title.length <= 65, title ? `„${title.slice(0, 70)}“ (${title.length} Zeichen${title.length > 65 ? ", zu lang" : title.length < 10 ? ", zu kurz" : ""})` : "fehlt"),
+    C("desc", "Beschreibung für Google", desc.length >= 50 && desc.length <= 170, desc ? `${desc.length} Zeichen${desc.length < 50 ? " – zu kurz" : desc.length > 170 ? " – zu lang" : ""}` : "fehlt – Google zeigt dann irgendeinen Text"),
+    C("h1", "Hauptüberschrift (H1)", h1 >= 1, h1 ? `${h1} vorhanden` : "fehlt"),
+    C("viewport", "Für Handys optimiert", /<meta[^>]+name=["']viewport["']/i.test(h), /<meta[^>]+name=["']viewport["']/i.test(h) ? "ja" : "kein Viewport-Tag"),
+    C("lang", "Sprache angegeben", /<html[^>]+lang=["'][a-z]{2}/i.test(h), /<html[^>]+lang=["'][a-z]{2}/i.test(h) ? "ja" : "fehlt"),
+    C("index", "Darf bei Google erscheinen", !/noindex/.test(robots), /noindex/.test(robots) ? "auf noindex gestellt!" : "ja"),
+    C("canonical", "Eindeutige Adresse (Canonical)", /<link[^>]+rel=["']canonical["']/i.test(h), /<link[^>]+rel=["']canonical["']/i.test(h) ? "ja" : "fehlt"),
+    C("alt", "Bildbeschreibungen", !imgs.length || withAlt / imgs.length >= 0.8, imgs.length ? `${withAlt} von ${imgs.length} Bildern beschrieben` : "keine Bilder"),
+    C("schema", "Firmendaten für Google (Schema)", ldBiz, ldBiz ? "vorhanden" : "fehlt – hilft bei Google-Karte & KI-Antworten"),
+    C("sitemap", "Sitemap & robots.txt", !!robotsOk && !!sitemapOk, `robots.txt ${robotsOk ? "✓" : "fehlt"} · Sitemap ${sitemapOk ? "✓" : "fehlt"}`),
+  ];
+  return out;
+}
+async function okUrl(u: string): Promise<boolean> {
+  try { const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(8000), headers: { "user-agent": "Mozilla/5.0 (compatible; RapidRemoveScan/1.0)" } }); if (!r.ok) return false; const t = (await r.text()).slice(0, 2000); return !/<html/i.test(t) || /urlset|sitemapindex/i.test(t); }
+  catch { return false; }
+}
+export async function siteAudit(url: string): Promise<Audit> {
+  const origin = (() => { try { return new URL(url).origin; } catch { return ""; } })();
+  const [robotsOk, sitemapOk] = origin ? await Promise.all([okUrl(origin + "/robots.txt"), okUrl(origin + "/sitemap.xml").then(async (x) => x || okUrl(origin + "/sitemap_index.xml"))]) : [null, null];
+  let metrics: Audit["metrics"] = null, html = "", finalUrl = url;
+  try {
+    const r = await withBrowserPage(async (page) => {
+      const cdp = await page.target().createCDPSession();
+      await page.setUserAgent("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36");
+      await page.setViewport({ width: 412, height: 823, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      await cdp.send("Network.enable");
+      await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+      let bytes = 0, reqs = 0;
+      cdp.on("Network.loadingFinished", (e: J) => { bytes += Number(e.encodedDataLength) || 0; reqs++; });
+      await page.evaluateOnNewDocument(() => {
+        (window as any).__lcp = 0; (window as any).__cls = 0;
+        try { new PerformanceObserver((l) => { for (const e of l.getEntries()) (window as any).__lcp = (e as any).startTime; }).observe({ type: "largest-contentful-paint", buffered: true }); } catch { /* */ }
+        try { new PerformanceObserver((l) => { for (const e of l.getEntries() as any[]) if (!e.hadRecentInput) (window as any).__cls += e.value; }).observe({ type: "layout-shift", buffered: true }); } catch { /* */ }
+      });
+      await page.goto(url, { waitUntil: "load", timeout: 60_000 });
+      await new Promise((res) => setTimeout(res, 2500));
+      const m = await page.evaluate(() => {
+        const fcp = performance.getEntriesByName("first-contentful-paint")[0] as PerformanceEntry | undefined;
+        return { fcp: fcp ? fcp.startTime : null, lcp: (window as any).__lcp || null, cls: Math.round(((window as any).__cls || 0) * 1000) / 1000 };
+      });
+      return { m, bytes, reqs, html: await page.content(), finalUrl: page.url() };
+    });
+    metrics = { fcp: r.m.fcp ? Math.round(r.m.fcp) : null, lcp: r.m.lcp ? Math.round(r.m.lcp || r.m.fcp) : r.m.fcp ? Math.round(r.m.fcp) : null, cls: r.m.cls, kb: r.bytes ? Math.round(r.bytes / 1024) : null, requests: r.reqs || null };
+    html = r.html; finalUrl = r.finalUrl || url;
+  } catch (e) {
+    console.warn("Rep-Scan Website-Browser", (e as Error).message);
+    try { const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(15_000), headers: { "user-agent": "Mozilla/5.0 (compatible; RapidRemoveScan/1.0)" } }); html = await res.text(); finalUrl = res.url || url; } catch { /* */ }
+  }
+  const checks = html ? seoChecks(html, finalUrl, robotsOk, sitemapOk) : [];
+  const seo = checks.length ? Math.round((checks.filter((c) => c.ok).length / checks.length) * 100) : null;
+  return { perf: metrics ? perfScore(metrics) : null, seo, metrics, checks, finalUrl, html };
+}
 
 const SOCIAL: [string, RegExp][] = [
   ["Facebook", /(^|\.)facebook\.com\/(?!sharer|share|plugins|dialog|tr\b)[^/?#]+/i], ["Instagram", /(^|\.)instagram\.com\/(?!p\/|explore)[^/?#]+/i],
@@ -198,7 +267,7 @@ type Item = { i: number; src: "google" | "bing" | "news"; pos: number; title: st
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null;
   ki: { name: string; known: boolean; sent: string; quote: string }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
-  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean }; social: { net: string; url: string }[];
+  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: { net: string; url: string }[];
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
@@ -277,7 +346,7 @@ export function evaluate(c: Ctx): J {
   const kiBad = c.ki.filter((k) => !k.known || k.sent !== "pos");
   if (kiBad.length) todos.push({ key: "ki", title: kiBad.every((k) => !k.known) ? `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "kennen" : "kennt"} Sie noch kaum` : `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "antworten" : "antwortet"} nicht positiv über Sie`, who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
-  if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: "Website ist langsam oder schlecht auffindbar", who: "wir", action: "website", points: gain({ web: true }), area: "web" });
+  if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} SEO-Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
@@ -364,7 +433,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     }
     await setStep(scanId, 70, "Website & SEO");
     const site = String(loc.website || "");
-    const [ps, hp] = site ? await Promise.all([pageSpeed(site), homepage(site)]) : [{ perf: null, seo: null }, { https: false, title: "", desc: "", social: [], ok: false }];
+    const [au, hp] = site ? await Promise.all([siteAudit(site), homepage(site)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
     const social = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
     await setStep(scanId, 78, "KI-Antworten");
@@ -401,7 +470,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
-      web: { url: site, perf: ps.perf, seo: ps.seo, https: hp.https, title: hp.title, desc: hp.desc, ok: hp.ok }, social, summary: String(cls?.summary || ""),
+      web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await setStep(scanId, 95, "Score berechnen");
     const result: J = { ...evaluate(ctx), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

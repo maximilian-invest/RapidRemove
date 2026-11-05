@@ -88,3 +88,19 @@ export async function probeReviewLink(url: string, reviewer?: string | null, tim
     scheduleClose();
   }
 }
+
+/** Eigene Seite im geteilten Browser öffnen (für andere Prüfungen, z. B. Website-Check im Reputations-Scan). */
+export async function withBrowserPage<T>(fn: (page: any) => Promise<T>): Promise<T> {
+  if (active >= 3) throw new Error("Browser ausgelastet");
+  active++;
+  let page: any = null;
+  try {
+    const b = await getBrowser();
+    page = await b.newPage();
+    return await fn(page);
+  } finally {
+    active--;
+    try { if (page) await page.close(); } catch { /* */ }
+    scheduleClose();
+  }
+}
