@@ -452,6 +452,68 @@ function KiSimple({ r, a, pending }) {
     </>
   );
 }
+/* Bewertungen: jedes Portal eine eigene ausklappbare Kachel (Google zuerst) */
+const PORTAL_NAME = { trustpilot: "Trustpilot", provenexpert: "ProvenExpert", kununu: "kununu", immobilienscout24: "ImmoScout24", immowelt: "immowelt", jameda: "jameda", yelp: "Yelp", tripadvisor: "Tripadvisor", herold: "Herold", gelbeseiten: "Gelbe Seiten", "11880": "11880", golocal: "golocal", werkenntdenbesten: "WerkenntdenBESTEN", ausgezeichnet: "ausgezeichnet.org", reviews: "Reviews.io", facebook: "Facebook", google: "Google", firmenabc: "FirmenABC", wlw: "wlw", glassdoor: "Glassdoor", anwalt: "anwalt.de", check24: "CHECK24", myhammer: "MyHammer", houzz: "Houzz", local: "local.ch", search: "search.ch", moneyhouse: "Moneyhouse" };
+const portalOf = (h) => { const p = String(h || "").replace(/^www\./, "").split("."); const core = p.length > 2 && p[0].length <= 3 ? p[1] : p[0]; return PORTAL_NAME[core] || core.charAt(0).toUpperCase() + core.slice(1); };
+const stars = (v) => String(Math.round(v * 10) / 10).replace(".", ",") + " ★";
+const ratingCol = (v) => (v == null ? "#9a9a9a" : v >= 4.3 ? "#15803d" : v >= 3.8 ? "#b45309" : "#b91c1c");
+function ReviewPortals({ r, items }) {
+  const [open, setOpen] = React.useState(null);
+  const groups = [...items.reduce((m, x) => { const k = portalOf(x.host); if (!m.has(k)) m.set(k, []); m.get(k).push(x); return m; }, new Map()).entries()].map(([name, list]) => {
+    const rated = list.find((x) => x.rating);
+    const m = !rated && list.map((x) => x.note || "").join(" ").match(/(\d[.,]\d)\s*von\s*5/);
+    const rating = rated ? Number(rated.rating) : m ? Number(m[1].replace(",", ".")) : null;
+    const votes = rated && rated.votes ? Number(rated.votes) : (list.map((x) => x.note || "").join(" ").match(/(\d+)\s*Bewertung/) || [])[1] || null;
+    return { name, list, rating, votes, neg: list.some((x) => x.sent === "neg"), url: list[0].link };
+  }).sort((p, q) => (q.neg ? 1 : 0) - (p.neg ? 1 : 0) || (p.rating ?? 9) - (q.rating ?? 9));
+  const g = r.gbp;
+  const ck = g ? g.checks || [] : [];
+  const gRating = g ? g.rating : r.kpis && r.kpis.rating;
+  const gVotes = g ? g.reviews : r.kpis && r.kpis.reviews;
+  const tile = (key, name, sub, right, rightCol, body, ini, col) => {
+    const on = open === key;
+    return (
+      <div key={key} className={"rp-pt" + (on ? " open" : "")}>
+        <button type="button" className="rp-pt-h" onClick={() => setOpen(on ? null : key)}>
+          <span className="rp-pt-i" style={{ background: col }}>{ini}</span>
+          <span className="rp-t"><b>{name}</b><span>{sub}</span></span>
+          {right ? <em style={{ color: rightCol }}>{right}</em> : null}
+          <ChevronDown className="rp-pt-chev" />
+        </button>
+        {on ? <div className="rp-pt-b">{body}</div> : null}
+      </div>
+    );
+  };
+  return (
+    <div className="rp-pts">
+      <div className="rp-box-h"><b>Bewertungsportale</b><span>{groups.length + 1} gefunden</span></div>
+      {tile("google", "Google", (gRating ? stars(gRating) + " · " + (gVotes || 0) + " Bewertungen" : "noch keine Bewertungen") + (g && g.type ? " · " + g.type : ""),
+        gRating ? stars(gRating) : null, ratingCol(gRating), (
+        <>
+          {ck.length ? <div className="rp-pt-sub">Google-Unternehmensprofil · {ck.filter((c) => c.ok).length} von {ck.length} erfüllt</div> : null}
+          {[...ck.filter((c) => !c.ok), ...ck.filter((c) => c.ok)].map((c) => (
+            <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+          ))}
+          {!ck.length ? <p className="rp-note">Der Profil-Check erscheint nach dem nächsten Scan.</p> : null}
+          {(g && g.url) || (r.location && r.location.mapsUrl) ? <a className="rp-pt-open" href={(g && g.url) || r.location.mapsUrl} target="_blank" rel="noopener noreferrer">Google-Profil öffnen<ExternalLink /></a> : null}
+        </>
+      ), "G", "#4285f4")}
+      {groups.map((p) => tile(p.name, p.name, (p.rating ? stars(p.rating) + (p.votes ? " · " + p.votes + " Bewertungen" : "") : p.list.length === 1 ? "1 Eintrag gefunden" : p.list.length + " Einträge gefunden") + (p.neg ? " · kritisch" : ""),
+        p.rating ? stars(p.rating) : null, ratingCol(p.rating), (
+        <>
+          {p.list.map((x, i) => (
+            <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
+              <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : "#bdbdbd" }} />
+              <span className="rp-t"><b>{x.title}</b><span>{x.note || x.snippet || x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : ""}{x.date ? " · " + x.date : ""}</span></span>
+              <ExternalLink />
+            </a>
+          ))}
+        </>
+      ), p.name.charAt(0).toUpperCase(), p.neg ? "#e23b3b" : "#9a9a9a"))}
+      {!groups.length ? <p className="rp-note">Außer Google keine weiteren Bewertungsportale mit Ihrem Namen gefunden.</p> : null}
+    </div>
+  );
+}
 const AREA_ICON = { press: Newspaper, search: Search, ki: Sparkles, reviews: Star, social: Users, web: Globe };
 function RepArea({ a, r, onBack, onAsk }) {
   if (!a) return null;
@@ -524,23 +586,9 @@ function RepArea({ a, r, onBack, onAsk }) {
         </section>
       ) : (
         <section className="rp-list">
-          {a.key === "reviews" && r.gbp ? (() => {
-            const ck = r.gbp.checks || [];
-            return (
-              <div className="rp-gbp">
-                <a className="rp-gbp-h" href={r.gbp.url || undefined} target="_blank" rel="noopener noreferrer">
-                  <span className="rp-gbp-i"><Star /></span>
-                  <span className="rp-t"><b>Google-Unternehmensprofil</b><span>{r.gbp.rating ? String(r.gbp.rating).replace(".", ",") + " ★ · " + (r.gbp.reviews || 0) + " Bewertungen" : "noch keine Bewertungen"}{r.gbp.type ? " · " + r.gbp.type : ""}</span></span>
-                  <em>{ck.filter((c) => c.ok).length}/{ck.length}</em>
-                  {r.gbp.url ? <ExternalLink /> : null}
-                </a>
-                {[...ck.filter((c) => !c.ok), ...ck.filter((c) => c.ok)].map((c) => (
-                  <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
-                ))}
-              </div>
-            );
-          })() : null}
-          <div className="rp-box-h"><b>{a.key === "reviews" ? "Andere Bewertungsportale" : "Was Kunden finden"}</b><span>{a.items.length} Treffer</span></div>
+          {a.key === "reviews" ? <ReviewPortals r={r} items={a.items} /> : null}
+          {a.key === "reviews" ? null : <>
+          <div className="rp-box-h"><b>Was Kunden finden</b><span>{a.items.length} Treffer</span></div>
           {a.key === "search" && r.suggestions && r.suggestions.length ? (
             <div className="rp-sugg">{r.suggestions.slice(0, 8).map((s) => <span key={s.q} className={s.neg ? "neg" : ""}>{s.q}</span>)}</div>
           ) : null}
@@ -551,6 +599,7 @@ function RepArea({ a, r, onBack, onAsk }) {
               <ExternalLink />
             </a>
           )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge über Sie gefunden – kein Risiko, aber auch keine Pluspunkte." : a.key === "reviews" ? "Außer Google keine weiteren Bewertungsportale mit Ihrem Namen gefunden." : "In diesem Bereich ist nichts Auffälliges aufgetaucht."}</div>}
+          </>}
         </section>
       )}
       {neg.length && (a.key === "press" || a.key === "search") ? (
