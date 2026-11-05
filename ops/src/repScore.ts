@@ -50,14 +50,24 @@ async function init(): Promise<void> {
 }
 
 /* ---------------- Externe Quellen ---------------- */
+/* SerpApi-Kontingent aufgebraucht → merken, Scan sauber abbrechen statt mit leeren Daten weiterzurechnen */
+let serpOutAt = 0;
+let serpOutTold = 0;
+const QUOTA_RE = /run out of searches|out of searches|exceeded|limit reached|plan.*(limit|searches)|account.*(suspended|disabled)|invalid api key/i;
 async function serp(params: Record<string, string>, ms = 45_000): Promise<J> {
   if (!skey()) throw new Error("SERPAPI_KEY fehlt");
+  if (serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("SerpApi-Kontingent aufgebraucht");
   const p = new URLSearchParams({ ...params, api_key: skey() });
   const res = await fetch(SERP_BASE() + "/search.json?" + p.toString(), { signal: AbortSignal.timeout(ms) });
   const j = (await res.json().catch(() => ({}))) as J;
   if (!res.ok || j.error) {
     // „Keine Ergebnisse“ ist kein Fehler
     if (/hasn't returned any results|no results/i.test(String(j.error || ""))) return {};
+    if (res.status === 429 || res.status === 401 || QUOTA_RE.test(String(j.error || ""))) {
+      serpOutAt = Date.now();
+      console.error("Rep-Scan SerpApi gesperrt/aufgebraucht:", res.status, String(j.error || ""));
+      if (Date.now() - serpOutTold > 6 * 3600_000) { serpOutTold = Date.now(); void notifyTeam("SerpApi aufgebraucht", `Reputations-Scans pausiert: ${String(j.error || "HTTP " + res.status).slice(0, 160)} – bitte Kontingent aufstocken.`).catch(() => {}); }
+    }
     throw new Error(String(j.error || "SerpApi HTTP " + res.status));
   }
   return j;
@@ -668,6 +678,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       }
       kg = gPages[0]?.knowledge_graph as J | undefined;
     }
+    if (!cache && serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("Suchdienst vorübergehend nicht verfügbar");
     const itemsRaw = items.map((x) => ({ ...x }));
     await say(64, `${items.filter((x) => x.src === "mention" || x.src === "news").length} Erwähnungen gefunden · lese jetzt die neuesten Google-Bewertungen`);
     const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
@@ -786,6 +797,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
     if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
     // Neu recherchiert und brauchbar → für eine Woche merken
+    if (!cache && serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("Suchdienst vorübergehend nicht verfügbar");
     if (!fromCache && cls && [claudeAns, gptAns, pplxAns].some((a) => a.some(Boolean))) {
       const kwsNow = await kwPromise;
       await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
