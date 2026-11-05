@@ -785,9 +785,9 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       for (const r of list) { const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
     }
     if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
-    await say(70, site ? `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit` : "Kein Website-Link im Google-Profil – überspringe Website-Check");
+    await say(70, site ? ((process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY) ? `Messe die Ladezeit von ${host(site)} mit Google PageSpeed (Handy)` : `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit`) : "Kein Website-Link im Google-Profil – überspringe Website-Check");
     const [au, hp] = site ? await Promise.all([siteAudit(site), Promise.resolve(hp0)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
-    if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
+    if (site) await say(74, au.metrics?.lcp ? `${host(site)}: ${au.src === "google" ? "PageSpeed " + au.perf + "/100 · " : ""}fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
     // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
     const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
     const kwPromise: Promise<Kw[]> = cache && Array.isArray(cache.kws) && cache.kws.length ? Promise.resolve(cache.kws as Kw[]) : (async () => {
