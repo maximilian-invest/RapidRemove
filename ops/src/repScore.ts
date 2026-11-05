@@ -123,17 +123,25 @@ function parseJson(t: string): J | null {
 }
 
 async function pageSpeed(url: string): Promise<{ perf: number | null; seo: number | null }> {
-  const p = new URLSearchParams({ url, strategy: "mobile" });
-  p.append("category", "performance"); p.append("category", "seo");
-  if (process.env.PAGESPEED_KEY) p.set("key", process.env.PAGESPEED_KEY);
-  try {
-    const res = await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + p.toString(), { signal: AbortSignal.timeout(70_000) });
-    const j = (await res.json().catch(() => ({}))) as J;
-    const c = j.lighthouseResult?.categories || {};
-    const sc = (x: J | undefined) => (x && typeof x.score === "number" ? Math.round(x.score * 100) : null);
-    return { perf: sc(c.performance), seo: sc(c.seo) };
-  } catch { return { perf: null, seo: null }; }
+  // Ohne Schlüssel teilt man sich ein globales Kontingent (meist 429) → eigenen Key nutzen (PAGESPEED_KEY, sonst der Google-Maps-Key).
+  const keys = [process.env.PAGESPEED_KEY, process.env.GOOGLE_MAPS_API_KEY, ""].map((k) => (k || "").trim()).filter((k, i, a) => a.indexOf(k) === i);
+  for (const key of keys) {
+    const p = new URLSearchParams({ url, strategy: "mobile" });
+    p.append("category", "performance"); p.append("category", "seo");
+    if (key) p.set("key", key);
+    try {
+      const res = await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + p.toString(), { signal: AbortSignal.timeout(80_000) });
+      const j = (await res.json().catch(() => ({}))) as J;
+      if (!res.ok) { console.warn("Rep-Scan PageSpeed", key ? "mit Key" : "ohne Key", res.status, String(j.error?.message || "").slice(0, 140)); continue; }
+      const c = j.lighthouseResult?.categories || {};
+      const sc = (x: J | undefined) => (x && typeof x.score === "number" ? Math.round(x.score * 100) : null);
+      return { perf: sc(c.performance), seo: sc(c.seo) };
+    } catch (e) { console.warn("Rep-Scan PageSpeed", (e as Error).message); }
+  }
+  return { perf: null, seo: null };
 }
+const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+  .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
 
 const SOCIAL: [string, RegExp][] = [
   ["Facebook", /(^|\.)facebook\.com\/(?!sharer|share|plugins|dialog|tr\b)[^/?#]+/i], ["Instagram", /(^|\.)instagram\.com\/(?!p\/|explore)[^/?#]+/i],
@@ -147,8 +155,8 @@ async function homepage(url: string): Promise<{ https: boolean; title: string; d
     out.https = /^https:/i.test(res.url || url);
     const html = (await res.text()).slice(0, 600_000);
     out.ok = res.ok;
-    out.title = (html.match(/<title[^>]*>([^<]{0,200})/i)?.[1] || "").trim();
-    out.desc = (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{0,400})/i)?.[1] || "").trim();
+    out.title = decode((html.match(/<title[^>]*>([^<]{0,200})/i)?.[1] || "").trim());
+    out.desc = decode((html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{0,400})/i)?.[1] || "").trim());
     const links = [...html.matchAll(/href=["'](https?:\/\/[^"'#\s]+)/gi)].map((m) => m[1]);
     for (const [net, re] of SOCIAL) { const hit = links.find((l) => re.test(l.replace(/^https?:\/\//, ""))); if (hit) out.social.push({ net, url: hit }); }
   } catch { /* Website nicht erreichbar */ }
@@ -217,7 +225,7 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   // Website & SEO
   let web = 2;
   if (c.web.url) {
-    const perf = fix.web ? 90 : c.web.perf ?? 50, seo = fix.web ? 95 : c.web.seo ?? 60;
+    const perf = fix.web ? 90 : c.web.perf ?? 70, seo = fix.web ? 95 : c.web.seo ?? 80; // nicht messbar → neutral
     web = (perf * 0.4 + seo * 0.6) / 10;
     if (!c.web.https) web -= 1;
     if (!c.web.ok) web -= 3;
@@ -245,7 +253,7 @@ export function evaluate(c: Ctx): J {
   if (c.reviews.unanswered > 0) todos.push({ key: "answer", title: `${c.reviews.unanswered} von ${c.reviews.total} neuesten Bewertungen ohne Antwort`, who: "selbst", action: "antworten", points: gain({ answer: true }), area: "reviews" });
   if (c.ki[0] && (!c.ki[0].known || c.ki[0].sent !== "pos")) todos.push({ key: "ki", title: c.ki[0].known ? "KI-Antworten über Sie sind nicht positiv" : "KIs kennen Sie noch kaum", who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
-  if (c.web.url && ((c.web.perf ?? 100) < 70 || (c.web.seo ?? 100) < 85)) todos.push({ key: "web", title: "Website ist langsam oder schlecht auffindbar", who: "wir", action: "website", points: gain({ web: true }), area: "web" });
+  if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: "Website ist langsam oder schlecht auffindbar", who: "wir", action: "website", points: gain({ web: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));

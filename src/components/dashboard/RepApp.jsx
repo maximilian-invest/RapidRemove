@@ -364,10 +364,10 @@ function RepArea({ a, r, onBack, onAsk }) {
         <section className="rp-list">
           {r.website && r.website.url ? (
             <>
-              <div className="rp-li"><i style={{ background: BAR((r.website.perf ?? 0) / 10) }} /><span className="rp-t"><b>Ladezeit (Handy)</b><span>{r.website.perf ?? "–"}/100 · Google PageSpeed</span></span></div>
-              <div className="rp-li"><i style={{ background: BAR((r.website.seo ?? 0) / 10) }} /><span className="rp-t"><b>Technisches SEO</b><span>{r.website.seo ?? "–"}/100</span></span></div>
+              <div className="rp-li"><i style={{ background: r.website.perf == null ? "#d4d4d4" : BAR(r.website.perf / 10) }} /><span className="rp-t"><b>Ladezeit (Handy)</b><span>{r.website.perf == null ? "Konnte diesmal nicht gemessen werden – zählt nicht in den Score" : `${r.website.perf}/100 · Google PageSpeed`}</span></span></div>
+              <div className="rp-li"><i style={{ background: r.website.seo == null ? "#d4d4d4" : BAR(r.website.seo / 10) }} /><span className="rp-t"><b>Technisches SEO</b><span>{r.website.seo == null ? "Konnte diesmal nicht gemessen werden" : `${r.website.seo}/100`}</span></span></div>
               <div className="rp-li"><i style={{ background: r.website.https ? "#16a34a" : "#e23b3b" }} /><span className="rp-t"><b>Sichere Verbindung (https)</b><span>{r.website.https ? "ja" : "nein"}</span></span></div>
-              <a className="rp-li" href={r.website.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{r.website.title || r.website.url}</b><span>{r.website.url}</span></span><ExternalLink /></a>
+              <a className="rp-li" href={r.website.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{String(r.website.title || r.website.url).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&amp;/g, "&")}</b><span>{r.website.url}</span></span><ExternalLink /></a>
             </>
           ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
         </section>
