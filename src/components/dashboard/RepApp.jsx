@@ -419,21 +419,8 @@ function KiSimple({ r, a, pending }) {
   const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
   if (!ais.length) return <div className="rp-empty"><Sparkles />Keine KI-Antworten in diesem Scan.</div>;
   const dims = [...kiDimsOf(r)].sort((p, q) => p.score - q.score);
-  const all = ais.flatMap((ai) => ai.answers.filter((x) => x.sent !== "none"));
-  const negs = all.filter((x) => x.known && x.sent === "neg").length;
-  const pos = all.filter((x) => x.known && x.sent === "pos").length;
-  const unknown = ais.every((ai) => ai.answers.filter((x) => x.sent !== "none").every((x) => !x.known));
-  const head = negs ? (negs === 1 ? "Eine KI-Antwort ist kritisch" : `KIs äußern sich ${negs}× kritisch über Sie`) : pos / Math.max(1, all.length) >= 0.6 ? "KIs empfehlen Sie überwiegend" : unknown ? "KIs kennen Sie noch kaum" : "KIs äußern sich neutral über Sie";
-  const tone = negs ? "bad" : pos / Math.max(1, all.length) >= 0.6 ? "good" : "mid";
   return (
     <>
-      <section className={"rp-ki-hero t-" + tone}>
-        <div className="rp-ki-hero-top">
-          <div><span className="rp-k">KI-Antworten</span><b>{head}</b></div>
-          <span className="rp-ki-score" style={{ color: dimCol(a.score10) }}>{a.score10}<small>/10</small></span>
-        </div>
-        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : null}
-      </section>
       <section className="rp-dims">
         {dims.map((d) => (
           <div key={d.key} className="rp-dim">
@@ -520,12 +507,10 @@ function RepArea({ a, r, onBack, onAsk }) {
         <button type="button" className="rp-back" onClick={onBack} aria-label="Zurück"><ArrowLeft /></button>
         <div><h1>{a.name}</h1></div>
       </div>
-      {a.key === "ki" ? null : (
       <section className="rp-status" style={{ background: bg }}>
         <span className="rp-pill" style={{ background: COLORS[st] }}>{st} · {a.score10}/10</span>
-        {r.areaSums && r.areaSums[a.key] ? <p style={{ color: fg }}>{r.areaSums[a.key]}</p> : null}
+        {(a.key === "ki" ? r.kiSummary : r.areaSums && r.areaSums[a.key]) ? <p style={{ color: fg }}>{a.key === "ki" ? r.kiSummary : r.areaSums[a.key]}</p> : null}
       </section>
-      )}
       {a.facts && a.facts.length && a.key !== "ki" && !(a.key === "reviews" && r.gbp) ? (
         <section className="rp-facts">
           {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
