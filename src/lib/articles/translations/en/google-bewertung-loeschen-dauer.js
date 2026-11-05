@@ -5,7 +5,7 @@ const article = {
     slug: "how-long-does-google-take-to-remove-a-review",
     title: "How Long Does Google Take to Remove a Review? (2026)",
     h1: "How long does Google take to remove a review? Timeline, status and appeal",
-    description: "Google sets no fixed timeline: hours to several weeks. Stages, Reviews Management Tool status, appeals – and removal from $179, paid only on success.",
+    description: "Google sets no fixed timeline: hours to several weeks. Stages, Reviews Management Tool status, appeals – and removal from $199, paid only on success.",
     keywords: [
       "how long does google take to remove a review",
       "google review removal time",
@@ -20,7 +20,7 @@ const article = {
     authorRole: "Founder",
     date: "2026-10-05",
   },
-  dek: "**Google gives no fixed timeline.** A clear policy violation can disappear within hours or a few days; borderline cases, appeals and escalations can take **several weeks**. With RapidRemove, removal usually takes **1–2 weeks** for reviews with text up to 4 weeks old and **1–2 weeks** for all others – and you only pay once the review is actually gone. Below: every stage with typical durations, how to read your status in the Reviews Management Tool, how the appeal works and what really speeds things up.",
+  dek: "**Google gives no fixed timeline.** A clear policy violation can disappear within hours or a few days; borderline cases, appeals and escalations can take **several weeks**. With RapidRemove, removal usually takes **1–2 weeks** for reviews with text up to 4 weeks old – and you only pay once the review is actually gone. Below: every stage with typical durations, how to read your status in the Reviews Management Tool, how the appeal works and what really speeds things up.",
   blocks: [
     { t: "h2", id: "short-answer", text: "The short answer: no fixed timeline, but typical ranges", toc: "Short answer" },
     { t: "p", text: "**Google does not promise any processing time for reported reviews.** Reports are checked by automated systems and by people, and depending on the case that takes anywhere from hours to several weeks." },
@@ -28,7 +28,7 @@ const article = {
       "**Obvious violations** (spam, insults, clearly fake engagement): often within hours to a few days.",
       "**Borderline cases** that need a human look: often one to a few weeks.",
       "**Appeals and escalations**: add more time on top – sometimes several weeks.",
-      "**With us**: reviews with text up to 4 weeks old usually 1–2 weeks, all others usually 1–2 weeks. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **from $179 per removed review**, nothing upfront. If you want the whole listing gone instead, see [how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/).",
+      "**With us**: reviews with text up to 4 weeks old usually 1–2 weeks. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **from $199 per removed review**, nothing upfront. If you want the whole listing gone instead, see [how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/).",
     ] },
     { t: "warn", title: "Typical, not guaranteed", text: "All durations in this article are typical ranges from practice, not Google commitments. Google's processing time varies, and nobody can promise a date – or a removal." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**The right category from the start** – a precise first report saves you the appeal.",
       "**Evidence ready** – screenshots of the review and the reviewer profile, a note on why there's no customer contact, dates.",
-      "**Act within four weeks** – fresh reviews have far better odds, and with us reviews with text cost $179 instead of $250.",
+      "**Act within four weeks** – fresh reviews have far better odds, and with us reviews with text up to 4 weeks old can be removed for $199 (older ones: available again from January 2027).",
       "**One clean report, not ten** – repeated reports of the same review don't jump the queue.",
       "**Fake waves and blackmail** – if 1-star reviews arrive together with a demand for money, use Google's dedicated form and read our guide on [Google review extortion](/en/magazine/google-review-extortion/). Don't pay, don't engage, keep screenshots.",
     ] },
-    { t: "cta", title: "Don't wait weeks for a standard reply", text: "Search your business, tick the reviews that should go and see the price instantly. **$179 per removed review**, $250 if older than 4 weeks or without text – charged only once the review is gone.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free honest assessment"] },
+    { t: "cta", title: "Don't wait weeks for a standard reply", text: "Search your business, tick the reviews that should go and see the price instantly. **$199 per removed review** with text up to 4 weeks old – charged only once the review is gone (others: available again from January 2027).", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free honest assessment"] },
 
     { t: "h2", id: "while-waiting", text: "What to do while you wait", toc: "While you wait" },
     { t: "p", text: "**Reply publicly, briefly and calmly – that's the one thing you can always do, and future customers read it.** A good reply doesn't argue and doesn't reveal customer data." },
@@ -96,12 +96,12 @@ const article = {
       "**Don't** threaten, don't guess who wrote it in public, and don't ask friends for counter-reviews – that can itself break Google's rules on fake engagement.",
       "**Document** everything: screenshots of the review, the reviewer profile and your report status.",
     ] },
-    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/) – we remove those too, with a more extensive procedure ($250 per removed review) – and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
+    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/) – our more extensive procedure for those is available again from January 2027 – and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
 
     { t: "h2", id: "different-times", text: "Why several reviews come down at different times", toc: "Different times" },
     { t: "p", text: "**Every review is checked on its own, so if you report five, they rarely disappear on the same day.** One may be gone after two days, another needs an appeal, a third is still pending after two weeks." },
     { t: "p", text: "That's why we **bill per review**: you pay for each review once it's actually removed – each one is charged separately to your stored card or PayPal. Reviews we're still working on cost you nothing, and with 3, 5 or 10 accepted reviews the volume discount (−10 %, −15 %, −30 %) applies to every one that comes down. All prices and comparisons are in [Google review removal cost](/en/magazine/google-review-removal-cost/), and the order process is on our [service page for removing a single Google review](/en/remove-single-reviews/)." },
-    { t: "cta", title: "Check which reviews have a real chance", text: "Free assessment first: we tell you honestly whether a review is removable. Ordering takes about two minutes – usually done in 1–2 weeks for reviews with text up to 4 weeks old, otherwise in 1–2 weeks.", btn: "Start free check", href: "/en/check-profile/?start=reviews", trust: ["Only Google's own procedures", "Reviewer isn't told who asked", "1,600+ profiles removed since 2023"] },
+    { t: "cta", title: "Check which reviews have a real chance", text: "Free assessment first: we tell you honestly whether a review is removable. Ordering takes about two minutes – usually done in 1–2 weeks for reviews with text up to 4 weeks old.", btn: "Start free check", href: "/en/check-profile/?start=reviews", trust: ["Only Google's own procedures", "Reviewer isn't told who asked", "1,600+ profiles removed since 2023"] },
   ],
   faq: [
     { q: "How long does Google take to remove a reported review?", a: "Google doesn't publish a fixed timeline. Clear violations can go within hours or a few days; borderline cases and appeals often take **one to several weeks**." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Can I appeal more than once?", a: "No. In the Reviews Management Tool you get **one appeal per review**. After the final decision, the only other official route is a legal removal request – and only if the content is unlawful." },
     { q: "Does Google notify the reviewer?", a: "The reviewer is **not told who reported the review or requested its removal** – neither with your own report nor when we handle it. They may simply notice that their review is no longer visible." },
     { q: "Can a removed review come back?", a: "A review Google removes for a policy violation normally stays removed. The same person can write a new review, though – that one is checked separately and can be reported again." },
-    { q: "How fast is it with RapidRemove?", a: "Reviews with text up to 4 weeks old usually take **1–2 weeks**, all others usually **1–2 weeks**. You pay **$179 per removed review** ($250 if older than 4 weeks or without text) – only once it's gone." },
+    { q: "How fast is it with RapidRemove?", a: "Reviews with text up to 4 weeks old usually take **1–2 weeks**. You pay **$199 per removed review** – only once it's gone. Older reviews and ratings without text are available again from January 2027." },
     { q: "Does a reply to the review hurt my chances?", a: "No. A short, calm public reply is always allowed and doesn't affect the check. Just avoid insults and customer data." },
   ],
   related: [

@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "short-answer", text: "Short answer: which reviews does Google remove?", toc: "Short answer" },
     { t: "p", text: "Google removes reviews that violate its [Prohibited and restricted content policy](https://support.google.com/contributionpolicy/answer/7400114) for Maps or that are unlawful. In practice, that means reviews that are **not based on a real experience**, reviews written with a **conflict of interest**, and reviews containing **harassment, hate, profanity, personal information, spam or off-topic content**." },
     { t: "p", text: "What Google does not remove: honest negative experiences, even harsh ones. Google says explicitly that you should not report a review just because you disagree with it. Business owners also cannot delete reviews themselves; only the reviewer can edit or delete their own review. Your options are reporting a violation, appealing once, a legal request for unlawful content, and replying publicly." },
-    { t: "p", text: "If you'd rather have someone check which of your reviews actually qualify, our [Google review removal service](/en/remove-single-reviews/) starts with a free, honest assessment, and you pay **from $179 per review only once it's removed**." },
+    { t: "p", text: "If you'd rather have someone check which of your reviews actually qualify, our [Google review removal service](/en/remove-single-reviews/) starts with a free, honest assessment, and you pay **from $199 per review only once it's removed**." },
 
     { t: "h2", id: "categories", text: "All Google review policy categories at a glance", toc: "Policy categories" },
     { t: "p", text: "Each reported review is checked against these categories. The most important column for you is the last one: it shows what looks similar but is **not** a violation." },
@@ -57,12 +57,12 @@ const article = {
       "**Messages** if someone demands money to remove reviews. That is [review extortion](/en/magazine/google-review-extortion/), and Google has a [separate form for it](https://support.google.com/business/answer/16404809).",
     ] },
     { t: "warn", title: "Don't misuse customer data", text: "Use your records only to check whether the reviewer was a customer. **Never post a customer's details, order history or health information in your public reply**, and don't try to unmask anonymous reviewers. That can itself break Google's personal-information rule and data-protection law." },
-    { t: "cta", title: "Find out which of your reviews are removable", text: "Search your business, tick the reviews that break the rules and see the price instantly. **From $179 per removed review**, nothing upfront, honest assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
+    { t: "cta", title: "Find out which of your reviews are removable", text: "Search your business, tick the reviews that break the rules and see the price instantly. **From $199 per removed review**, nothing upfront, honest assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
 
     { t: "h2", id: "grey-areas", text: "Grey areas: star-only ratings, ex-employees, competitors, prices", toc: "Grey areas" },
     { t: "p", text: "These cases are not automatically removable or automatically safe. The outcome depends on whether you can show a policy breach, not on how unfair the review feels." },
     { t: "ul", items: [
-      "**Star-only ratings without text:** there is nothing for a content rule to catch, so the question is whether the person was a real customer. Wordless 1-star ratings from unknown profiles are often fake engagement; see our guide to the [1-star review without text](/en/magazine/remove-1-star-review-without-text/). Our single-review removal also covers them, with a more extensive procedure ($250 per removed review).",
+      "**Star-only ratings without text:** there is nothing for a content rule to catch, so the question is whether the person was a real customer. Wordless 1-star ratings from unknown profiles are often fake engagement; see our guide to the [1-star review without text](/en/magazine/remove-1-star-review-without-text/). Our single-review removal for them (a more extensive procedure) is available again from January 2027.",
       "**Ex-employees:** Google lists current or former employment as a **conflict of interest**. A review from an ex-employee about the business as an employer is a strong report case, especially if the person was never a customer.",
       "**Competitors:** reviews posted by or for a competitor are a conflict of interest. Proof is rarely direct, so timing, wording and the reviewer's other reviews do the work.",
       "**Reviews about prices:** “too expensive” is an opinion and stays. It becomes removable only if it contains something else, such as false statements of fact, profanity or a link to a competitor.",
@@ -92,10 +92,10 @@ const article = {
     { t: "p", text: "Getting help makes sense when several reviews are involved, a report was already rejected, or you simply don't have the time. RapidRemove works only through Google's own procedures, on behalf of the business owner: no fake accounts, no bots, no fake legal notices, and the reviewer is not told who requested the removal." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
-      "**$179 per removed review** up to 4 weeks old with text, $250 for older reviews and star-only ratings. You pay only once the review is gone.",
+      "**$199 per removed review** up to 4 weeks old with text; older reviews and star-only ratings are available again from January 2027. You pay only once the review is gone.",
       "**Success chance:** approx. **90 %** for reviews up to 4 weeks old, approx. **50 %** for older ones.",
       "**Volume discount** on accepted reviews: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Duration:** reviews with text up to 4 weeks old usually 1–2 weeks, all others usually 1–2 weeks.",
+      "**Duration:** reviews with text up to 4 weeks old usually 1–2 weeks.",
     ] },
     { t: "p", text: "Since 2023 we have removed 1,600+ Google Business Profiles ([how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/)) and run 20,000+ free profile checks for clients in 50+ countries. More on prices and the order flow: [Google review removal service](/en/remove-single-reviews/)." },
     { t: "cta", title: "Pick the reviews that break the rules", text: "Load your latest Google reviews, tick the ones to remove and see the exact price. Takes about 2 minutes, and you pay only for reviews that are actually removed.", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Only Google's own procedures", "Free assessment"] },
@@ -106,7 +106,7 @@ const article = {
     { q: "Can I delete a Google review myself as the business owner?", a: "No. Only the reviewer can edit or delete their own review. As the owner you can report it, appeal once, file a legal request for unlawful content, and reply publicly." },
     { q: "Is a 1-star rating without text a policy violation?", a: "Not by itself. It is removable when there are signs it is fake, for example no customer record and a profile with suspicious activity, or a wave of similar ratings." },
     { q: "What happens if Google says there's no policy violation?", a: "You can **appeal once per review** in the Reviews Management Tool; the appeal may be escalated and gets a final decision. For defamation or other unlawful content, a legal removal request is a separate option." },
-    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$179 per removed review** ($250 for reviews older than 4 weeks or without text), paid only once the review is gone. The assessment beforehand is free." },
+    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$199 per removed review** with text up to 4 weeks old (others available again from January 2027), paid only once the review is gone. The assessment beforehand is free." },
   ],
   related: [
     { label: "Google review removal service", url: "/en/remove-single-reviews/" },

@@ -1,3 +1,4 @@
+import { REVIEWS_OTHER_PAUSED } from "./pricing";
 /* Löschdauer Standard je Preisstufe (Admin → Einstellungen → Express & Löschdauer, 02.11.2026).
    fresh = 179er (bis 4 Wochen, mit Text) · other = 250er (alle anderen). unit "d" = Tage, "w" = Wochen.
    Texte tragen Platzhalter: {DF} = Dauer 179er, {DO} = Dauer 250er, {DA} = Spanne über beide (allgemeine Aussagen).
@@ -61,7 +62,8 @@ const DATIVE_BEFORE = /(?:^|[\s(])(in|von|nach|binnen|seit|mit)\s$/i;
 export function fillDur(s, lang, dur) {
   if (typeof s !== "string" || s.indexOf("{D") < 0) return s;
   const d = dur || DUR_DEFAULT;
-  const T = { DF: d.fresh, DO: d.other, DA: durAll(d) };
+  // Pause 05.11.2026: ältere/textlose nicht bestellbar → allgemeine Spanne {DA} = Dauer der frischen Bewertungen.
+  const T = { DF: d.fresh, DO: d.other, DA: REVIEWS_OTHER_PAUSED ? d.fresh : durAll(d) };
   // {DF:de} = feste Sprache (z. B. deutsche Wissensbasis in einem englischen Prompt).
   return s.replace(/\{(DF|DO|DA)(?::([a-z]{2}))?\}/g, (m, k, fl, off, all) => {
     const L = fl || lang;
