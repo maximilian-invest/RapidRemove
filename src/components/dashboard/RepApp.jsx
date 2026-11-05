@@ -7,6 +7,9 @@ import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Lo
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 const monthOf = (iso) => { try { return MONTHS[new Date(iso).getMonth()]; } catch (e) { return ""; } };
 const dateOf = (iso) => { try { const d = new Date(iso); return d.getDate() + ". " + MONTHS[d.getMonth()]; } catch (e) { return ""; } };
+/* Überall: Negatives zuerst, Positives zuletzt (innerhalb einer Gruppe bleibt die Reihenfolge, z. B. Google-Platz) */
+const RANK = { neg: 0, none: 1, neu: 2, other: 3, pos: 4 };
+const worstFirst = (list, f = (x) => x.sent) => list.map((x, i) => [x, i]).sort((a, b) => (RANK[f(a[0])] ?? 2) - (RANK[f(b[0])] ?? 2) || a[1] - b[1]).map((x) => x[0]);
 const COLORS = { Gut: "#16a34a", Mittel: "#d97706", Achtung: "#e23b3b" };
 const BAR = (v) => (v >= 7.5 ? "#16a34a" : v >= 5 ? "#f59e0b" : "#e23b3b");
 
@@ -315,7 +318,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
           {r.ki && r.ki.length ? (
             <section className="rp-box">
               <div className="rp-box-h"><b>Was KIs sagen</b></div>
-              {r.ki.map((x) => (
+              {worstFirst(r.ki, (x) => (!x.known ? "neu" : x.sent)).map((x) => (
                 <div key={x.name} className="rp-ki">
                   <span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>
                   {x.answers ? <span className="rp-ki-sum">{x.answers.filter((a) => a.sent === "pos").length} von {x.answers.filter((a) => a.sent !== "none").length} Antworten positiv{x.answers.some((a) => a.sent === "neg") ? ` · ${x.answers.filter((a) => a.sent === "neg").length} kritisch` : ""}</span> : null}
@@ -364,11 +367,13 @@ function RepArea({ a, r, onBack, onAsk }) {
             const LBL = { kennen: "Kennst du die Firma?", serioes: "Ist die Firma seriös?", erfahrungen: "Welche Erfahrungen haben Kunden gemacht?", beauftragen: "Soll ich die Firma beauftragen?", besser: "Gibt es in der Region bessere Anbieter?" };
             const chip = (x) => (x.sent === "none" ? "keine Antwort" : !x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral");
             if (!ais.length) return <div className="rp-empty">Keine KI-Antworten in diesem Scan.</div>;
-            return ais[0].answers.map((q0, qi) => (
+            const kiS = (x) => (x.sent === "none" ? "none" : !x.known ? "neu" : x.sent);
+            const qOrder = ais[0].answers.map((q0, qi) => [qi, Math.min(...ais.map((ai) => RANK[kiS(ai.answers[qi])] ?? 2))]).sort((a, b) => a[1] - b[1] || a[0] - b[0]).map((x) => x[0]);
+            return qOrder.map((qi) => [ais[0].answers[qi], qi]).map(([q0, qi]) => (
               <div key={q0.key} className="rp-q">
                 <b className="rp-q-h">{LBL[q0.key] || q0.q}</b>
                 <span className="rp-q-full">„{q0.q}“</span>
-                {ais.map((ai) => { const x = ai.answers[qi]; return (
+                {worstFirst(ais, (ai) => kiS(ai.answers[qi])).map((ai) => { const x = ai.answers[qi]; return (
                   <details key={ai.name} className="rp-ans">
                     <summary><span className="rp-ans-n">{ai.name}</span><em className={"s-" + (x.known ? x.sent : "neu")}>{chip(x)}</em></summary>
                     {x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}
@@ -384,7 +389,7 @@ function RepArea({ a, r, onBack, onAsk }) {
       ) : a.key === "social" ? (
         <section className="rp-list">
           <div className="rp-box-h"><b>Ihre Profile</b><span>{a.items.length} gefunden</span></div>
-          {a.items.length ? a.items.map((x, i) => (
+          {a.items.length ? [...a.items].sort((p, q) => (p.inGoogle === false ? 0 : p.inGoogle == null ? 1 : 2) - (q.inGoogle === false ? 0 : q.inGoogle == null ? 1 : 2)).map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
               <i style={{ background: "#16a34a" }} />
               <span className="rp-t"><b>{x.title}</b><span>{x.host}{x.followers ? " · " + x.followers : ""}</span>
@@ -416,7 +421,7 @@ function RepArea({ a, r, onBack, onAsk }) {
                     )}
                     <p className="rp-note">Gemessen wie bei Google: Handy mit mittelguter mobiler Verbindung. Ziel: unter 2,5 s bis fertig.</p>
                     <div className="rp-box-h" style={{ marginTop: 20 }}><b>SEO-Grundlagen</b><span>{ok.filter((c) => c.ok).length} von {ok.length} erfüllt</span></div>
-                    {ok.map((c) => (
+                    {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
                       <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
                     ))}
                     <a className="rp-li" href={w.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{String(w.title || w.url).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&amp;/g, "&")}</b><span>{w.url}</span></span><ExternalLink /></a>
@@ -432,7 +437,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.key === "search" && r.suggestions && r.suggestions.length ? (
             <div className="rp-sugg">{r.suggestions.slice(0, 8).map((s) => <span key={s.q} className={s.neg ? "neg" : ""}>{s.q}</span>)}</div>
           ) : null}
-          {a.items.length ? a.items.map((x, i) => (
+          {a.items.length ? worstFirst(a.items).map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
               <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : x.sent === "other" ? "#fff" : "#bdbdbd", boxShadow: x.sent === "other" ? "inset 0 0 0 2px #d4d4d4" : "none" }} />
               <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
