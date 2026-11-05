@@ -1260,3 +1260,35 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-metrics span{font-size:11.5px;color:var(--g3);line-height:1.3}
 .rra .rp-chk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:12px;font-weight:800;color:#fff}
 .rra .rp-chk.y{background:#16a34a}.rra .rp-chk.n{background:#e23b3b}
+/* Scan läuft – kompakt (Variante D) */
+.rra .rp-mini-scan{display:flex;align-items:center;gap:14px;margin:0 0 26px;padding:14px 16px;border-radius:24px;background:linear-gradient(120deg,#fff4ea,#fff 75%);box-shadow:inset 0 0 0 1px #ffe2c7}
+.rra .rp-ms-ring{position:relative;width:72px;height:72px;flex:none}
+.rra .rp-ms-ring svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rra .rp-ms-p{transform:rotate(-90deg);filter:drop-shadow(0 0 2px rgba(255,106,0,.45))}
+.rra .rp-ms-dot{animation:rpSpin 2.2s linear infinite;filter:drop-shadow(0 0 3px rgba(255,128,0,.9))}
+.rra .rp-ms-ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:19px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.rra .rp-ms-ring b small{font-size:11px;color:#ff6a00;margin-left:1px}
+.rra .rp-ms-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.rra .rp-ms-k{font-size:12px;font-weight:600;color:#9a6a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .rp-ms-step{font-size:16px;font-weight:700;letter-spacing:-.3px;background:linear-gradient(90deg,#111 0%,#111 40%,#ff8000 50%,#111 60%,#111 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rpShim 1.8s linear infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .rp-ms-icons{display:flex;gap:5px;margin-top:2px}
+.rra .rp-ms-i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:12px;font-weight:800;background:#f1ece6;color:#b9a58f}
+.rra .rp-ms-i svg{width:13px;height:13px}
+.rra .rp-ms-i.done{background:#16a34a;color:#fff;animation:rpPop .45s cubic-bezier(.3,1.6,.5,1) both}
+.rra .rp-ms-i.run{background:#fff;box-shadow:0 0 0 3px rgba(255,128,0,.18)}
+.rra .rp-ms-i.run i{width:12px;height:12px;border-radius:50%;border:2px solid #ffd3a6;border-top-color:#ff6a00;animation:rpSpin .8s linear infinite}
+@media (min-width:821px){.rra .rp-mini-scan{max-width:720px}}
+/* KI-Fragen */
+.rra .rp-q{padding:14px 0}
+.rra .rp-q+.rp-q{border-top:1px solid var(--g1)}
+.rra .rp-q-h{display:block;font-size:16px;font-weight:700}
+.rra .rp-q-full{display:block;font-size:12.5px;color:var(--g3);margin:2px 0 8px}
+.rra .rp-ans{background:var(--g1);border-radius:14px;padding:10px 12px;margin-top:6px}
+.rra .rp-ans summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none}
+.rra .rp-ans summary::-webkit-details-marker{display:none}
+.rra .rp-ans-n{font-size:14px;font-weight:700}
+.rra .rp-ans em{font-style:normal;font-size:12px;font-weight:700;padding:3px 9px;border-radius:10px;background:#fff}
+.rra .rp-ans em.s-pos{color:#15803d}.rra .rp-ans em.s-neg{color:#b91c1c}.rra .rp-ans em.s-neu,.rra .rp-ans em.s-none{color:#6b6b6b}
+.rra .rp-ans .rp-ki-q{display:block;margin-top:8px}
+.rra .rp-ans-t{font-size:13px;line-height:1.45;color:#3d3d3d;margin-top:8px;white-space:pre-line}
+.rra .rp-ki-sum{font-size:12px;color:var(--g3)}
