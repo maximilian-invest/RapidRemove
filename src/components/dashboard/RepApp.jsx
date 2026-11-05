@@ -552,7 +552,7 @@ function KwRow({ k }) {
   return (
     <div className={"rp-kw-w" + (on ? " on" : "")}>
       <button type="button" className="rp-kw" onClick={() => n && setOn(!on)} disabled={!n}>
-        <b>{k.q}</b>
+        <span className="rp-kw-q"><b>{k.q}</b>{k.vol != null ? <small>≈ {k.vol.toLocaleString("de-AT")} Suchen/Monat</small> : null}</span>
         {k.mine ? <span className="rp-kw-c" style={{ color: n >= 3 ? "#15803d" : n >= 1 ? "#b45309" : "#b91c1c" }}><small>Seite 1</small>{n}/{of}</span> : null}
         <span className="rp-kw-c" style={{ color: k.err ? "#9a9a9a" : rankCol(k.g) }}><small>Website</small>{k.err ? "?" : k.g ? "#" + k.g : "–"}</span>
         {k.noMaps ? null : <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>}
@@ -713,7 +713,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.items.length ? worstFirst(a.items).map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
               <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : x.sent === "other" ? "#fff" : "#bdbdbd", boxShadow: x.sent === "other" ? "inset 0 0 0 2px #d4d4d4" : "none" }} />
-              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{READ_LBL[x.read] && x.read !== "own" ? " · " + READ_LBL[x.read] : ""}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
+              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{READ_LBL[x.read] && x.read !== "own" ? " · " + READ_LBL[x.read] : ""}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : x.src === "link" ? " · verlinkt Sie" : x.src === "web" ? " · Erwähnung im Netz" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
               <ExternalLink />
             </a>
           )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge gefunden." : "Keine Treffer."}</div>}
