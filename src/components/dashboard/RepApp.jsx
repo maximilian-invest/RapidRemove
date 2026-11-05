@@ -181,7 +181,6 @@ export function RepSearchSheet({ open, initial, rep, onClose, onPicked, showToas
       <div className="rp-sheet" role="dialog" aria-label="Unternehmen wählen">
         <div className="rp-sheet-h"><b>Welches Unternehmen?</b><button type="button" onClick={onClose} aria-label="Schließen"><X /></button></div>
         <label className="rp-search"><Search /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Firmenname und Ort" /></label>
-        <span className="rp-hint">Wie bei Google – wir prüfen dann alles rund um dieses Unternehmen.</span>
         <div className="rp-res">
           {busy && !res.length ? <div className="rp-empty"><Loader className="spin" /></div> : null}
           {res.map((p) => (
@@ -426,9 +425,6 @@ function KiSimple({ r, a, pending }) {
   const unknown = ais.every((ai) => ai.answers.filter((x) => x.sent !== "none").every((x) => !x.known));
   const head = negs ? (negs === 1 ? "Eine KI-Antwort ist kritisch" : `KIs äußern sich ${negs}× kritisch über Sie`) : pos / Math.max(1, all.length) >= 0.6 ? "KIs empfehlen Sie überwiegend" : unknown ? "KIs kennen Sie noch kaum" : "KIs äußern sich neutral über Sie";
   const tone = negs ? "bad" : pos / Math.max(1, all.length) >= 0.6 ? "good" : "mid";
-  const missing = (a.facts || []).find((f) => f.label === "Nicht geantwortet");
-  const gov = (r.ki || []).some((x) => x.name === "Google KI-Übersicht");
-  const names = ais.map((x) => x.name);
   return (
     <>
       <section className={"rp-ki-hero t-" + tone}>
@@ -436,19 +432,17 @@ function KiSimple({ r, a, pending }) {
           <div><span className="rp-k">KI-Antworten</span><b>{head}</b></div>
           <span className="rp-ki-score" style={{ color: dimCol(a.score10) }}>{a.score10}<small>/10</small></span>
         </div>
-        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : pending ? <p className="rp-ki-top rp-wait"><Loader className="spin" />Zusammenfassung wird erstellt …</p> : null}
-        <span className="rp-ki-meta">Zusammengefasst aus {all.length} Antworten von {names.length > 1 ? names.slice(0, -1).join(", ") + " und " + names[names.length - 1] : names[0]}{gov ? " + Google KI-Übersicht" : ""}{missing ? ` · ${missing.value} hat nicht geantwortet` : ""}</span>
+        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : null}
       </section>
       <section className="rp-dims">
         {dims.map((d) => (
           <div key={d.key} className="rp-dim">
             <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
             <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
-            <p>{d.sum || (pending ? "Zusammenfassung wird erstellt …" : d.hint)}</p>
+            {d.sum ? <p>{d.sum}</p> : null}
           </div>
         ))}
       </section>
-      <p className="rp-note">Alle KIs bekamen dieselben Fragen, die Kunden typischerweise stellen. Pro Thema sehen Sie, was sie zusammengenommen sagen – schlechteste Themen zuerst.</p>
     </>
   );
 }
@@ -492,9 +486,8 @@ function ReviewPortals({ r, items }) {
         <>
           {ck.length ? <div className="rp-pt-sub">Google-Unternehmensprofil · {ck.filter((c) => c.ok).length} von {ck.length} erfüllt</div> : null}
           {[...ck.filter((c) => !c.ok), ...ck.filter((c) => c.ok)].map((c) => (
-            <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+            <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b></span></div>
           ))}
-          {!ck.length ? <p className="rp-note">Der Profil-Check erscheint nach dem nächsten Scan.</p> : null}
           {(g && g.url) || (r.location && r.location.mapsUrl) ? <a className="rp-pt-open" href={(g && g.url) || r.location.mapsUrl} target="_blank" rel="noopener noreferrer">Google-Profil öffnen<ExternalLink /></a> : null}
         </>
       ), "G", "#4285f4")}
@@ -510,7 +503,6 @@ function ReviewPortals({ r, items }) {
           ))}
         </>
       ), p.name.charAt(0).toUpperCase(), p.neg ? "#e23b3b" : "#9a9a9a"))}
-      {!groups.length ? <p className="rp-note">Außer Google keine weiteren Bewertungsportale mit Ihrem Namen gefunden.</p> : null}
     </div>
   );
 }
@@ -531,7 +523,7 @@ function RepArea({ a, r, onBack, onAsk }) {
       {a.key === "ki" ? null : (
       <section className="rp-status" style={{ background: bg }}>
         <span className="rp-pill" style={{ background: COLORS[st] }}>{st} · {a.score10}/10</span>
-        <p style={{ color: fg }}>{(r.areaSums && r.areaSums[a.key]) || a.text}</p>
+        {r.areaSums && r.areaSums[a.key] ? <p style={{ color: fg }}>{r.areaSums[a.key]}</p> : null}
       </section>
       )}
       {a.facts && a.facts.length && a.key !== "ki" && !(a.key === "reviews" && r.gbp) ? (
@@ -551,7 +543,6 @@ function RepArea({ a, r, onBack, onAsk }) {
               <ExternalLink />
             </a>
           )) : <div className="rp-empty"><Users />Keine Social-Media-Profile gefunden.</div>}
-          <p className="rp-note">„Im Google-Profil sichtbar“ heißt: Das Profil steht rechts in Ihrem Google-Firmeneintrag unter „Profile“.</p>
         </section>
       ) : a.key === "web" ? (
         <section className="rp-list">
@@ -572,7 +563,6 @@ function RepArea({ a, r, onBack, onAsk }) {
                         <div><b style={{ color: m.kb > 4096 ? "#e23b3b" : m.kb > 1640 ? "#d97706" : "#16a34a" }}>{mb}</b><span>Datenmenge{m.requests ? ` · ${m.requests} Dateien` : ""}</span></div>
                       </div>
                     )}
-                    <p className="rp-note">Gemessen wie bei Google: Handy mit mittelguter mobiler Verbindung. Ziel: unter 2,5 s bis fertig.</p>
                     <div className="rp-box-h" style={{ marginTop: 20 }}><b>SEO-Grundlagen</b><span>{ok.filter((c) => c.ok).length} von {ok.length} erfüllt</span></div>
                     {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
                       <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
@@ -598,7 +588,7 @@ function RepArea({ a, r, onBack, onAsk }) {
               <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
               <ExternalLink />
             </a>
-          )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge über Sie gefunden – kein Risiko, aber auch keine Pluspunkte." : a.key === "reviews" ? "Außer Google keine weiteren Bewertungsportale mit Ihrem Namen gefunden." : "In diesem Bereich ist nichts Auffälliges aufgetaucht."}</div>}
+          )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge gefunden." : "Keine Treffer."}</div>}
           </>}
         </section>
       )}
