@@ -50,6 +50,7 @@ async function init(): Promise<void> {
 }
 
 /* ---------------- Externe Quellen ---------------- */
+const GDOM: Record<string, string> = { at: "google.at", de: "google.de", ch: "google.ch", li: "google.li", it: "google.it", lu: "google.lu" };
 /* SerpApi-Kontingent aufgebraucht → merken, Scan sauber abbrechen statt mit leeren Daten weiterzurechnen */
 let serpOutAt = 0;
 let serpOutTold = 0;
@@ -57,7 +58,7 @@ const QUOTA_RE = /run out of searches|out of searches|exceeded|limit reached|pla
 async function serp(params: Record<string, string>, ms = 45_000): Promise<J> {
   if (!skey()) throw new Error("SERPAPI_KEY fehlt");
   if (serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("SerpApi-Kontingent aufgebraucht");
-  const p = new URLSearchParams({ ...params, api_key: skey() });
+  const p = new URLSearchParams({ ...(params.engine === "google" && params.gl && GDOM[params.gl] && !params.google_domain ? { google_domain: GDOM[params.gl] } : {}), ...params, api_key: skey() });
   const res = await fetch(SERP_BASE() + "/search.json?" + p.toString(), { signal: AbortSignal.timeout(ms) });
   const j = (await res.json().catch(() => ({}))) as J;
   if (!res.ok || j.error) {
@@ -287,13 +288,16 @@ const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCo
  * Erster Inhalt (FCP), Hauptinhalt (LCP), Layout-Sprünge (CLS) und Datenmenge messen → 0–100.
  * SEO: 11 nachvollziehbare Grundlagen-Checks am fertigen HTML → Anteil erfüllt = 0–100. */
 type Check = { key: string; label: string; ok: boolean; detail: string };
-type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string };
+type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string; err?: boolean; noMaps?: boolean };
+const kwOk = (k: Kw) => !k.err;
 const kwVal = (k: Kw) => {
-  const o = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : k.g <= 10 ? 6 : k.g <= 20 ? 3.5 : 2;
+  const o0 = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : k.g <= 10 ? 6 : k.g <= 20 ? 3.5 : 2;
+  if (k.noMaps) return o0;
+  const o = o0;
   const l = k.pack != null ? 10 : k.maps == null ? 1 : k.maps <= 3 ? 9 : k.maps <= 10 ? 6 : 3;
   return Math.max(o, l);
 };
-type Audit = { perf: number | null; seo: number | null; metrics: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null; requests: number | null } | null; checks: Check[]; finalUrl: string; html: string };
+type Audit = { src?: string; perf: number | null; seo: number | null; metrics: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null; requests: number | null } | null; checks: Check[]; finalUrl: string; html: string };
 const lin = (v: number, good: number, mid: number, bad: number) => (v <= good ? 100 : v <= mid ? 100 - ((v - good) / (mid - good)) * 50 : v >= bad ? 0 : 50 - ((v - mid) / (bad - mid)) * 50);
 function perfScore(m: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null }): number | null {
   const parts: [number, number][] = [];
@@ -336,6 +340,21 @@ async function okUrl(u: string): Promise<boolean> {
   try { const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(8000), headers: { "user-agent": "Mozilla/5.0 (compatible; RapidRemoveScan/1.0)" } }); if (!r.ok) return false; const t = (await r.text()).slice(0, 2000); return !/<html/i.test(t) || /urlset|sitemapindex/i.test(t); }
   catch { return false; }
 }
+/* Offizielle Google-Messung (PageSpeed Insights, Handy) – Key in PAGESPEED_API */
+async function pageSpeed(url: string): Promise<{ perf: number; metrics: NonNullable<Audit["metrics"]> } | null> {
+  const key = (process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY || "").trim();
+  if (!key) return null;
+  try {
+    const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&category=performance&url=${encodeURIComponent(url)}&key=${encodeURIComponent(key)}`, { signal: AbortSignal.timeout(90_000) });
+    const j = (await res.json().catch(() => ({}))) as J;
+    if (!res.ok) { console.warn("Rep-Scan PageSpeed", res.status, String(j.error?.message || "").slice(0, 140)); return null; }
+    const lr = j.lighthouseResult || {}, au = lr.audits || {};
+    const sc = Number(lr.categories?.performance?.score);
+    if (!Number.isFinite(sc)) return null;
+    const num = (k: string) => (Number.isFinite(Number(au[k]?.numericValue)) ? Math.round(Number(au[k].numericValue)) : null);
+    return { perf: Math.round(sc * 100), metrics: { fcp: num("first-contentful-paint"), lcp: num("largest-contentful-paint"), cls: Number.isFinite(Number(au["cumulative-layout-shift"]?.numericValue)) ? Math.round(Number(au["cumulative-layout-shift"].numericValue) * 1000) / 1000 : null, kb: num("total-byte-weight") != null ? Math.round(num("total-byte-weight")! / 1024) : null, requests: null } };
+  } catch (e) { console.warn("Rep-Scan PageSpeed", (e as Error).message); return null; }
+}
 export async function siteAudit(url: string): Promise<Audit> {
   const origin = (() => { try { return new URL(url).origin; } catch { return ""; } })();
   const [robotsOk, sitemapOk] = origin ? await Promise.all([okUrl(origin + "/robots.txt"), okUrl(origin + "/sitemap.xml").then(async (x) => x || okUrl(origin + "/sitemap_index.xml"))]) : [null, null];
@@ -347,7 +366,7 @@ export async function siteAudit(url: string): Promise<Audit> {
       await page.setViewport({ width: 412, height: 823, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
       await cdp.send("Network.enable");
       await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
-      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
       let bytes = 0, reqs = 0;
       cdp.on("Network.loadingFinished", (e: J) => { bytes += Number(e.encodedDataLength) || 0; reqs++; });
       await page.evaluateOnNewDocument(() => {
@@ -371,6 +390,8 @@ export async function siteAudit(url: string): Promise<Audit> {
   }
   const checks = html ? seoChecks(html, finalUrl, robotsOk, sitemapOk) : [];
   const seo = checks.length ? Math.round((checks.filter((c) => c.ok).length / checks.length) * 100) : null;
+  const ps = await pageSpeed(url);
+  if (ps) return { perf: ps.perf, seo, metrics: { ...ps.metrics, kb: ps.metrics.kb ?? metrics?.kb ?? null, requests: metrics?.requests ?? null }, checks, finalUrl, html, src: "google" };
   return { perf: metrics ? perfScore(metrics) : null, seo, metrics, checks, finalUrl, html };
 }
 
@@ -485,8 +506,9 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
     if (!own || own.pos > 10) web -= 2;
   }
   // Ranking bei Suchbegriffen ohne Firmennamen zählt am meisten
-  if (c.kws && c.kws.length) {
-    const rank = fix.rank ? 9 : c.kws.reduce((s2, k) => s2 + kwVal(k), 0) / c.kws.length;
+  const kOk = (c.kws || []).filter(kwOk);
+  if (kOk.length) {
+    const rank = fix.rank ? 9 : kOk.reduce((s2, k) => s2 + kwVal(k), 0) / kOk.length;
     web = rank * 0.7 + Math.max(0, web) * 0.3;
   }
   return { search: clamp(search), reviews: clamp(reviews), press: clamp(Math.min(10, press)), ki: clamp(ki), social: clamp(social), web: clamp(web) };
@@ -517,8 +539,9 @@ export function evaluate(c: Ctx): J {
   if (notLinked.length) todos.push({ key: "glink", title: `${notLinked.map((x) => x.net).join(", ")} im Google Business Profil verlinken`, who: "selbst", action: "glink", points: gain({ gLink: true }), area: "social" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
   if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} SEO-Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
-  const weak = (c.kws || []).filter((k) => kwVal(k) < 6);
-  if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${c.kws!.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
+  const kChecked = (c.kws || []).filter(kwOk);
+  const weak = kChecked.filter((k) => kwVal(k) < 6);
+  if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${kChecked.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
@@ -568,12 +591,16 @@ export function evaluate(c: Ctx): J {
       { label: "Gefunden", value: c.social.length ? [...new Set(c.social.map((x) => x.net))].join(", ") : "keine Profile", tone: c.social.length >= 2 ? "good" : "bad" },
       { label: "Im Google-Profil", value: !c.kgSeen ? "nicht feststellbar" : c.social.length ? `${c.social.filter((x) => x.inGoogle).length} von ${c.social.length} sichtbar` : "–" },
     ],
-    web: (c.kws || []).length ? [
-      { label: "Suchbegriffe geprüft", value: String(c.kws!.length) },
-      { label: "Google Seite 1", value: `${c.kws!.filter((k) => k.g != null && k.g <= 10).length} von ${c.kws!.length}`, tone: c.kws!.filter((k) => k.g != null && k.g <= 10).length >= c.kws!.length / 2 ? "good" : "bad" },
-      { label: "Google Top 30", value: `${c.kws!.filter((k) => k.g != null).length} von ${c.kws!.length}` },
-      { label: "Maps Top 3", value: `${c.kws!.filter((k) => k.pack != null || (k.maps != null && k.maps <= 3)).length} von ${c.kws!.length}` },
-    ] : [],
+    web: (() => {
+      const ks = (c.kws || []).filter(kwOk);
+      if (!ks.length) return [];
+      const p1 = ks.filter((k) => k.g != null && k.g <= 10).length;
+      return [
+        { label: "Google Seite 1", value: `${p1} von ${ks.length}`, tone: p1 >= ks.length / 2 ? "good" as const : "bad" as const },
+        { label: "Google Top 30", value: `${ks.filter((k) => k.g != null).length} von ${ks.length}` },
+        ...(ks.some((k) => !k.noMaps) ? [{ label: "Maps Top 3", value: `${ks.filter((k) => k.pack != null || (k.maps != null && k.maps <= 3)).length} von ${ks.length}` }] : []),
+      ];
+    })(),
   };
   const areas = AREAS.map((x) => { const s10 = Math.max(0, Math.min(10, Math.round(a[x.key] - 0.1))); return { key: x.key, name: x.name, score10: s10, status: status10(s10), text: x.text(a[x.key]), items: x.items, facts: FACTS[x.key] }; })
     .sort((p, q) => p.score10 - q.score10);
@@ -597,9 +624,11 @@ async function setStep(scanId: string, progress: number, step: string) {
   await pool!.query(`UPDATE rep_scans SET progress=$2, step=$3 WHERE id=$1`, [scanId, progress, step]).catch(() => {});
 }
 async function runScan(scanId: string, loc: J): Promise<void> {
-  const name = String(loc.name || ""), city = String(loc.city || "");
+  const fullName = String(loc.name || ""), city = String(loc.city || "");
+  const name = fullName.split(/\s+[|–—·:]\s+|\s+-\s+/)[0].trim() || fullName;
   const gl = String(loc.country || "at") || "at";
-  const q = city && !name.toLowerCase().includes(city.toLowerCase()) ? `${name} ${city}` : name;
+  let q = city && !name.toLowerCase().includes(city.toLowerCase()) ? `${name} ${city}` : name;
+  let scope = "lokal";
   const items: Item[] = [];
   let n = 0;
   const add = (src: Item["src"], pos: number, r: J) => {
@@ -628,12 +657,20 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
     }
+    const site = String(loc.website || "");
+    const hp0 = site ? await homepage(site) : { https: false, title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
+    const sj = parseJson(await askClaude("Antworte NUR mit JSON.", `Unternehmen: ${fullName}\nKategorie: ${loc.type || "?"}\nOrt: ${city || "?"}\nWebsite: ${hp0.title} – ${hp0.desc}\n\nWoher kommen die Kunden? "lokal" = aus dem Ort und der Umgebung (Restaurant, Friseur, Arzt, Handwerker), "regional" = Bundesland/Großraum (Bauträger, Makler, Kanzlei), "ueberregional" = ganzes Land, DACH oder online – der Standort ist egal (Online-Dienstleistung, Software, Versand, Agentur für ganz Österreich/Deutschland).\n{"scope":"lokal|regional|ueberregional"}`, { maxTokens: 300 }).catch(() => ""));
+    if (sj && /^(lokal|regional|ueberregional)$/.test(String(sj.scope))) scope = String(sj.scope);
+    const national = scope === "ueberregional";
+    if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 3;
+    const CACHE_V = 5;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
     const own0 = host(String(loc.website || ""));
+    // alle Schreibweisen: „Rapid Remove“, „RapidRemove“, „rapid-remove.com“
+    const nameOr = [...new Set([name, name.includes(" ") && name.length <= 30 ? name.replace(/\s+/g, "") : "", own0].filter(Boolean))].map((x) => `"${x}"`).join(" OR ");
     let aiOverview: string | null = null;
     let suggestions: { q: string; neg: boolean }[] = [];
     let kg: J | undefined;
@@ -685,12 +722,12 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const bj = await serp({ engine: "bing", q, cc: gl.toUpperCase() }).catch(() => ({} as J));
       (Array.isArray(bj.organic_results) ? bj.organic_results : []).slice(0, 10).forEach((r: J, k: number) => add("bing", k + 1, r));
       await say(60, `Durchsuche Google News nach „${short(name)}“`);
-      const nj = await serp({ engine: "google_news", q: `"${name}"`, gl, hl: "de" }).catch(() => ({} as J));
+      const nj = await serp({ engine: "google_news", q: nameOr, gl, hl: "de" }).catch(() => ({} as J));
       (Array.isArray(nj.news_results) ? nj.news_results : []).slice(0, 10).forEach((r: J, k: number) => add("news", k + 1, { ...r, snippet: r.snippet || r.source?.name || "" }));
       // Erwähnungen ohne Ort und ohne eigene Website: findet Presse/Magazin-Artikel, die bei „Name + Ort“ untergehen
       await say(62, `Suche Artikel und Erwähnungen über „${short(name)}“ im ganzen Netz`);
-      for (let pg = 0; pg < 2; pg++) {
-        const mj = await serp({ engine: "google", q: `"${name}"${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
+      for (let pg = 0; pg < 3; pg++) {
+        const mj = await serp({ engine: "google", q: `${nameOr}${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
         (Array.isArray(mj.organic_results) ? mj.organic_results : []).forEach((r: J, k: number) => add("mention", pg * 10 + k + 1, r));
       }
       kg = gPages[0]?.knowledge_graph as J | undefined;
@@ -706,9 +743,8 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       for (const r of list) { const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
     }
     if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
-    const site = String(loc.website || "");
     await say(70, site ? `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit` : "Kein Website-Link im Google-Profil – überspringe Website-Check");
-    const [au, hp] = site ? await Promise.all([siteAudit(site), homepage(site)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
+    const [au, hp] = site ? await Promise.all([siteAudit(site), Promise.resolve(hp0)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
     if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
     // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
     const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
@@ -716,39 +752,57 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const g0 = loc.gbp as J | undefined;
       const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, g0?.district && `Bezirk: ${g0.district}`, g0?.state && `Bundesland/Region: ${g0.state}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
         ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
-      const t = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\n` +
-        `Nenne 8 Suchbegriffe auf Deutsch, mit denen jemand bei Google einen Anbieter wie dieses Unternehmen sucht – OHNE den Firmennamen. Regeln:\n` +
-        `- Suche nach der DIENSTLEISTUNG bzw. dem Anbieter (z. B. „Bauträger Salzburg“, „Immobilienmakler Salzburg Umgebung“), NICHT nach einzelnen Produkten oder Objekten (also nicht „Wohnung kaufen …“, „Haus mieten …“, „Neubauwohnungen …“).\n` +
-        `- Region größer denken: Bauträger, Makler, Projektentwickler, Agenturen, Kanzleien, Handwerksbetriebe usw. arbeiten regional – nutze vor allem Bundesland, Landeshauptstadt/Großraum, Bezirk und gängige Regionsnamen (z. B. „Salzburg“, „Salzburg Umgebung“, „Flachgau“, „Salzkammergut“). Den kleinen Ort nur 1× verwenden. Nur bei klar lokalen Betrieben (Restaurant, Friseur, Arztpraxis) vor allem Ort und Nachbarorte.\n` +
-        `- Mische Branchenbegriff + Region und konkrete Leistung + Region, 2–4 Wörter, so wie Menschen tippen.\n{"keywords":["…"]}`, { maxTokens: 400 }).catch(() => "");
-      let kws: string[] = (parseJson(t)?.keywords || []).map((x: unknown) => String(x).trim()).filter((x: string) => x && !norm(x).includes(norm(name).slice(0, 8)));
-      if (!kws.length) kws = [`${loc.type || "Anbieter"} ${city}`.trim()];
+      // 1) Ausgangsbegriffe (Leistung, ggf. + Region) → 2) Google-Vorschläge = das, was Menschen wirklich tippen → 3) die passendsten 8 auswählen
+      const regionRule = national ? "OHNE Ort oder Region – der Standort ist egal." : scope === "regional" ? "mit Bundesland, Landeshauptstadt/Großraum oder Bezirk (z. B. „Salzburg“, „Salzburg Umgebung“, „Flachgau“), den kleinen Ort höchstens 1×." : "mit dem Ort oder der nächsten Stadt.";
+      const t1 = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nNenne 5 kurze Ausgangsbegriffe (1–3 Wörter), mit denen jemand bei Google nach der DIENSTLEISTUNG dieses Unternehmens sucht – keine Firmennamen, keine Produkte/Objekte (nicht „Wohnung kaufen“). ${regionRule}\n{"seeds":["…"]}`, { maxTokens: 400 }).catch(() => "");
+      const seeds: string[] = ((parseJson(t1) || {}).seeds || []).map((x: unknown) => String(x).trim()).filter(Boolean).slice(0, 5);
+      const sugg: string[] = [];
+      await Promise.all(seeds.map(async (sd) => {
+        const a = await serp({ engine: "google_autocomplete", q: sd, gl, hl: "de" }).catch(() => ({} as J));
+        for (const x of (Array.isArray(a.suggestions) ? a.suggestions : []).slice(0, 8)) { const v = String(x.value || "").trim(); if (v && !sugg.includes(v)) sugg.push(v); }
+      }));
+      const t = sugg.length ? await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nDas sind echte Google-Vorschläge, also Begriffe, die Menschen tatsächlich suchen:\n${sugg.map((x) => "- " + x).join("\n")}\n\nWähle daraus bis zu 8 Begriffe, bei denen potenzielle KUNDEN genau diese Dienstleistung suchen und dieses Unternehmen gefunden werden sollte. Nicht: Firmennamen, Anleitungen zum Selbermachen, Jobs, irrelevante Themen. ${national ? "Begriffe mit Ortsnamen weglassen." : ""} Übernimm die Begriffe wörtlich.\n{"keywords":["…"]}`, { maxTokens: 500 }).catch(() => "") : "";
+      const kj = parseJson(t) || {};
+      let kws: string[] = ((kj.keywords || []) as unknown[]).map((x) => String(x).trim()).filter((x: string) => x && !norm(x).includes(norm(name).slice(0, 8)));
+      if (kws.length < 4) kws = [...kws, ...seeds.filter((x) => !kws.includes(x))];
+      if (!kws.length) kws = [`${loc.type || "Anbieter"}${national ? "" : " " + city}`.trim()];
       kws = [...new Set(kws)].slice(0, 8);
       const ll = g0 && g0.lat && g0.lng ? `@${g0.lat},${g0.lng},12z` : "";
-      const isMe = (x: J) => (loc.place_id && x.place_id === loc.place_id) || (!!norm(x.title) && norm(x.title) === norm(name));
+      const isMe = (x: J) => (loc.place_id && x.place_id === loc.place_id) || (!!norm(x.title) && (norm(x.title) === norm(name) || norm(x.title) === norm(fullName)));
       let done = 0;
-      return Promise.all(kws.map(async (q0) => {
-        const mP = serp({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) }, 60_000).catch(() => ({} as J));
+      // höchstens 3 Begriffe gleichzeitig + 1 Wiederholung – sonst laufen SerpApi-Abfragen in Timeouts
+      const retry = async (pp: Record<string, string>): Promise<J | null> => {
+        for (let t2 = 0; t2 < 2; t2++) { try { return await serp(pp, 75_000); } catch (e) { if (/Kontingent/.test((e as Error).message)) return null; console.warn("Rep-Scan Suchbegriff", pp.engine, pp.q, "Versuch", t2 + 1, (e as Error).message); } }
+        return null;
+      };
+      const one = async (q0: string): Promise<Kw> => {
+        const mP = national ? Promise.resolve({} as J) : retry({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) });
         // Google Platz 1–30: nächste Seite nur abfragen, wenn die eigene Website noch nicht gefunden ist
-        let g: J = {}; let gPos: number | null = null;
+        let g: J = {}; let gPos: number | null = null; let gErr = false;
         for (let pg = 0; pg < 3; pg++) {
-          const j = await serp({ engine: "google", q: q0, gl, hl: "de", num: "10", start: String(pg * 10) }, 60_000).catch(() => ({} as J));
+          const j0 = await retry({ engine: "google", q: q0, gl, hl: "de", num: "10", start: String(pg * 10) });
+          if (!j0) { if (pg === 0) gErr = true; break; }
+          const j = j0;
           if (pg === 0) g = j;
           const org: J[] = Array.isArray(j.organic_results) ? j.organic_results : [];
           const oi = own0 ? org.findIndex((x) => host(String(x.link || "")).endsWith(own0)) : -1;
           if (oi >= 0) { gPos = pg * 10 + (Number(org[oi].position) > 0 && Number(org[oi].position) <= 10 ? Number(org[oi].position) : oi + 1); break; }
           if (!own0 || org.length < 5) break;
         }
-        const m = await mP;
+        const m = (await mP) || {};
         const pk: J[] = Array.isArray(g.local_results?.places) ? g.local_results.places : Array.isArray(g.local_results) ? g.local_results : [];
         const pi = pk.findIndex(isMe);
         const ml: J[] = Array.isArray(m.local_results) ? m.local_results : m.place_results ? [m.place_results] : [];
         const mi = ml.findIndex(isMe);
         const lead = mi === 0 ? undefined : String(ml[0]?.title || "") || undefined;
         done++;
-        void say(77, `Suchbegriff „${short(q0)}“: ${gPos ? "Google Platz " + gPos : "nicht in Google Top 30"} · ${mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps"} (${done} von ${kws.length})`);
-        return { q: q0, g: gPos, pack: pi >= 0 ? pi + 1 : null, maps: mi >= 0 ? mi + 1 : null, lead } as Kw;
-      }));
+        void say(77, `Suchbegriff „${short(q0)}“: ${gErr ? "Google nicht erreichbar" : gPos ? "Google Platz " + gPos : "nicht in Google Top 30"}${national ? "" : " · " + (mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps")} (${done} von ${kws.length})`);
+        return { q: q0, g: gPos, pack: national || pi < 0 ? null : pi + 1, maps: national || mi < 0 ? null : mi + 1, lead: national ? undefined : lead, ...(gErr ? { err: true } : {}), ...(national ? { noMaps: true } : {}) } as Kw;
+      };
+      const out: Kw[] = new Array(kws.length);
+      let next = 0;
+      await Promise.all(Array.from({ length: Math.min(3, kws.length) }, async () => { while (next < kws.length) { const i = next++; out[i] = await one(kws[i]); } }));
+      return out;
     })().catch((e) => { console.warn("Rep-Scan Suchbegriffe", (e as Error).message); return [] as Kw[]; });
     await say(76, "Suche Facebook-, Instagram-, LinkedIn- und YouTube-Profile");
     const social: Social[] = [...hp.social];
@@ -767,7 +821,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     }
     await say(78, social.length ? `Gefunden: ${[...new Set(social.map((x) => x.net))].join(", ")} · frage jetzt ChatGPT, Claude & Perplexity` : "Frage jetzt ChatGPT, Claude & Perplexity");
     // Fester Fragenkatalog – so wie echte Kunden fragen. Jede KI bekommt jede Frage einzeln.
-    const inCity = city ? ` in ${city}` : "";
+    const inCity = city && !national ? ` in ${city}` : "";
     const branche = String(loc.type || "").trim() || "Anbieter";
     const QUESTIONS = [
       { key: "kennen", q: `Kennst du die Firma „${name}“${inCity}?` },
@@ -776,14 +830,14 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       { key: "erfahrungen", q: `Welche Erfahrungen haben Kunden mit „${name}“${inCity} gemacht?` },
       { key: "kritik", q: `Gibt es Kritik oder Beschwerden über „${name}“${inCity}?` },
       { key: "beauftragen", q: `Soll ich „${name}“${inCity} beauftragen?` },
-      { key: "besser", q: `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
+      { key: "besser", q: national ? `Gibt es bessere Anbieter als „${name}“ (${branche})?` : `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
     ];
     const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
     // Grundlage, falls Claudes eigene Websuche nicht liefert: echte Such-Treffer (Google, News, Erwähnungen) – keine eigene Website
     const snips = items.filter((x) => x.src !== "bing" && !(own0 && host(x.link).endsWith(own0))).slice(0, 30)
       .map((x) => `- ${x.title} (${host(x.link)})${x.snippet ? ": " + x.snippet : ""}`).join("\n");
     const askClaudeWeb = async (qq: string, sink?: Src[]): Promise<string> => {
-      const t = await askClaude(SYS, qq, { search: true, maxTokens: 700, sink }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
+      const t = await askClaude(SYS, qq, { search: true, maxTokens: 4000, sink }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
       if (t && !/nicht live|kann .{0,30}nicht .{0,20}(nachsehen|suchen|recherchieren)|keinen (internet|web)zugriff|no (internet|web) access/i.test(t)) return t;
       return askClaude(SYS + " Dir liegen aktuelle Suchergebnisse aus dem Web vor – nutze sie wie eine Websuche, erfinde nichts dazu.", `${qq}\n\nAktuelle Suchergebnisse:\n${snips || "(keine)"}`, { maxTokens: 700 })
         .catch((e) => { console.warn("Rep-Scan KI (Suchergebnisse)", e.message); return t; });
