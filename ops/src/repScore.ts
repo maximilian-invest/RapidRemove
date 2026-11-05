@@ -74,7 +74,7 @@ async function placesSearch(q: string): Promise<J[]> {
   if (!res.ok) throw new Error(j.error?.message || "Places HTTP " + res.status);
   return Array.isArray(j.places) ? j.places : [];
 }
-const PROFILE_FIELDS = ",regularOpeningHours,nationalPhoneNumber,internationalPhoneNumber,photos,businessStatus";
+const PROFILE_FIELDS = ",location,regularOpeningHours,nationalPhoneNumber,internationalPhoneNumber,photos,businessStatus";
 async function placeDetails(placeId: string, full = false): Promise<J> {
   if (!gkey()) throw new Error("GOOGLE_MAPS_API_KEY fehlt");
   const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=de`, {
@@ -197,7 +197,7 @@ function areaDigest(r: J): J {
     const d: J = { bereich: a.name, score: a.score10 + "/10", fakten: (a.facts || []).map((f: J) => `${f.label}: ${f.value}`) };
     if (a.key === "search") { d.treffer = pickI(a.items); d.vorschlaege = (r.suggestions || []).slice(0, 8).map((x: J) => x.q + (x.neg ? " (negativ)" : "")); }
     else if (a.key === "social") d.profile = (a.items || []).map((x: J) => `${x.title}${x.followers ? " · " + x.followers : ""}${x.inGoogle === true ? " · im Google-Profil" : x.inGoogle === false ? " · nicht im Google-Profil" : ""}`);
-    else if (a.key === "web") d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
+    else if (a.key === "web") d.suchbegriffe = (r.kws || []).map((k: J) => `${k.q}: Google ${k.g ? "Platz " + k.g : "nicht auf Seite 1"}, Maps ${k.pack ? "Top 3 (Platz " + k.pack + ")" : k.maps ? "Platz " + k.maps : "nicht gefunden"}${k.lead ? ", Maps-Platz 1: " + k.lead : ""}`), d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
     else if (a.key === "reviews") { d.googleProfil = r.gbp ? (r.gbp.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) : undefined; d.portale = pickI(a.items); }
     else d.treffer = pickI(a.items);
     out[a.key] = d;
@@ -258,6 +258,12 @@ const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCo
  * Erster Inhalt (FCP), Hauptinhalt (LCP), Layout-Sprünge (CLS) und Datenmenge messen → 0–100.
  * SEO: 11 nachvollziehbare Grundlagen-Checks am fertigen HTML → Anteil erfüllt = 0–100. */
 type Check = { key: string; label: string; ok: boolean; detail: string };
+type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string };
+const kwVal = (k: Kw) => {
+  const o = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : 6;
+  const l = k.pack != null ? 10 : k.maps == null ? 1 : k.maps <= 3 ? 9 : k.maps <= 10 ? 6 : 3;
+  return Math.max(o, l);
+};
 type Audit = { perf: number | null; seo: number | null; metrics: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null; requests: number | null } | null; checks: Check[]; finalUrl: string; html: string };
 const lin = (v: number, good: number, mid: number, bad: number) => (v <= good ? 100 : v <= mid ? 100 - ((v - good) / (mid - good)) * 50 : v >= bad ? 0 : 50 - ((v - mid) / (bad - mid)) * 50);
 function perfScore(m: { fcp: number | null; lcp: number | null; cls: number | null; kb: number | null }): number | null {
@@ -373,13 +379,14 @@ type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: numbe
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
   ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
+  kws?: Kw[];
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
 const W = { search: 25, reviews: 20, press: 15, ki: 15, social: 10, web: 15 } as const;
 type AreaKey = keyof typeof W;
-type Fix = { gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
+type Fix = { rank?: boolean; gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
 
 const gbpMissing = (g: J) => [!g.website && "Website", !g.phone && "Telefonnummer", !g.hours && "Öffnungszeiten", g.photos < 8 && "Fotos"].filter(Boolean) as string[];
 function gbpChecks(g: J, rv: { total: number; unanswered: number }, n: number): J[] {
@@ -448,6 +455,11 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
     if (!c.web.ok) web -= 3;
     if (!own || own.pos > 10) web -= 2;
   }
+  // Ranking bei Suchbegriffen ohne Firmennamen zählt am meisten
+  if (c.kws && c.kws.length) {
+    const rank = fix.rank ? 9 : c.kws.reduce((s2, k) => s2 + kwVal(k), 0) / c.kws.length;
+    web = rank * 0.7 + Math.max(0, web) * 0.3;
+  }
   return { search: clamp(search), reviews: clamp(reviews), press: clamp(Math.min(10, press)), ki: clamp(ki), social: clamp(social), web: clamp(web) };
 }
 const total = (a: Record<AreaKey, number>) => Math.round((Object.keys(W) as AreaKey[]).reduce((s, k) => s + (a[k] / 10) * W[k], 0));
@@ -476,6 +488,8 @@ export function evaluate(c: Ctx): J {
   if (notLinked.length) todos.push({ key: "glink", title: `${notLinked.map((x) => x.net).join(", ")} im Google Business Profil verlinken`, who: "selbst", action: "glink", points: gain({ gLink: true }), area: "social" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
   if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: c.web.perf != null && c.web.perf < 70 ? `Website lädt am Handy langsam (${c.web.perf}/100)` : `${(c.web.checks || []).filter((x) => !x.ok).length} SEO-Grundlagen fehlen auf Ihrer Website`, who: "wir", action: "website", points: gain({ web: true }), area: "web" });
+  const weak = (c.kws || []).filter((k) => kwVal(k) < 6);
+  if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${c.kws!.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
@@ -490,7 +504,7 @@ export function evaluate(c: Ctx): J {
     { key: "ki", name: "KI-Antworten", text: () => "Was KI-Assistenten antworten, wenn jemand nach Ihnen fragt.", items: [] },
     { key: "reviews", name: "Bewertungen", text: () => "Ihre Sterne auf Google und anderen Bewertungsplattformen.", items: pick((x) => x.type === "review") },
     { key: "social", name: "Social Media", text: () => "Ihre Profile in sozialen Netzwerken.", items: c.social.map((s) => ({ title: s.net, link: s.url, src: "web", sent: "pos", type: "social", host: host(s.url), followers: s.followers || "", inGoogle: c.kgSeen ? !!s.inGoogle : null })) },
-    { key: "web", name: "Website & SEO", text: () => "Ladezeit, Technik und Auffindbarkeit Ihrer Website.", items: [] },
+    { key: "web", name: "Ranking & Website", text: () => "Wo Sie bei Google und Maps erscheinen, wenn Kunden nach Ihren Leistungen suchen.", items: [] },
   ];
   // Fakten je Bereich: was geprüft wurde und was herauskam – auch wenn nichts Auffälliges gefunden wurde
   const own1 = self.find((x) => x.src === "google" && x.type === "own");
@@ -525,7 +539,11 @@ export function evaluate(c: Ctx): J {
       { label: "Gefunden", value: c.social.length ? [...new Set(c.social.map((x) => x.net))].join(", ") : "keine Profile", tone: c.social.length >= 2 ? "good" : "bad" },
       { label: "Im Google-Profil", value: !c.kgSeen ? "nicht feststellbar" : c.social.length ? `${c.social.filter((x) => x.inGoogle).length} von ${c.social.length} sichtbar` : "–" },
     ],
-    web: [],
+    web: (c.kws || []).length ? [
+      { label: "Suchbegriffe geprüft", value: String(c.kws!.length) },
+      { label: "Google Seite 1", value: `${c.kws!.filter((k) => k.g != null).length} von ${c.kws!.length}`, tone: c.kws!.filter((k) => k.g != null).length >= c.kws!.length / 2 ? "good" : "bad" },
+      { label: "Maps Top 3", value: `${c.kws!.filter((k) => k.pack != null || (k.maps != null && k.maps <= 3)).length} von ${c.kws!.length}` },
+    ] : [],
   };
   const areas = AREAS.map((x) => { const s10 = Math.max(0, Math.min(10, Math.round(a[x.key] - 0.1))); return { key: x.key, name: x.name, score10: s10, status: status10(s10), text: x.text(a[x.key]), items: x.items, facts: FACTS[x.key] }; })
     .sort((p, q) => p.score10 - q.score10);
@@ -537,6 +555,7 @@ export function evaluate(c: Ctx): J {
     kpis: { flags, rating: c.loc.rating, reviews: c.loc.reviews, page1Pos: serp1.filter((x) => x.sent === "pos").length, page1Total: serp1.length },
     kiSummary: c.kiSummary || "",
     ki: [...c.ki, ...(c.aiOverview ? [{ name: "Google KI-Übersicht", known: true, sent: c.aiOverviewSent || "neu", quote: "", sum: c.aiOverviewSum || "" }] : [])],
+    kws: c.kws || [],
     gbp: c.loc.gbp ? { url: c.loc.gbp.url, type: c.loc.gbp.type, rating: c.loc.rating, reviews: c.loc.reviews, checks: gbpChecks(c.loc.gbp, c.reviews, Number(c.loc.reviews) || 0) } : null,
     suggestions: c.suggestions, website: c.web, social: c.social, reviewsInfo: c.reviews, summary: c.summary,
     sources: c.items.length + c.suggestions.length + c.ki.length + (c.web.url ? 2 : 0) + c.reviews.total + 1,
@@ -572,6 +591,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
           url: p.mapsUrl || loc.maps_url || "", website: !!p.website, phone: !!(raw.nationalPhoneNumber || raw.internationalPhoneNumber),
           hours: !!(raw.regularOpeningHours && (raw.regularOpeningHours.periods || raw.regularOpeningHours.weekdayDescriptions)),
           photos: Array.isArray(raw.photos) ? raw.photos.length : 0, status: String(raw.businessStatus || "OPERATIONAL"), type: p.type,
+          lat: Number(raw.location?.latitude) || null, lng: Number(raw.location?.longitude) || null,
         };
         loc.rating = p.rating; loc.reviews = p.reviews; loc.website = loc.website || p.website; loc.type = p.type;
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
@@ -641,6 +661,36 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     await say(70, site ? `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit` : "Kein Website-Link im Google-Profil – überspringe Website-Check");
     const [au, hp] = site ? await Promise.all([siteAudit(site), homepage(site)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
     if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
+    // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
+    const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
+    const kwPromise: Promise<Kw[]> = (async () => {
+      const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
+        ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
+      const t = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nNenne 6–8 Suchbegriffe auf Deutsch, mit denen potenzielle Kunden bei Google nach genau den Leistungen dieses Unternehmens suchen würden – OHNE den Firmennamen. Mische: Branche + Ort, konkrete Leistung + Ort, Leistung + Region/Bezirk. Kurz und realistisch (2–4 Wörter), so wie Menschen tippen.\n{"keywords":["…"]}`, { maxTokens: 400 }).catch(() => "");
+      let kws: string[] = (parseJson(t)?.keywords || []).map((x: unknown) => String(x).trim()).filter((x: string) => x && !norm(x).includes(norm(name).slice(0, 8)));
+      if (!kws.length) kws = [`${loc.type || "Anbieter"} ${city}`.trim()];
+      kws = [...new Set(kws)].slice(0, 8);
+      const g0 = loc.gbp as J | undefined;
+      const ll = g0 && g0.lat && g0.lng ? `@${g0.lat},${g0.lng},12z` : "";
+      const isMe = (x: J) => (loc.place_id && x.place_id === loc.place_id) || (!!norm(x.title) && norm(x.title) === norm(name));
+      let done = 0;
+      return Promise.all(kws.map(async (q0) => {
+        const [g, m] = await Promise.all([
+          serp({ engine: "google", q: q0, gl, hl: "de", num: "10" }, 60_000).catch(() => ({} as J)),
+          serp({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) }, 60_000).catch(() => ({} as J)),
+        ]);
+        const org: J[] = Array.isArray(g.organic_results) ? g.organic_results : [];
+        const oi = own0 ? org.findIndex((x) => host(String(x.link || "")).endsWith(own0)) : -1;
+        const pk: J[] = Array.isArray(g.local_results?.places) ? g.local_results.places : Array.isArray(g.local_results) ? g.local_results : [];
+        const pi = pk.findIndex(isMe);
+        const ml: J[] = Array.isArray(m.local_results) ? m.local_results : m.place_results ? [m.place_results] : [];
+        const mi = ml.findIndex(isMe);
+        const lead = mi === 0 ? undefined : String(ml[0]?.title || "") || undefined;
+        done++;
+        void say(77, `Suchbegriff „${short(q0)}“: ${oi >= 0 ? "Google Platz " + (Number(org[oi].position) || oi + 1) : "nicht auf Google Seite 1"} · ${mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps"} (${done} von ${kws.length})`);
+        return { q: q0, g: oi >= 0 ? Number(org[oi].position) || oi + 1 : null, pack: pi >= 0 ? pi + 1 : null, maps: mi >= 0 ? mi + 1 : null, lead } as Kw;
+      }));
+    })().catch((e) => { console.warn("Rep-Scan Suchbegriffe", (e as Error).message); return [] as Kw[]; });
     await say(76, "Suche Facebook-, Instagram-, LinkedIn- und YouTube-Profile");
     const social: Social[] = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
@@ -733,7 +783,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
-      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

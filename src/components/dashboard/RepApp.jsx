@@ -226,8 +226,8 @@ function Chart({ history }) {
     </div>
   );
 }
-const TODO_ICON = { gbp: Star, neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
-const TODO_COL = { gbp: ["#d97706", "#fff4e0"], neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
+const TODO_ICON = { rank: Search, gbp: Star, neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
+const TODO_COL = { rank: ["#2b7fff", "#eaf2ff"], gbp: ["#d97706", "#fff4e0"], neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
 
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
@@ -493,6 +493,67 @@ function ReviewPortals({ r, items }) {
     </div>
   );
 }
+/* Ranking & Website: Suchbegriffe oben, Ladezeit und SEO klein als Kacheln */
+const rankCol = (v) => (v == null ? "#b91c1c" : v <= 3 ? "#15803d" : v <= 10 ? "#b45309" : "#b91c1c");
+function WebArea({ r }) {
+  const [open, setOpen] = React.useState(null);
+  const kws = [...(r.kws || [])].map((k) => ({ ...k, best: Math.min(k.g ?? 99, k.pack ?? (k.maps ?? 99)) })).sort((p, q) => q.best - p.best);
+  const w = r.website || {}, m = w.metrics || {};
+  const sec = (ms) => (ms == null ? "–" : (ms / 1000).toFixed(1).replace(".", ",") + " s");
+  const mb = m.kb == null ? "–" : m.kb >= 1024 ? (m.kb / 1024).toFixed(1).replace(".", ",") + " MB" : m.kb + " KB";
+  const ok = w.checks || [];
+  const tile = (key, name, sub, right, rightCol, body, ini, col) => {
+    const on = open === key;
+    return (
+      <div key={key} className={"rp-pt" + (on ? " open" : "")}>
+        <button type="button" className="rp-pt-h" onClick={() => setOpen(on ? null : key)}>
+          <span className="rp-pt-i" style={{ background: col }}>{ini}</span>
+          <span className="rp-t"><b>{name}</b><span>{sub}</span></span>
+          {right ? <em style={{ color: rightCol }}>{right}</em> : null}
+          <ChevronDown className="rp-pt-chev" />
+        </button>
+        {on ? <div className="rp-pt-b">{body}</div> : null}
+      </div>
+    );
+  };
+  return (
+    <section className="rp-list">
+      {kws.length ? (
+        <>
+          <div className="rp-box-h"><b>Suchbegriffe</b><span>{kws.length}</span></div>
+          <div className="rp-kws">
+            {kws.map((k) => (
+              <div key={k.q} className="rp-kw">
+                <b>{k.q}</b>
+                <span className="rp-kw-c" style={{ color: rankCol(k.g) }}><small>Google</small>{k.g ? "#" + k.g : "–"}</span>
+                <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+      {w.url ? (
+        <div className="rp-pts" style={{ marginTop: kws.length ? 22 : 0 }}>
+          {tile("speed", "Ladezeit am Handy", w.perf == null ? "nicht messbar" : sec(m.lcp) + " bis fertig · " + mb, w.perf == null ? null : w.perf + "/100", w.perf >= 90 ? "#15803d" : w.perf >= 50 ? "#b45309" : "#b91c1c", (
+            <div className="rp-metrics">
+              <div><b style={{ color: m.fcp > 3000 ? "#e23b3b" : m.fcp > 1800 ? "#d97706" : "#16a34a" }}>{sec(m.fcp)}</b><span>bis etwas zu sehen ist</span></div>
+              <div><b style={{ color: m.lcp > 4000 ? "#e23b3b" : m.lcp > 2500 ? "#d97706" : "#16a34a" }}>{sec(m.lcp)}</b><span>bis die Seite fertig aussieht</span></div>
+              <div><b style={{ color: m.kb > 4096 ? "#e23b3b" : m.kb > 1640 ? "#d97706" : "#16a34a" }}>{mb}</b><span>Datenmenge{m.requests ? ` · ${m.requests} Dateien` : ""}</span></div>
+            </div>
+          ), "⚡", "#9a9a9a")}
+          {tile("seo", "SEO-Grundlagen", `${ok.filter((c) => c.ok).length} von ${ok.length} erfüllt`, null, null, (
+            <>
+              {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
+                <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+              ))}
+              <a className="rp-pt-open" href={w.url} target="_blank" rel="noopener noreferrer">Website öffnen<ExternalLink /></a>
+            </>
+          ), "S", ok.some((c) => !c.ok) ? "#d97706" : "#16a34a")}
+        </div>
+      ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
+    </section>
+  );
+}
 const AREA_ICON = { press: Newspaper, search: Search, ki: Sparkles, reviews: Star, social: Users, web: Globe };
 function RepArea({ a, r, onBack, onAsk }) {
   if (!a) return null;
@@ -529,37 +590,8 @@ function RepArea({ a, r, onBack, onAsk }) {
             </a>
           )) : <div className="rp-empty"><Users />Keine Social-Media-Profile gefunden.</div>}
         </section>
-      ) : a.key === "web" ? (
-        <section className="rp-list">
-          {r.website && r.website.url ? (
-            <>
-              {(() => {
-                const w = r.website, m = w.metrics || {};
-                const sec = (ms) => (ms == null ? "–" : (ms / 1000).toFixed(1).replace(".", ",") + " s");
-                const mb = m.kb == null ? "–" : m.kb >= 1024 ? (m.kb / 1024).toFixed(1).replace(".", ",") + " MB" : m.kb + " KB";
-                const ok = w.checks || [];
-                return (
-                  <>
-                    <div className="rp-box-h"><b>Ladezeit am Handy</b><span>{w.perf == null ? "nicht messbar" : w.perf + "/100"}</span></div>
-                    {w.perf == null ? <div className="rp-empty">Die Website hat beim Laden nicht geantwortet.</div> : (
-                      <div className="rp-metrics">
-                        <div><b style={{ color: m.fcp > 3000 ? "#e23b3b" : m.fcp > 1800 ? "#d97706" : "#16a34a" }}>{sec(m.fcp)}</b><span>bis etwas zu sehen ist</span></div>
-                        <div><b style={{ color: m.lcp > 4000 ? "#e23b3b" : m.lcp > 2500 ? "#d97706" : "#16a34a" }}>{sec(m.lcp)}</b><span>bis die Seite fertig aussieht</span></div>
-                        <div><b style={{ color: m.kb > 4096 ? "#e23b3b" : m.kb > 1640 ? "#d97706" : "#16a34a" }}>{mb}</b><span>Datenmenge{m.requests ? ` · ${m.requests} Dateien` : ""}</span></div>
-                      </div>
-                    )}
-                    <div className="rp-box-h" style={{ marginTop: 20 }}><b>SEO-Grundlagen</b><span>{ok.filter((c) => c.ok).length} von {ok.length} erfüllt</span></div>
-                    {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
-                      <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
-                    ))}
-                    <a className="rp-li" href={w.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{String(w.title || w.url).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&amp;/g, "&")}</b><span>{w.url}</span></span><ExternalLink /></a>
-                  </>
-                );
-              })()}
-            </>
-          ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
-        </section>
-      ) : (
+      ) : a.key === "web" ? <WebArea r={r} /> : null}
+      {a.key === "web" || a.key === "ki" || a.key === "social" ? null : (
         <section className="rp-list">
           {a.key === "reviews" ? <ReviewPortals r={r} items={a.items} /> : null}
           {a.key === "reviews" ? null : <>
