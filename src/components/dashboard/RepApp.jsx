@@ -544,9 +544,36 @@ function ReviewPortals({ r, items }) {
 }
 /* Ranking & Website: Suchbegriffe oben, Ladezeit und SEO klein als Kacheln */
 const rankCol = (v) => (v == null ? "#b91c1c" : v <= 3 ? "#15803d" : v <= 10 ? "#b45309" : "#b91c1c");
+const READ_LBL = { own: "Ihre Website", channel: "Ihr Kanal", links: "verlinkt Sie", names: "nennt Sie" };
+function KwRow({ k }) {
+  const [on, setOn] = React.useState(false);
+  const mine = k.mine || [];
+  const n = mine.length, of = k.top || 10;
+  return (
+    <div className={"rp-kw-w" + (on ? " on" : "")}>
+      <button type="button" className="rp-kw" onClick={() => n && setOn(!on)} disabled={!n}>
+        <b>{k.q}</b>
+        {k.mine ? <span className="rp-kw-c" style={{ color: n >= 3 ? "#15803d" : n >= 1 ? "#b45309" : "#b91c1c" }}><small>Seite 1</small>{n}/{of}</span> : null}
+        <span className="rp-kw-c" style={{ color: k.err ? "#9a9a9a" : rankCol(k.g) }}><small>Website</small>{k.err ? "?" : k.g ? "#" + k.g : "–"}</span>
+        {k.noMaps ? null : <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>}
+      </button>
+      {on ? (
+        <div className="rp-kw-b">
+          {mine.map((m) => (
+            <a key={m.u} className="rp-li" href={m.u} target="_blank" rel="noopener noreferrer">
+              <span className="rp-kw-p">#{m.p}</span>
+              <span className="rp-t"><b>{m.t || m.h}</b><span>{m.h} · {READ_LBL[m.k] || m.k}</span></span>
+              <ExternalLink />
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 function WebArea({ r }) {
   const [open, setOpen] = React.useState(null);
-  const kws = [...(r.kws || [])].map((k) => ({ ...k, best: k.err ? -1 : Math.min(k.g ?? 99, k.noMaps ? 99 : k.pack ?? (k.maps ?? 99)) })).sort((p, q) => q.best - p.best);
+  const kws = [...(r.kws || [])].map((k) => ({ ...k, best: k.err ? -1 : Math.min(k.g ?? 99, k.noMaps ? 99 : k.pack ?? (k.maps ?? 99)) })).sort((p, q) => (p.err ? 1 : 0) - (q.err ? 1 : 0) || ((p.mine || []).length - (q.mine || []).length) || q.best - p.best);
   const w = r.website || {}, m = w.metrics || {};
   const sec = (ms) => (ms == null ? "–" : (ms / 1000).toFixed(1).replace(".", ",") + " s");
   const mb = m.kb == null ? "–" : m.kb >= 1024 ? (m.kb / 1024).toFixed(1).replace(".", ",") + " MB" : m.kb + " KB";
@@ -571,13 +598,7 @@ function WebArea({ r }) {
         <>
           <div className="rp-box-h"><b>Suchbegriffe</b><span>{kws.length}</span></div>
           <div className="rp-kws">
-            {kws.map((k) => (
-              <div key={k.q} className="rp-kw">
-                <b>{k.q}</b>
-                <span className="rp-kw-c" style={{ color: k.err ? "#9a9a9a" : rankCol(k.g) }}><small>Google</small>{k.err ? "?" : k.g ? "#" + k.g : "–"}</span>
-                {k.noMaps ? null : <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>}
-              </div>
-            ))}
+            {kws.map((k) => <KwRow key={k.q} k={k} />)}
           </div>
         </>
       ) : null}
@@ -692,7 +713,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.items.length ? worstFirst(a.items).map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
               <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : x.sent === "other" ? "#fff" : "#bdbdbd", boxShadow: x.sent === "other" ? "inset 0 0 0 2px #d4d4d4" : "none" }} />
-              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
+              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{READ_LBL[x.read] && x.read !== "own" ? " · " + READ_LBL[x.read] : ""}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
               <ExternalLink />
             </a>
           )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge gefunden." : "Keine Treffer."}</div>}
