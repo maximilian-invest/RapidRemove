@@ -1457,3 +1457,15 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-dim-refs{background:#fff;border-radius:14px;padding:2px 14px;margin-top:12px}
 .rra .rp-dim-refs .rp-li{border-bottom:1px solid #f0f0f0}
 .rra .rp-dim-refs .rp-li:last-child{border-bottom:0}
+
+/* Reputation: Steckbrief + Empfehlung */
+.rra .rp-prof{background:#fff;border:1px solid #ececec;border-radius:20px;margin:0 0 18px;overflow:hidden}
+.rra .rp-prof-h{display:flex;align-items:center;gap:12px;width:100%;padding:14px 18px;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rra .rp-prof.on .rp-pt-chev{transform:rotate(180deg)}
+.rra .rp-prof-b{display:flex;flex-direction:column;gap:12px;padding:0 18px 16px}
+.rra .rp-prof-b em,.rra .rp-dim-rec em{display:block;font-style:normal;font-size:12px;font-weight:700;color:#8a8a8a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.rra .rp-prof-b p,.rra .rp-dim-rec p{margin:0 0 4px;font-size:14px;line-height:1.5;color:#3a3a3a}
+.rra .rp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rra .rp-chips span{background:#f2f2f2;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#2a2a2a}
+.rra .rp-chips.no span{background:#fdecec;color:#7f1d1d}
+.rra .rp-dim-rec{background:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;display:flex;flex-direction:column;gap:12px}

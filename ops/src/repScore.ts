@@ -41,6 +41,7 @@ async function init(): Promise<void> {
     progress integer NOT NULL DEFAULT 0, step text, score integer, result jsonb, error text,
     created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS rep_scans_loc ON rep_scans (location_id, created_at DESC)`);
+  await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz`);
   // Wöchentlicher Recherche-Cache je Standort: Suchtreffer, Suchbegriffe, KI-Antworten + Einordnung
   await pool.query(`CREATE TABLE IF NOT EXISTS rep_cache (location_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
@@ -198,14 +199,13 @@ const DIMS: { key: string; name: string; hint: string }[] = [
   { key: "serioes", name: "Seriosität", hint: "Halten KIs Sie für seriös?" },
   { key: "erfahrungen", name: "Kundenerfahrungen", hint: "Was KIs über Erfahrungen von Kunden wissen" },
   { key: "kritik", name: "Kritik & Warnungen", hint: "Nennen KIs Kritik oder Beschwerden?" },
-  { key: "beauftragen", name: "Empfehlung", hint: "Würden KIs Sie empfehlen?" },
-  { key: "besser", name: "Vergleich mit Mitbewerbern", hint: "Schicken KIs Kunden zur Konkurrenz?" },
+  { key: "rec", name: "Empfehlung", hint: "Nennen KIs Sie, wenn Kunden nach Ihrer Leistung fragen?" },
 ];
-const kiAnsVal = (key: string, a: J) => (!a.known ? (key === "kennen" ? 2 : 4) : a.sent === "pos" ? 9 : a.sent === "neg" ? 3 : 6.5);
+const kiAnsVal = (key: string, a: J) => (key === "rec" ? (!a.mentioned ? 1 : !a.rank || a.rank <= 1 ? 10 : a.rank <= 3 ? 8 : 6) : !a.known ? (key === "kennen" ? 2 : 4) : a.sent === "pos" ? 9 : a.sent === "neg" ? 3 : 6.5);
 function buildDims(ki: J[], sums: J[] | undefined): J[] {
   const sm = new Map<string, string>((Array.isArray(sums) ? sums : []).map((d: J) => [String(d.key), String(d.sum || "")]));
   return DIMS.map((d) => {
-    const ans = ki.flatMap((k) => (Array.isArray(k.answers) ? k.answers : []).filter((a: J) => a.key === d.key && a.sent !== "none").map((a: J) => ({ ...a, ai: k.name })));
+    const ans = ki.flatMap((k) => (Array.isArray(k.answers) ? k.answers : []).filter((a: J) => (d.key === "rec" ? String(a.key).startsWith("rec") : a.key === d.key) && a.sent !== "none").map((a: J) => ({ ...a, ai: k.name })));
     if (!ans.length) return null;
     const score = Math.round(ans.reduce((s2: number, a: J) => s2 + kiAnsVal(d.key, a), 0) / ans.length);
     // Quellen, auf die sich die KIs bei diesem Thema stützen (mit kurzer Einordnung, worum es geht)
@@ -214,7 +214,9 @@ function buildDims(ki: J[], sums: J[] | undefined): J[] {
     const rf = new Map<string, J>((Array.isArray(sums) ? sums : []).filter((x: J) => x.key === d.key).flatMap((x: J) => (Array.isArray(x.refs) ? x.refs : [])).map((r: J) => [String(r.url || ""), r]));
     const refs = all.map((x) => { const r = rf.get(x.u) || {}; return { title: x.t || host(x.u), url: x.u, host: host(x.u), about: String(r.about || "").slice(0, 160), sent: String(r.sent || "neu") }; })
       .sort((p, q) => (p.sent === "neg" ? 0 : p.sent === "neu" ? 1 : 2) - (q.sent === "neg" ? 0 : q.sent === "neu" ? 1 : 2)).slice(0, 8);
-    return { key: d.key, name: d.name, hint: d.hint, score, n: ans.length, ais: [...new Set(ans.map((a: J) => a.ai))], neg: ans.filter((a: J) => a.known && a.sent === "neg").length, pos: ans.filter((a: J) => a.known && a.sent === "pos").length, sum: (sm.get(d.key) || "").slice(0, 300), refs };
+    const others = d.key === "rec" ? [...ans.flatMap((a: J) => (Array.isArray(a.others) ? a.others : []) as string[]).reduce((m, v) => m.set(v, (m.get(v) || 0) + 1), new Map<string, number>()).entries()].sort((p, q) => q[1] - p[1]).slice(0, 6).map(([v]) => v) : undefined;
+    const qs = d.key === "rec" ? [...new Set(ans.map((a: J) => String(a.q)))] : undefined;
+    return { key: d.key, name: d.name, hint: d.hint, score, n: ans.length, others, qs, mentioned: d.key === "rec" ? ans.filter((a: J) => a.mentioned).length : undefined, ais: [...new Set(ans.map((a: J) => a.ai))], neg: ans.filter((a: J) => a.known && a.sent === "neg").length, pos: ans.filter((a: J) => a.known && a.sent === "pos").length, sum: (sm.get(d.key) || "").slice(0, 300), refs };
   }).filter(Boolean) as J[];
 }
 /* Zusammenfassung je Bereich (Suche, Bewertungen, Presse, Social, Website) aus den Scan-Daten */
@@ -288,6 +290,8 @@ const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCo
  * Erster Inhalt (FCP), Hauptinhalt (LCP), Layout-Sprünge (CLS) und Datenmenge messen → 0–100.
  * SEO: 11 nachvollziehbare Grundlagen-Checks am fertigen HTML → Anteil erfüllt = 0–100. */
 type Check = { key: string; label: string; ok: boolean; detail: string };
+/* Recherche-Zusätze: so sucht jemand, der schon einen Anbieter im Kopf hat – nicht jemand, der einen sucht */
+const RESEARCH_RE = /\b(seriös|serioes|erfahrung(en)?|bewertung(en)? (zu|von)|test|kosten|kostenlos|gratis|preis(e)?|selber|selbst|anleitung|tutorial|reddit|forum|gutefrage|wiki|definition|was ist|wie (geht|funktioniert)|job(s)?|gehalt|ausbildung|abzocke|betrug|kündigen|stornieren|login|anmelden)\b/i;
 type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string; err?: boolean; noMaps?: boolean };
 const kwOk = (k: Kw) => !k.err;
 const kwVal = (k: Kw) => {
@@ -400,6 +404,38 @@ const SOCIAL: [string, RegExp][] = [
   ["LinkedIn", /(^|\.)linkedin\.com\/(company|in)\/[^/?#]+/i], ["YouTube", /(^|\.)youtube\.com\/(@|c\/|channel\/|user\/)[^/?#]+/i],
   ["TikTok", /(^|\.)tiktok\.com\/@[^/?#]+/i], ["X", /(^|\.)(twitter|x)\.com\/(?!intent|share|home)[^/?#]+/i],
 ];
+/* Website des Kunden lesen: Startseite + wichtigste Unterseiten (Leistungen, Preise, Über uns, FAQ …) als reiner Text */
+const htmlText = (h: string) => decode(h.replace(/&amp;/g, "&").replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ").replace(/<!--[\s\S]*?-->/g, " ").replace(/<br\s*\/?>|<\/(p|div|li|h[1-6]|section|tr)>/gi, "\n").replace(/<[^>]+>/g, " ")).replace(/[ \t\u00a0]+/g, " ").replace(/\n\s*\n+/g, "\n").trim();
+async function readSite(url: string): Promise<{ pages: { url: string; text: string }[] }> {
+  const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0 Safari/537.36" };
+  const get = async (u: string) => { try { const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(12_000), headers: UA }); if (!r.ok || !/html/i.test(r.headers.get("content-type") || "")) return null; return { url: r.url || u, html: (await r.text()).slice(0, 800_000) }; } catch { return null; } };
+  const home = await get(url);
+  if (!home) return { pages: [] };
+  const base = new URL(home.url);
+  const PRIO = /leistung|service|angebot|produkt|preis|kosten|paket|ueber|uber|about|team|unternehmen|faq|fragen|so-funktioniert|ablauf|warum|referenz|branchen|loesung|solution|pricing|how/i;
+  const SKIP = /impressum|datenschutz|privacy|agb|terms|cookie|login|warenkorb|cart|checkout|widerruf|\.(pdf|jpe?g|png|gif|webp|svg|ico|css|js|woff2?|xml|zip)(\?|$)|\/_next\/|\/assets?\/|\/wp-(content|includes|json)\/|\?|#|mailto:|tel:|\/tag\/|\/category\//i;
+  const links = [...new Set([...home.html.matchAll(/href=["']([^"'#\s]+)/gi)].map((m) => { try { return new URL(m[1], base).toString().replace(/\/$/, ""); } catch { return ""; } })
+    .filter((u) => u && host(u) === host(base.toString()) && u !== base.toString().replace(/\/$/, "") && !SKIP.test(u) && !/^\/[a-z]{2}(-[a-z]{2})?$/i.test(new URL(u).pathname)))];
+  const pick = [...links.filter((u) => PRIO.test(new URL(u).pathname)), ...links.filter((u) => !PRIO.test(new URL(u).pathname))].slice(0, 7);
+  const sub = (await Promise.all(pick.map(get))).filter(Boolean) as { url: string; html: string }[];
+  // Menü/Fußzeile, die auf jeder Seite steht, nur einmal (auf der Startseite) behalten
+  const homeLines = new Set(htmlText(home.html).split("\n").map((l) => l.trim()).filter(Boolean));
+  const clean = (p: { url: string; html: string }, i: number) => { const t = htmlText(p.html); return i === 0 ? t : t.split("\n").filter((l) => !homeLines.has(l.trim())).join("\n"); };
+  return { pages: [home, ...sub].map((p, i) => ({ url: p.url, text: clean(p, i).slice(0, 6000) })).filter((p) => p.text.length > 80) };
+}
+type Profile = { summary: string; services: string[]; notOffered: string[]; customers: string; reach: string; countries: string[]; usp: string[]; recQuestions: string[]; pages: number };
+async function buildProfile(fullName: string, loc: J, city: string, site: string): Promise<Profile | null> {
+  const rs = site ? await readSite(site) : { pages: [] };
+  const web = rs.pages.map((p) => `### ${p.url}\n${p.text}`).join("\n\n").slice(0, 32_000);
+  const t = await askClaude("Du analysierst Unternehmen für einen Reputations-Check. Antworte NUR mit JSON. Erfinde nichts – nur was auf der Website steht bzw. aus Kategorie und Ort klar ist.",
+    `Unternehmen: ${fullName}\nGoogle-Kategorie: ${loc.type || "?"}\nStandort: ${[city, loc.address].filter(Boolean).join(", ") || "?"}\n\nWebsite-Inhalte:\n${web || "(keine Website lesbar)"}\n\n` +
+    `Erstelle einen Steckbrief:\n{"summary":"2 Sätze: was das Unternehmen konkret macht und für wen","services":["konkrete angebotene Leistungen, max 8, kurz"],"notOffered":["Leistungen, die die Website ausdrücklich NICHT oder nur eingeschränkt anbietet, inkl. Einschränkung (z. B. „Bewertungslöschung – nicht im DACH-Raum“); leer, wenn nichts erwähnt"],"customers":"Zielkunden, kurz","reach":"lokal|regional|ueberregional|international","countries":["ISO-Ländercodes, in denen aktiv angeboten wird, z. B. AT, DE, CH"],"usp":["max 4 Besonderheiten, z. B. Festpreis, Garantie"],"recQuestions":["3 Fragen, wie ein echter potenzieller Kunde eine KI (ChatGPT) nach genau dieser Leistung fragen würde – OHNE den Firmennamen, natürlich formuliert, z. B. „Welche Firma kann mein Google-Unternehmensprofil dauerhaft löschen?“; bei lokalen/regionalen Firmen mit Ort/Region, bei überregionalen ohne"]}\n` +
+    `reach: "lokal" = Kunden aus Ort und Umgebung (Restaurant, Friseur, Arzt), "regional" = Bundesland/Großraum (Bauträger, Makler, Kanzlei), "ueberregional" = ganzes Land/DACH oder online, "international" = mehrere Länder/weltweit.`, { maxTokens: 1500 }).catch(() => "");
+  const j = parseJson(t);
+  if (!j || !j.summary) return null;
+  const arr = (x: unknown, n: number) => (Array.isArray(x) ? x : []).map((v) => String(v).trim()).filter(Boolean).slice(0, n);
+  return { summary: String(j.summary).slice(0, 400), services: arr(j.services, 8), notOffered: arr(j.notOffered, 6), customers: String(j.customers || "").slice(0, 160), reach: /^(lokal|regional|ueberregional|international)$/.test(String(j.reach)) ? String(j.reach) : "lokal", countries: arr(j.countries, 12).map((c) => c.toUpperCase().slice(0, 2)), usp: arr(j.usp, 4), recQuestions: arr(j.recQuestions, 3), pages: rs.pages.length };
+}
 async function homepage(url: string): Promise<{ https: boolean; title: string; desc: string; social: { net: string; url: string }[]; ok: boolean }> {
   const out = { https: /^https:/i.test(url), title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
   try {
@@ -486,7 +522,7 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   }
   // KI
   const val = (known: boolean, sent: string) => (!known ? 4 : sent === "pos" ? 9 : sent === "neg" ? 3 : 6.5);
-  const one = (k: Ctx["ki"][number]) => { const a = (k.answers || []).filter((x) => x.sent !== "none"); return a.length ? a.reduce((s2, x) => s2 + val(x.known, x.sent), 0) / a.length : val(k.known, k.sent); };
+  const one = (k: Ctx["ki"][number]) => { const a = (k.answers || []).filter((x) => x.sent !== "none"); return a.length ? a.reduce((s2, x) => s2 + (x.key.startsWith("rec") ? kiAnsVal("rec", x as J) : val(x.known, x.sent)), 0) / a.length : val(k.known, k.sent); };
   let ki = fix.ki ? 9 : !c.ki.length ? 5 : c.ki.reduce((s, k) => s + one(k), 0) / c.ki.length;
   if (c.aiOverview) ki += c.aiOverviewSent === "neg" ? -3 : c.aiOverviewSent === "pos" ? 1 : 0;
   // Social
@@ -659,12 +695,17 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     }
     const site = String(loc.website || "");
     const hp0 = site ? await homepage(site) : { https: false, title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
-    const sj = parseJson(await askClaude("Antworte NUR mit JSON.", `Unternehmen: ${fullName}\nKategorie: ${loc.type || "?"}\nOrt: ${city || "?"}\nWebsite: ${hp0.title} – ${hp0.desc}\n\nWoher kommen die Kunden? "lokal" = aus dem Ort und der Umgebung (Restaurant, Friseur, Arzt, Handwerker), "regional" = Bundesland/Großraum (Bauträger, Makler, Kanzlei), "ueberregional" = ganzes Land, DACH oder online – der Standort ist egal (Online-Dienstleistung, Software, Versand, Agentur für ganz Österreich/Deutschland).\n{"scope":"lokal|regional|ueberregional"}`, { maxTokens: 300 }).catch(() => ""));
-    if (sj && /^(lokal|regional|ueberregional)$/.test(String(sj.scope))) scope = String(sj.scope);
+    let profile: Profile | null = loc.profile && loc.profile_at && Date.now() - new Date(loc.profile_at).getTime() < 7 * 86400_000 && Number(process.env.REP_CACHE_DAYS ?? 7) > 0 ? (loc.profile as Profile) : null;
+    if (!profile) {
+      await say(6, site ? `Lese die Website ${host(site)}: Leistungen, Preise, Über uns` : "Erstelle den Steckbrief aus dem Google-Profil");
+      profile = await buildProfile(fullName, loc, city, site).catch((e) => { console.warn("Rep-Scan Steckbrief", (e as Error).message); return null; });
+      if (profile) await pool!.query(`UPDATE rep_locations SET profile=$2, profile_at=now() WHERE id=$1`, [loc.id, JSON.stringify(profile)]).catch(() => {});
+    }
+    if (profile) { scope = profile.reach === "international" ? "ueberregional" : profile.reach; await say(7, `Steckbrief: ${short(profile.services.slice(0, 3).join(", ") || profile.summary)}`); }
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 5;
+    const CACHE_V = 6;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -754,16 +795,17 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
       // 1) Ausgangsbegriffe (Leistung, ggf. + Region) → 2) Google-Vorschläge = das, was Menschen wirklich tippen → 3) die passendsten 8 auswählen
       const regionRule = national ? "OHNE Ort oder Region – der Standort ist egal." : scope === "regional" ? "mit Bundesland, Landeshauptstadt/Großraum oder Bezirk (z. B. „Salzburg“, „Salzburg Umgebung“, „Flachgau“), den kleinen Ort höchstens 1×." : "mit dem Ort oder der nächsten Stadt.";
-      const t1 = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nNenne 5 kurze Ausgangsbegriffe (1–3 Wörter), mit denen jemand bei Google nach der DIENSTLEISTUNG dieses Unternehmens sucht – keine Firmennamen, keine Produkte/Objekte (nicht „Wohnung kaufen“). ${regionRule}\n{"seeds":["…"]}`, { maxTokens: 400 }).catch(() => "");
+      const prof = profile ? `\nSteckbrief: ${profile.summary}\nAngeboten: ${profile.services.join("; ")}${profile.notOffered.length ? "\nNICHT angeboten: " + profile.notOffered.join("; ") : ""}` : "";
+      const t1 = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}${prof}\n\nNenne 5 kurze Ausgangsbegriffe (1–3 Wörter), mit denen jemand bei Google nach der DIENSTLEISTUNG dieses Unternehmens sucht – keine Firmennamen, keine Produkte/Objekte (nicht „Wohnung kaufen“). ${regionRule}\nNur für angebotene Leistungen, nie für „NICHT angeboten“.\n{"seeds":["…"]}`, { maxTokens: 400 }).catch(() => "");
       const seeds: string[] = ((parseJson(t1) || {}).seeds || []).map((x: unknown) => String(x).trim()).filter(Boolean).slice(0, 5);
       const sugg: string[] = [];
       await Promise.all(seeds.map(async (sd) => {
         const a = await serp({ engine: "google_autocomplete", q: sd, gl, hl: "de" }).catch(() => ({} as J));
-        for (const x of (Array.isArray(a.suggestions) ? a.suggestions : []).slice(0, 8)) { const v = String(x.value || "").trim(); if (v && !sugg.includes(v)) sugg.push(v); }
+        for (const x of (Array.isArray(a.suggestions) ? a.suggestions : []).slice(0, 8)) { const v = String(x.value || "").trim(); if (v && !sugg.includes(v) && !RESEARCH_RE.test(v)) sugg.push(v); }
       }));
-      const t = sugg.length ? await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nDas sind echte Google-Vorschläge, also Begriffe, die Menschen tatsächlich suchen:\n${sugg.map((x) => "- " + x).join("\n")}\n\nWähle daraus bis zu 8 Begriffe, bei denen potenzielle KUNDEN genau diese Dienstleistung suchen und dieses Unternehmen gefunden werden sollte. Nicht: Firmennamen, Anleitungen zum Selbermachen, Jobs, irrelevante Themen. ${national ? "Begriffe mit Ortsnamen weglassen." : ""} Übernimm die Begriffe wörtlich.\n{"keywords":["…"]}`, { maxTokens: 500 }).catch(() => "") : "";
+      const t = sugg.length ? await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}${prof}\n\nDas sind echte Google-Vorschläge, also Begriffe, die Menschen tatsächlich suchen:\n${sugg.map((x) => "- " + x).join("\n")}\n\nWähle daraus bis zu 8 Begriffe, bei denen potenzielle KUNDEN genau diese Dienstleistung suchen und dieses Unternehmen gefunden werden sollte. Nicht: Leistungen aus „NICHT angeboten“, Firmennamen, Anleitungen zum Selbermachen, Jobs, Recherche-Zusätze wie „seriös“, „erfahrungen“, „kosten“, irrelevante Themen. ${national ? "Begriffe mit Ortsnamen weglassen." : ""} Übernimm die Begriffe wörtlich.\n{"keywords":["…"]}`, { maxTokens: 500 }).catch(() => "") : "";
       const kj = parseJson(t) || {};
-      let kws: string[] = ((kj.keywords || []) as unknown[]).map((x) => String(x).trim()).filter((x: string) => x && !norm(x).includes(norm(name).slice(0, 8)));
+      let kws: string[] = ((kj.keywords || []) as unknown[]).map((x) => String(x).trim()).filter((x: string) => x && !RESEARCH_RE.test(x) && !norm(x).includes(norm(name).slice(0, 8)));
       if (kws.length < 4) kws = [...kws, ...seeds.filter((x) => !kws.includes(x))];
       if (!kws.length) kws = [`${loc.type || "Anbieter"}${national ? "" : " " + city}`.trim()];
       kws = [...new Set(kws)].slice(0, 8);
@@ -822,15 +864,15 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     await say(78, social.length ? `Gefunden: ${[...new Set(social.map((x) => x.net))].join(", ")} · frage jetzt ChatGPT, Claude & Perplexity` : "Frage jetzt ChatGPT, Claude & Perplexity");
     // Fester Fragenkatalog – so wie echte Kunden fragen. Jede KI bekommt jede Frage einzeln.
     const inCity = city && !national ? ` in ${city}` : "";
-    const branche = String(loc.type || "").trim() || "Anbieter";
+    const branche = String(loc.type || "").trim() || (profile?.services[0] || "Anbieter");
     const QUESTIONS = [
       { key: "kennen", q: `Kennst du die Firma „${name}“${inCity}?` },
       { key: "angebot", q: `Was bietet „${name}“${inCity} genau an?` },
       { key: "serioes", q: `Ist „${name}“${inCity} seriös?` },
       { key: "erfahrungen", q: `Welche Erfahrungen haben Kunden mit „${name}“${inCity} gemacht?` },
       { key: "kritik", q: `Gibt es Kritik oder Beschwerden über „${name}“${inCity}?` },
-      { key: "beauftragen", q: `Soll ich „${name}“${inCity} beauftragen?` },
-      { key: "besser", q: national ? `Gibt es bessere Anbieter als „${name}“ (${branche})?` : `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
+      // so fragt ein echter Kunde, der die Firma noch nicht kennt → wird sie empfohlen?
+      ...((profile?.recQuestions.length ? profile.recQuestions : [national ? `Welcher Anbieter ist für ${branche} empfehlenswert?` : `Welche ${branche} in ${city || "der Region"} kannst du empfehlen?`]).slice(0, 3).map((x, i) => ({ key: "rec" + (i + 1), q: x }))),
     ];
     const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
     // Grundlage, falls Claudes eigene Websuche nicht liefert: echte Such-Treffer (Google, News, Erwähnungen) – keine eigene Website
@@ -865,9 +907,11 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = fromCache && cache!.cls ? (cache!.cls as J) : parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
-      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F7):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau 7, in Reihenfolge F1–F7]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","dims":[{"key":"kennen|angebot|serioes|erfahrungen|kritik|beauftragen|besser","sum":"1–2 Sätze: was ALLE KIs zusammen zu diesem Punkt sagen, eigene Worte, max 30 Wörter, kein Zitat","refs":[{"url":"exakt eine der bei dieser Frage angegebenen Quellen-URLs","about":"worum es in dieser Quelle geht bzw. was dort kritisiert/gelobt wird, max 14 Wörter, konkret","sent":"pos|neu|neg"}]} – genau 7, je Frage F1–F7 einer],"kiSummary":"2–3 Sätze Gesamtfazit, was KI-Systeme insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
-      `Regeln zu den KI-Antworten: Bei "kiSummary" und "dims": Sprich allgemein von „KI-Systemen“ (z. B. „KI-Systeme raten zu …“, „KI-Systeme kennen …“) – nie „beide KIs“, „zwei KIs“, „alle drei“ oder andere Anzahlen, und nenne keine einzelnen KI-Namen. "sent" bewertet immer, ob die Antwort für das Unternehmen gut (pos) oder schlecht (neg) ist – bei F5 (Kritik) also pos, wenn keine Kritik bekannt ist, und neg, wenn Kritik genannt wird; bei F7 (bessere Anbieter) neg, wenn klar Konkurrenten empfohlen werden. ` +
+      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F${QUESTIONS.length}):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"mentioned":true|false,"rank":Zahl|null,"others":["nur bei Empfehlungsfragen: andere genannte Anbieter, max 5"],"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau ${QUESTIONS.length}, in Reihenfolge F1–F${QUESTIONS.length}]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","dims":[{"key":"kennen|angebot|serioes|erfahrungen|kritik|rec","sum":"1–2 Sätze: was ALLE KIs zusammen zu diesem Punkt sagen, eigene Worte, max 30 Wörter, kein Zitat","refs":[{"url":"exakt eine der bei dieser Frage angegebenen Quellen-URLs","about":"worum es in dieser Quelle geht bzw. was dort kritisiert/gelobt wird, max 14 Wörter, konkret","sent":"pos|neu|neg"}]} – je Frage einer; die Empfehlungsfragen (rec1, rec2 …) gemeinsam unter "key":"rec"],"kiSummary":"2–3 Sätze Gesamtfazit, was KI-Systeme insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Fragen: ${QUESTIONS.map((x, i) => `F${i + 1} [${x.key}] ${x.q}`).join(" | ")}. Die Fragen mit [rec…] sind Empfehlungsfragen OHNE Firmennamen: "mentioned" = nennt die Antwort dieses Unternehmen (${name}${own0 ? " / " + own0 : ""})? "rank" = an welcher Stelle unter den genannten Anbietern (1 = zuerst), sonst null; "others" = die anderen genannten Anbieter; "sent" = pos wenn empfohlen, neg wenn nicht genannt. ` +
+      (profile ? `Steckbrief des Unternehmens: ${profile.summary} Angeboten: ${profile.services.join("; ")}.${profile.notOffered.length ? " NICHT angeboten: " + profile.notOffered.join("; ") + " – fehlende Treffer dazu sind keine Schwäche." : ""} ` : "") +
+      `Regeln zu den KI-Antworten: Bei "kiSummary" und "dims": Sprich allgemein von „KI-Systemen“ (z. B. „KI-Systeme raten zu …“, „KI-Systeme kennen …“) – nie „beide KIs“, „zwei KIs“, „alle drei“ oder andere Anzahlen, und nenne keine einzelnen KI-Namen. "sent" bewertet immer, ob die Antwort für das Unternehmen gut (pos) oder schlecht (neg) ist – bei der Kritik-Frage [kritik] also pos, wenn keine Kritik bekannt ist, und neg, wenn Kritik genannt wird. ` +
       `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
       { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
@@ -898,6 +942,12 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const ans = QUESTIONS.map((x, i) => {
         const a = Array.isArray(c?.answers) ? c!.answers[i] || {} : {};
         const src = raw[i] ? srcs[i] || [] : [];
+        if (x.key.startsWith("rec")) {
+          const txt = String(raw[i] || "").toLowerCase();
+          const hit = typeof a.mentioned === "boolean" ? a.mentioned : [name, name.replace(/\s+/g, ""), own0].filter(Boolean).some((v) => txt.includes(String(v).toLowerCase()));
+          const rank = hit ? Number(a.rank) || null : null;
+          return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? (hit ? "pos" : "neg") : "none", known: true, mentioned: hit, rank, others: (Array.isArray(a.others) ? a.others : []).map((v: unknown) => String(v).slice(0, 60)).slice(0, 5), quote: "", sum: String(a.sum || "").slice(0, 220), src };
+        }
         return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300), sum: String(a.sum || "").slice(0, 220), src };
       });
       const kn = ans.filter((a) => a.sent !== "none");
@@ -913,7 +963,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
-    const result: J = { ...evaluate(ctx), kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
+    const result: J = { ...evaluate(ctx), profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
     await say(97, "Schreibe die Zusammenfassungen für jeden Bereich");
     result.sumV = SUM_V;
     result.areaSums = await summarizeAreas(result).catch((e) => { console.warn("Rep-Scan Bereichs-Zusammenfassung", (e as Error).message); return {}; });
