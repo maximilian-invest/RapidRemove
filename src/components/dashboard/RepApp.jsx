@@ -415,6 +415,31 @@ function KiTable({ r }) {
   );
 }
 /* KI-Antworten, einfach: 1) EIN Satz + Score + das Wichtigste, 2) je KI eine Zeile, 3) Details erst auf Tippen */
+function KiDim({ d }) {
+  const [on, setOn] = React.useState(false);
+  const refs = d.refs || [];
+  return (
+    <div className={"rp-dim" + (refs.length ? " has" : "") + (on ? " on" : "")}>
+      <button type="button" className="rp-dim-btn" onClick={() => refs.length && setOn(!on)} disabled={!refs.length}>
+        <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
+        <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
+        {d.sum ? <p>{d.sum}</p> : null}
+        {refs.length ? <span className="rp-dim-more">{refs.length} {refs.length === 1 ? "Quelle" : "Quellen"}<ChevronDown /></span> : null}
+      </button>
+      {on ? (
+        <div className="rp-dim-refs">
+          {refs.map((x) => (
+            <a key={x.url} className="rp-li" href={x.url} target="_blank" rel="noopener noreferrer">
+              <i style={{ background: x.sent === "neg" ? "#e23b3b" : x.sent === "pos" ? "#16a34a" : "#bdbdbd" }} />
+              <span className="rp-t"><b>{x.about || x.title}</b><span>{x.about ? x.title + " · " : ""}{x.host}</span></span>
+              <ExternalLink />
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 function KiSimple({ r, a, pending }) {
   const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
   if (!ais.length) return <div className="rp-empty"><Sparkles />Keine KI-Antworten in diesem Scan.</div>;
@@ -422,13 +447,7 @@ function KiSimple({ r, a, pending }) {
   return (
     <>
       <section className="rp-dims">
-        {dims.map((d) => (
-          <div key={d.key} className="rp-dim">
-            <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
-            <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
-            {d.sum ? <p>{d.sum}</p> : null}
-          </div>
-        ))}
+        {dims.map((d) => <KiDim key={d.key} d={d} />)}
       </section>
     </>
   );
