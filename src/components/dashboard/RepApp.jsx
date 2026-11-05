@@ -115,7 +115,7 @@ export function RepFailed({ loc, rep, showToast }) {
       <div className="rp-ms-t">
         <span className="rp-ms-k">{loc.name}</span>
         <b className="rp-fail-t">Scan wurde unterbrochen</b>
-        <span className="rp-fail-s">Bitte einfach neu starten – dauert 3–5 Minuten.</span>
+        <span className="rp-fail-s">{/Suchdienst/.test(String(loc.scan && loc.scan.error || "")) ? "Gerade nicht möglich – bitte später noch einmal." : "Bitte einfach neu starten – dauert 3–5 Minuten."}</span>
       </div>
       <button type="button" className="rp-mini" disabled={busy} onClick={async () => { setBusy(true); try { await rep.scan({ locationId: loc.id }); } catch (e) { showToast("Scan konnte nicht gestartet werden", true); } setBusy(false); }}>{busy ? <Loader className="spin" /> : "Neu starten"}</button>
     </div>
