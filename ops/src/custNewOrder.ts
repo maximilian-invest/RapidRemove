@@ -24,6 +24,7 @@ import { resolveReviewLink } from "./monitor";
 import { findPlaceReview } from "./reviewsFetch";
 import { cleanUrl, classifyLink } from "./bulkParse";
 import { addrCountry } from "./addrCountry";
+import { isPausedReview, REVIEWS_OTHER_PAUSED } from "./reviewsPricing";
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
@@ -137,6 +138,8 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     // Eigene Staffel des Kunden (Admin → Kunden & Preise) gilt auch für Bestellungen von Hand (Standard-Staffel nur für Bulk);
     // Partner-Konditionen des Kunden gelten immer.
     const pr = await pricingFor(email).catch(() => null);
+    // Pause (05.11.2026): keine Bewertungen älter als 4 Wochen / ohne Text („Wieder verfügbar ab Januar 2027") – Admin kann weiterhin anlegen.
+    if (REVIEWS_OTHER_PAUSED && items.some((x) => isPausedReview(x as { old?: boolean; nt?: boolean; days?: number }))) return reply.code(400).send({ ok: false, error: "reviews_paused" });
     const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;
     if (op) payload.pricing = op;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
@@ -183,7 +186,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
   const flagsOf = (s: Scan) => {
     const nt = s.found && !String(s.text || "").trim();
     const old = s.found && Number(s.days) > 28;
-    return { nt, old, sw: nt || (old && s.place?.cc === "US") };
+    return { nt, old, sw: nt || (old && s.place?.cc === "US"), paused: REVIEWS_OTHER_PAUSED && (nt || old) };
   };
 
   app.post("/cust/new-order/scan", async (req, reply) => {
@@ -255,6 +258,8 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       ...(b.express === true ? { reviewExpress: true } : {}), // Express-Zwischenschritt im Dashboard
     };
     const pr = await pricingFor(email).catch(() => null);
+    // Pause (05.11.2026): keine Bewertungen älter als 4 Wochen / ohne Text („Wieder verfügbar ab Januar 2027") – Admin kann weiterhin anlegen.
+    if (REVIEWS_OTHER_PAUSED && items.some((x) => isPausedReview(x as { old?: boolean; nt?: boolean; days?: number }))) return reply.code(400).send({ ok: false, error: "reviews_paused" });
     const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;
     if (op) payload.pricing = op;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();

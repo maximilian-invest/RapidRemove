@@ -1649,3 +1649,12 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpx-na .rd{opacity:.35}
 .bpx-na .pr strong{font-size:14px;color:var(--muted,#777)}
 .bpr-cos .ln.xo.na b.na{font-size:13px;opacity:.7;font-weight:600}
+/* Pause 05.11.2026: ältere/textlose Bewertungen nicht wählbar („Wieder verfügbar ab Januar 2027") */
+.bpr-rv.paused{cursor:default;background:#fafafa;box-shadow:0 0 0 1px #ececec}
+.bpr-rv.paused:hover{box-shadow:0 0 0 1px #ececec}
+.bpr-rv.paused .bpr-cb{opacity:.35}
+.bpr-rv.paused .bpr-rh,.bpr-rv.paused .bpr-rt{opacity:.55}
+.bpr-tag.pause{background:#fff4e5;color:#9a5b00}
+.bpr-tier.paused .p.pz{font-size:13px;font-weight:600;letter-spacing:0;color:#9a5b00;white-space:normal;max-width:170px;line-height:1.3}
+.rv-pick-item.paused{opacity:.6;cursor:default;background:#fafafa}
+.rv-chance.paused{color:#9a5b00}

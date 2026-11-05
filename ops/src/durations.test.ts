@@ -72,7 +72,7 @@ await ok("Mails rendern mit eingestellter Dauer (de + en), keine Platzhalter üb
   } finally { Object.assign(prev.fresh, B.DUR_DEFAULT.fresh); Object.assign(prev.other, B.DUR_DEFAULT.other); }
 });
 await ok("Chat-Wissensbasis: deutsche Platzhalter", () => {
-  assert.equal((KNOWLEDGE.match(/\{D[FO]:de\}/g) || []).length, 6);
+  assert.equal((KNOWLEDGE.match(/\{D[FO]:de\}/g) || []).length, 4); // 05.11.2026: ältere/textlose pausiert → weniger {DO}
   assert.ok(!/\{D[FOA]:de\}/.test(B.fillDur(KNOWLEDGE, "en", D721)));
   assert.ok(B.fillDur(KNOWLEDGE, "en", D721).includes("meist 7–21 Tage"));
 });

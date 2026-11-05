@@ -4,7 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
 import { useExpressOn, useDurations } from "@/lib/express-status";
 import { maxDays } from "@/lib/durations";
@@ -1778,6 +1778,8 @@ const LKR_COPY = {
 const LKR = (code) => LKR_COPY[code] || LKR_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
 const reviewIsOld = (r) => !!r && r.days > REVIEW_OLD_DAYS;
+/** Pause 05.11.2026: ältere (> 4 Wochen) oder textlose Bewertung → nicht wählbar („Wieder verfügbar ab Januar 2027"). */
+const reviewPaused = (r) => !!r && isPausedReview({ nt: !reviewHasText(r), days: r.days });
 /** „vor 14 Tagen" / „2 weeks ago" — eindeutiger als ein Datum im US-Format. */
 function relAge(days, lang) {
   if (!(days >= 0)) return "";
@@ -1929,7 +1931,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     try {
       const rs = await fetchProfileReviews(c.placeId, lang);
       // in Frage kommende zuerst, darin die schlechtesten zuerst
-      rs.sort((a, b) => (a.rating - b.rating) || (a.days - b.days)); // schlechteste zuerst, darin neueste zuerst
+      rs.sort((a, b) => (reviewPaused(a) - reviewPaused(b)) || (a.rating - b.rating) || (a.days - b.days)); // wählbare zuerst (Pause), dann schlechteste, darin neueste
       setPickReviews(rs); setPickPhase("list");
     } catch (e) { setPickPhase("error"); }
   };
@@ -1955,6 +1957,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }, [resKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const pickToggle = (r) => {
     setReviewErr("");
+    if (reviewPaused(r) && !pickSel.some((x) => x.id === r.id)) return; // pausiert – nicht wählbar
     setPickSel((sel) => sel.some((x) => x.id === r.id) ? sel.filter((x) => x.id !== r.id) : [...sel, r]);
   };
   // Profil-Fluss: in Schritt 5 die Bewertungen des gewählten Profils laden (einmal je Profil).
@@ -2185,6 +2188,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     }),
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;
+  const pausedN = reviewList.filter((it) => isPausedReview(it)).length; // Pause 05.11.2026 (z. B. per Link eingefügte ältere Bewertung)
   const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail });
   const hasX = rq.n250 > 0; // Express nur, wenn mindestens eine 250er-Bewertung im Warenkorb ist
   const servicePriceNum = revFlow
@@ -2432,6 +2436,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       const r = await Promise.race([sent, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
       setProcessing(false);
       if (r && r.error === "already_ordered") { setDupOrder(r); return; }
+      if (r && r.error === "reviews_paused") { setReviewErr(reviewPauseErr(lang)); go(4); return; } // Pause 05.11.2026
       // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
       if (r && r.autologin) { try { window.location.href = dashHref("/my-reviews") + "#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       // Bestehendes Konto (Einzelbewertungen): auch ins Dashboard – eingeloggt sofort, sonst Login mit Hinweis auf den Mail-Link.
@@ -2650,11 +2655,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const m = revMethod(r);
     const info = <button type="button" className="rv-sw-i" aria-label={pk.swInfo} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSwInfo(true); }}><Icon.info size={14} /></button>;
     return (
-      <label key={r.id} className={"rv-pick-item" + (on ? " on" : "")}>
-        <input type="checkbox" checked={on} onChange={() => pickToggle(r)} />
+      <label key={r.id} className={"rv-pick-item" + (on ? " on" : "") + (reviewPaused(r) && !on ? " paused" : "")}>
+        <input type="checkbox" checked={on} disabled={reviewPaused(r) && !on} onChange={() => pickToggle(r)} />
         <span className="rv-pick-body">
           <span className="rv-pick-top"><b>{r.name}</b> <span className="rv-pick-stars">{"★".repeat(Math.max(0, Math.min(5, r.rating)))}{"☆".repeat(Math.max(0, 5 - Math.min(5, r.rating)))}</span>{r.date ? <span className="rv-pick-date" title={new Date(r.date).toLocaleDateString(lang)}>{relAge(r.days, lang)}</span> : null}</span>
-          {m === "sw"
+          {reviewPaused(r) ? <span className="rv-chance paused">{(m === "sw" && !reviewHasText(r) ? pk.noText : pk.old) + " · " + reviewPauseText(lang)}</span>
+            : m === "sw"
             ? <span className="rv-chance sw">{pk.swChip.replace("{price}", money(rl, REVIEW_NOTEXT_PRICE))}{info}</span>
             : <span className={"rv-chance" + (old ? " legal" : "")}>{old ? pk.ch50 : pk.ch90}{old ? " · " + pk.old + " · +" + money(rl, REVIEW_OLD_SURCHARGE) : ""}</span>}
           {r.text ? <span className="rv-pick-text">{r.text.length > 240 ? r.text.slice(0, 240) + " …" : r.text}</span> : null}
@@ -2692,7 +2698,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
       : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
     const manualOnly = pickPhase === "manual";
-    const cont = () => { if (!reviewCount) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
+    const cont = () => { if (!reviewCount) { setReviewErr(rv.need); return; } if (pausedN) { setReviewErr(reviewPauseErr(lang)); return; } setReviewErr(""); go(5); };
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.starOff size={14} /> {pk.stepLbl}</div>
@@ -3191,6 +3197,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   function ReviewIntake() {
     const cont = () => {
       if (!reviewCount) { setReviewErr(rv.need); return; }
+      if (pausedN) { setReviewErr(reviewPauseErr(lang)); return; }
       setContact((c) => ({ ...c, company: c.company || "" }));
       go(5); // direkt in den Checkout — keine Profilsuche, kein Schutzschritt
     };
@@ -3823,6 +3830,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               </label>
             )}
             {!it.alt && it.res ? (it.res.busy ? <div className="bpr-mres">{LKR(t.code).busy}</div>
+              : it.res.ok && reviewPaused(it.res) ? <div className="bpr-mres bad"><b>{it.res.name || "Google"}</b><BprStars n={it.res.rating} /><span>{(reviewHasText(it.res) ? LKR(t.code).old : LKR(t.code).nt.split(" · ")[0]) + " · " + reviewPauseText(lang)}</span></div>
               : it.res.ok ? <div className="bpr-mres ok"><b>{it.res.name || "Google"}</b><BprStars n={it.res.rating} /><span>{reviewHasText(it.res) ? (reviewIsOld(it.res) ? LKR(t.code).old : LKR(t.code).recent) : LKR(t.code).nt}</span></div>
               : <div className={"bpr-mres" + (it.res.fail === "other_profile" ? " bad" : "")}>{it.res.fail === "other_profile" ? LKR(t.code).other : LKR(t.code).later}</div>) : null}
             <button type="button" className="alt" onClick={toggleAlt(i)}>{it.alt ? "↩ " + rv.urlLabel : rv.altBtn}</button>
@@ -3931,28 +3939,32 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const shown = all.filter((r) => q
       ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
       : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
-    const allSel = shown.length > 0 && shown.every((r) => pickSel.some((x) => x.id === r.id));
-    const toggleAll = () => setPickSel((sel) => allSel ? sel.filter((x) => !shown.some((r) => r.id === x.id)) : [...sel, ...shown.filter((r) => !sel.some((x) => x.id === r.id))]);
+    const allSel = shown.some((r) => !reviewPaused(r)) && shown.filter((r) => !reviewPaused(r)).every((r) => pickSel.some((x) => x.id === r.id));
+    const shownOk = shown.filter((r) => !reviewPaused(r)); // Pause: nur wählbare
+    const toggleAll = () => setPickSel((sel) => allSel ? sel.filter((x) => !shown.some((r) => r.id === x.id)) : [...sel, ...shownOk.filter((r) => !sel.some((x) => x.id === r.id))]);
     const n = reviewCount;
     const hint = discountNudge(n, pk);
-    const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); setTempoOn(hasX); go(5); };
+    const cont = () => { if (!n) { setReviewErr(rv.need); return; } if (pausedN) { setReviewErr(reviewPauseErr(lang)); return; } setReviewErr(""); setTempoOn(hasX); go(5); };
     const back = () => go(manualOnly ? 1 : 3);
-    const priceOf = (r) => listPriceV2({ nt: !reviewHasText(r), days: r.days }); // Preismodell 2: 179 / 250
+    const priceOf = (r) => listPriceV2({ nt: !reviewHasText(r), days: r.days }); // Preismodell 2: 199 (250er pausiert)
     const row = (r, k) => {
       const on = pickSel.some((x) => x.id === r.id);
       const m = revMethod(r);
       const hasT = reviewHasText(r);
+      const off = reviewPaused(r) && !on; // Pause 05.11.2026
       return (
-        <button type="button" key={r.id} className={"bpr-rv" + (on ? " sel" : "")} style={{ "--i": Math.min(k, 12) }} onClick={() => pickToggle(r)} aria-pressed={on}>
+        <button type="button" key={r.id} className={"bpr-rv" + (on ? " sel" : "") + (off ? " paused" : "")} style={{ "--i": Math.min(k, 12) }} onClick={() => pickToggle(r)} aria-pressed={on} aria-disabled={off || undefined}>
           <span className="bpr-cb"><LCheck /></span>
           <span className="bd">
             <span className="bpr-rh"><b>{r.name}</b><BprStars n={r.rating} />{r.date ? <span className="ago">{relAge(r.days, lang)}</span> : null}</span>
             <span className={"bpr-rt" + (hasT ? "" : " none")}>{hasT ? r.text : bp.noText}</span>
             <span className="bpr-tags">
               {/* Preismodell 2: kein Software-Hinweis mehr für den Kunden – nur Kategorie + Preis. */}
-              {m !== "sw" ? <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span> : null}
-              <span className="bpr-tag">{!hasT ? bp.cat.nt : reviewIsOld(r) ? bp.cat.legal : bp.cat.std}</span>
-              <span className="bpr-tag pr">{money(rl, priceOf(r))} {vatNote(lang)}</span>
+              {off ? <span className="bpr-tag">{!hasT ? bp.cat.nt : bp.cat.legal}</span> : null}
+              {off ? <span className="bpr-tag pause"><LClock />{reviewPauseText(lang)}</span> : null}
+              {!off && m !== "sw" ? <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span> : null}
+              {!off ? <span className="bpr-tag">{!hasT ? bp.cat.nt : reviewIsOld(r) ? bp.cat.legal : bp.cat.std}</span> : null}
+              {!off ? <span className="bpr-tag pr">{money(rl, priceOf(r))} {vatNote(lang)}</span> : null}
             </span>
           </span>
         </button>
@@ -4335,8 +4347,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="bpr-tiers">
               {(() => { const xp = xpCopy(t.code); return (<React.Fragment>
                 <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{money(rl, PRICE_V2_FRESH)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span><span className="q"><LClock />{xp.tf99}</span></div>
-                <div className="bpr-tier"><b>{xp.t2[0]}</b><div className="p">{money(rl, PRICE_V2_OTHER)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t2[1]}</span><span className="q"><LClock />{xp.stdD}</span></div>
-                <div className="bpr-tier"><b><LZap className="bpx-z" />{xp.t3[0]}</b><div className="p">+{money(rl, EXPRESS_FEE)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t3[1](EXPRESS_HOURS, money(rl, PRICE_V2_OTHER))}</span></div>
+                {/* Pause 05.11.2026: ältere/textlose (250er) und Express nicht bestellbar → nur Hinweis. */}
+                <div className="bpr-tier paused"><b>{xp.other}</b><div className="p pz">{reviewPauseText(lang)}</div><span>{xp.otherSub}</span></div>
               </React.Fragment>); })()}
             </div>
             <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>

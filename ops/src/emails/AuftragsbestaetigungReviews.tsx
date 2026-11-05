@@ -9,7 +9,7 @@ import * as React from "react";
 import { DashBox, type DashInfo } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
-import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, quoteReviews, isSwItem, lpOf, cpOf, PRICE_V2_FRESH, PRICE_V2_FRESH_LEGACY, PRICE_V2_OTHER, EXPRESS_CUSTOMER_H } from "../reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, quoteReviews, isSwItem, lpOf, cpOf, PRICE_V2_FRESH, PRICE_V2_FRESH_LEGACIES, PRICE_V2_OTHER, EXPRESS_CUSTOMER_H } from "../reviewsPricing";
 
 /** Eine eingereichte Bewertung: Teilen-Link ODER Name + Bewertungstext
    (Wizard-Alternative, wenn der Kunde den Link nicht findet). */
@@ -476,7 +476,8 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
   const v2 = list.some((it) => lpOf(it) > 0) && list.every((it) => lpOf(it) > 0 || cpOf(it) > 0);
   const nX = list.filter((it) => lpOf(it) === PRICE_V2_OTHER && it.x).length;
   // Frisch-Preis in den Bedingungen = der in diesem Auftrag festgeschriebene (Bestand 99 bleibt 99, neu 179).
-  const freshShown = list.some((it) => lpOf(it) === PRICE_V2_FRESH_LEGACY) && !list.some((it) => lpOf(it) === PRICE_V2_FRESH) ? PRICE_V2_FRESH_LEGACY : PRICE_V2_FRESH;
+  // Bestand: 179 (23.10.–05.11.2026) bzw. 99 (16.–22.10.2026) bleiben; neu 199.
+  const freshShown = list.some((it) => lpOf(it) === PRICE_V2_FRESH) ? PRICE_V2_FRESH : (PRICE_V2_FRESH_LEGACIES.find((v) => list.some((it) => lpOf(it) === v)) ?? PRICE_V2_FRESH);
   const all = quoteReviews(list, cur, undefined, "full", chatPct);
   const perRest = rest.length ? quoteReviews(rest, cur, list.length, "full", chatPct).per : per;
   const swUnit = fmtReviewMoney(Math.round((REVIEW_NOTEXT_PRICE * (100 - all.pct)) / 100), cur);

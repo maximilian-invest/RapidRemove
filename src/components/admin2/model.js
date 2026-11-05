@@ -48,9 +48,9 @@ export const inTile = (k, b) => (Array.isArray(b) ? b.some((x) => inTile(k, x)) 
  * Kacheln aus den Partner-Aufgaben + raw-Feldern ab – dieselbe Logik wie das Kunden-Dashboard
  * (ops/src/customers.ts › orderView), damit Admin und Kunde dieselben Zahlen sehen. */
 const REVIEW_BASE = 179, REVIEW_OLD_SURCHARGE = 50, REVIEW_NOTEXT_PRICE = 300; // Preismodell 1 (Bestandsaufträge ohne lp)
-// Preismodell 2 (16.10.2026): Listenpreis je Bewertung (lp 179/250; bis 23.10.2026 bestellt: 99) + Express (+100, nur wenn in 30 Std. gelöscht) – wie ops/src/reviewsPricing.ts.
+// Preismodell 2 (16.10.2026): Listenpreis je Bewertung (lp 199/250 seit 05.11.2026; davor 179, 16.–22.10.: 99) + Express (+100, nur wenn in 30 Std. gelöscht) – wie ops/src/reviewsPricing.ts.
 const PRICE_V2_OTHER = 250, EXPRESS_FEE = 100;
-const lpOf = (it) => { const v = Number(it && it.lp); return v === 179 || v === 99 || v === 250 ? v : 0; /* 179 neu, 99 Bestand (bis 23.10.2026), 250 */ };
+const lpOf = (it) => { const v = Number(it && it.lp); return v === 199 || v === 179 || v === 99 || v === 250 ? v : 0; /* 199 neu (ab 05.11.2026), 179 + 99 Bestand, 250 */ };
 // Express eingehalten? Gelöscht bis zur Kunden-Zusage (30 Std.; Start Fr 12:00–So → Di 24:00 Wien) – wie ops/src/reviewsPricing.ts.
 export const expressOk = (t) => !!(t && t.express && t.express.at && t.removed) && new Date(t.removed).getTime() <= (t.express.custDue ? new Date(t.express.custDue).getTime() : expressDueMs(new Date(t.express.at).getTime()));
 const reviewDiscountPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);

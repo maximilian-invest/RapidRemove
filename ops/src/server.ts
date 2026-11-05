@@ -22,7 +22,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
 import { registerExpressSwitch, expressOn } from "./expressSwitch";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -542,6 +542,15 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     if (!it.nt && !it.text && it.rating && it.rating >= 1 && it.rating <= 5) { it.nt = true; delete it.old; }
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
+  // Pause (05.11.2026): Bewertungen älter als 4 Wochen / ohne Text werden 2026 nicht mehr angenommen („Wieder verfügbar ab Januar 2027").
+  // Gilt für Website, Chat-Kasse & Co.; interne Aufrufe (Admin-Kundenaufträge, Bulk, Kunden-Konditionen) bleiben unberührt.
+  if (isReviews && !internal && REVIEWS_OTHER_PAUSED) {
+    const paused = reviewItems.filter((it) => isPausedReview(it));
+    if (paused.length) {
+      app.log.info({ orderId, n: paused.length }, "Order: pausierte Bewertungen (älter 4 Wochen / ohne Text) abgelehnt");
+      return { ok: false, error: "reviews_paused", n: paused.length }; // wie already_ordered: 200 + ok:false (Website zeigt den Hinweis)
+    }
+  }
   // Kunden-Konditionen (Admin → Kunden & Preise), je Bewertung festgeschrieben:
   //   cp  = Preis je gelöschter Bewertung (Staffel)        swp = Kundenpreis, falls sie (jetzt oder später) Software braucht
   //   pUsd = Partnerpreis (Partner-Staffel, USD)           pSw = Partnerpreis für Software-Fälle (USD)
@@ -565,7 +574,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
     }
   }
-  // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (179 frisch / 250 alles andere; bis 23.10.2026: 99). Nicht bei Bulk und
+  // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (199 frisch seit 05.11.2026 – davor 179, 16.–22.10.: 99 / 250 alles andere). Nicht bei Bulk und
   // nicht bei Kunden-Konditionen (cp). Express (+100, Ziel 30 Std.) nur für 250er und nur, wenn im Bestellprozess gewählt.
   if (isReviews && !bulk) {
     const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren

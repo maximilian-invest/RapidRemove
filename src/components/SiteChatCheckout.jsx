@@ -5,30 +5,29 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { vatNote, PRICE_V2_FRESH, PRICE_V2_OTHER } from "@/lib/pricing";
+import { vatNote, PRICE_V2_FRESH, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
 import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.isInteger(n) ? String(n) : n.toFixed(2); return usd ? "$" + s : s.replace(".", ",") + " €"; };
 
-/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – Preismodell 2: 179 bis 4 Wochen mit Text / 250 alle anderen (Werte aus pricing.js),
+/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – 199 bis 4 Wochen mit Text; ältere/ohne Text seit 05.11.2026 pausiert, zählen nicht),
  *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
 export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none" }) {
   const usd = country === "US";
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
-    const n = Math.max(1, reviews.length);
-    const n250 = reviews.filter((r) => r.sw || r.age === "old").length; // älter als 4 Wochen oder ohne Text (Software inklusive)
-    const nSw = 0; // kein eigener Software-Preis mehr
-    const nOld = n250;
-    const sub = (n - n250) * PRICE_V2_FRESH + n250 * PRICE_V2_OTHER;
+    const nPaused = reviews.filter((r) => r.sw || r.age === "old").length; // älter als 4 Wochen oder ohne Text → pausiert (Januar 2027)
+    const n250 = 0, nSw = 0;
+    const n = Math.max(1, reviews.length - nPaused);
+    const sub = n * PRICE_V2_FRESH;
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
     const payD = pp ? Math.round(total * 0.1) : 0;
     total -= payD;
-    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: PRICE_V2_FRESH, unitOld: PRICE_V2_OTHER, nSw, n250 };
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: PRICE_V2_FRESH, nSw, n250, nPaused };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -99,7 +98,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     if (f.name.trim().length < 2) b.name = 1;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) b.email = 1;
     if (!f.country) b.country = 1;
-    if (isRev) { if (!revs.some((r) => /^https?:\/\//i.test(r.url.trim()))) b.revs = 1; if (f.country === "DE" || f.country === "AT") { setErr(c.errDach); setBad({ ...b, country: 1 }); return; } }
+    if (isRev) { if (!revs.some((r) => /^https?:\/\//i.test(r.url.trim()))) b.revs = 1; if (f.country === "DE" || f.country === "AT") { setErr(c.errDach); setBad({ ...b, country: 1 }); return; } if (p.nPaused) { setErr(reviewPauseErr(lang)); setBad({ ...b, revs: 1 }); return; } }
     else if (!/^https?:\/\//i.test(f.profileLink.trim()) && f.company.trim().length < 2) b.profileLink = 1;
     if (!f.agb) b.agb = 1;
     setBad(b);
@@ -112,7 +111,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j.ok) { setErr(j.error === "already_ordered" ? c.errDup : j.error === "reviews_dach" ? c.errDach : c.errGen); setBusy(false); return; }
+      if (!res.ok || !j.ok) { setErr(j.error === "already_ordered" ? c.errDup : j.error === "reviews_dach" ? c.errDach : j.error === "reviews_paused" ? reviewPauseErr(lang) : c.errGen); setBusy(false); return; }
       setOk({ id: j.orderId, email: f.email.trim() });
       try { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "order", transaction_id: j.orderId, value: p.total, currency: p.usd ? "USD" : "EUR", source: "chat" }); } catch (e) { /* */ }
       setTimeout(() => onDone(j.orderId, f.email.trim()), 2600);
@@ -138,7 +137,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-body">
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
-          {isRev ? <div className="cs-r"><span>{[revs.length - p.n250 ? `${revs.length - p.n250} × ${fmt(PRICE_V2_FRESH, p.usd)}` : "", p.n250 ? `${p.n250} × ${fmt(PRICE_V2_OTHER, p.usd)}` : ""].filter(Boolean).join(" + ")}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {isRev ? <div className="cs-r"><span>{`${revs.length - p.nPaused} × ${fmt(PRICE_V2_FRESH, p.usd)}`}</span><span>{fmt(revs.length - p.nPaused ? p.sub : 0, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
@@ -150,7 +149,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
             <span className="co-l">{c.reviews}</span>
             {revs.map((r, i) => (
               <div key={i} className="co-rev">
-                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) || r.age === "old" ? <i className="co-swt">{fmt(250, p.usd)}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
+                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) || r.age === "old" ? <i className="co-swt pz">{reviewPauseText(lang)}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
                 {!r.fixed && r.busy ? <div className="co-busy"><Loader2 className="spin" />{lang === "de" ? "Bewertung wird geprüft …" : "Checking the review …"}</div> : null}
                 <div className="co-age">
                   {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}
@@ -206,6 +205,8 @@ const ago = (days, lang) => {
 };
 export const Stars = ({ n }) => (n ? <span className="pk-st">{"★".repeat(n)}<i>{"★".repeat(5 - n)}</i></span> : null);
 
+/** Pause 05.11.2026: älter als 4 Wochen oder ohne Text → nicht wählbar. */
+const pausedR = (r) => !String(r.text || "").trim() || Number(r.days) > 28;
 export function ReviewPicker({ pick, lang, P, onNext, done }) {
   const [q, setQ] = React.useState("");
   const [sel, setSel] = React.useState(() => new Set());
@@ -217,9 +218,9 @@ export function ReviewPicker({ pick, lang, P, onNext, done }) {
       <input className="pk-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder={P.search} disabled={done} />
       <div className="pk-l">
         {list.length ? list.map((r) => (
-          <button key={r.id} type="button" className={"pk-r" + (sel.has(r.id) ? " on" : "")} onClick={() => !done && tog(r.id)}>
+          <button key={r.id} type="button" className={"pk-r" + (sel.has(r.id) ? " on" : "") + (pausedR(r) ? " paused" : "")} onClick={() => !done && !pausedR(r) && tog(r.id)} aria-disabled={pausedR(r) || undefined}>
             <span className="pk-c">{sel.has(r.id) ? <Check /> : null}</span>
-            <span className="pk-t"><span className="l1"><b>{r.name}</b><Stars n={r.rating} /></span><span className="l2">{r.text || "—"}</span><span className="l3">{ago(r.days, lang)}</span></span>
+            <span className="pk-t"><span className="l1"><b>{r.name}</b><Stars n={r.rating} /></span><span className="l2">{r.text || "—"}</span><span className="l3">{ago(r.days, lang)}</span>{pausedR(r) ? <span className="pk-pz">{reviewPauseText(lang)}</span> : null}</span>
           </button>
         )) : <div className="pk-none">{P.none}</div>}
       </div>

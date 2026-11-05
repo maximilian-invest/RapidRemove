@@ -15,7 +15,7 @@ import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { expressOn } from "./expressSwitch";
-import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, PRICE_V2_OTHER } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -82,8 +82,11 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (x.old === true || (it.days !== undefined && it.days > 28)) it.old = true;
     if (x.nt === true) it.nt = true;
     if (opts.by === "admin" && cpOf(x as { cp?: unknown })) it.cp = cpOf(x as { cp?: unknown }); // individueller Preis nur vom Admin
+    if (!it.nt && !it.text && it.rating && !it.url) it.nt = true; // Sterne bekannt, kein Text → reine Sternebewertung
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
-    // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 179 (frisch, seit 23.10.2026; davor 99) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
+    // Pause (05.11.2026): Kunden können 2026 keine Bewertungen älter als 4 Wochen / ohne Text mehr nachbeauftragen (Admin weiterhin schon).
+    if (opts.by === "customer" && raw.bulk !== true && REVIEWS_OTHER_PAUSED && isPausedReview(it)) return { ok: false, error: "reviews_paused" };
+    // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 199 (frisch, seit 05.11.2026; davor 179 bzw. 99) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
     if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
     if (xAllowed && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
     clean.push(it);

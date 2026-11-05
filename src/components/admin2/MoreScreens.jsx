@@ -287,8 +287,8 @@ function ExpressDurRow({ ctx }) {
    Website (Startseite, Landingpage inkl. FAQ/JSON-LD, Ratgeber-Hinweis), Bestellprozess, Kunden-Dashboard, Mails, Chatbot.
    Express-Frist (30 Std. / Wochenend-Regel) bleibt fest – sie hängt an Abrechnung und Partner-Timer. */
 const DUR_TIERS = [
-  ["fresh", "179 · bis 4 Wochen, mit Text", "Meist in {DF} gelöscht"],
-  ["other", "250 · alle anderen Bewertungen", "Meist in {DO} gelöscht"],
+  ["fresh", "199 · bis 4 Wochen, mit Text", "Meist in {DF} gelöscht"],
+  ["other", "250 · alle anderen (für Kunden pausiert bis Jänner 2027)", "Meist in {DO} gelöscht"],
 ];
 const DUR_PRESETS = [{ min: 1, max: 2, unit: "w" }, { min: 7, max: 14, unit: "d" }, { min: 7, max: 21, unit: "d" }, { min: 2, max: 4, unit: "w" }];
 function ExpressDurScreen({ ctx }) {

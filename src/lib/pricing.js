@@ -7,16 +7,16 @@ export const PRICES = {
   de: {
     cur: "€", sym: "€", suffix: true, // "450 €"
     deletion: "450", reset: "850", express: "149",
-    // Einzelne Bewertungen löschen — Preis JE Bewertung (Preismodell 2: 179 frisch / 250 alle anderen).
+    // Einzelne Bewertungen löschen — Preis JE Bewertung (seit 05.11.2026: 199 frisch; ältere/ohne Text pausiert bis Januar 2027).
     // Produkt ist außerhalb DACH verfügbar (siehe REVIEW_COPY/Router-Kachel im Wizard).
-    review: "179",
+    review: "199",
     protMonthly: "24,90", protMonitor: "69,90", protLifetime: "990",
   },
   en: {
     cur: "$", sym: "$", suffix: false, // "$495"
     deletion: "495", reset: "950", express: "149",
     // Wie bei „express" bewusst derselbe Zahlenwert in beiden Währungen.
-    review: "179",
+    review: "199",
     protMonthly: "24.90", protMonitor: "69.90", protLifetime: "990",
   },
 };
@@ -86,10 +86,45 @@ export const cpOf = (it) => { const v = Number(it && it.cp); return Number.isFin
    179 = höchstens 28 Tage alt UND mit Text, 250 = alle anderen (älter, ohne Text, Software). Kein eigener Software-Preis.
    23.10.2026: frisch von 99 zurück auf 179. Bestandsaufträge behalten ihr gespeichertes lp = 99 (PRICE_V2_FRESH_LEGACY).
    Express (+100 je Bewertung, nur 250er, nur bei der Bestellung): Ziel gelöscht in 30 Std. ab Start, sonst entfällt er. */
-export const PRICE_V2_FRESH = 179;
+/* 05.11.2026: frisch 179 → 199. Bestellt bis 05.11.2026 behalten ihr lp = 179. */
+export const PRICE_V2_FRESH = 199;
 /** Alter Frisch-Preis (bestellt 16.–22.10.2026): nur für gespeicherte lp von Bestandsaufträgen, nie für neue Bestellungen. */
 export const PRICE_V2_FRESH_LEGACY = 99;
+/** Frisch-Preis 23.10.–05.11.2026 (Bestand). */
+export const PRICE_V2_FRESH_LEGACY2 = 179;
+export const PRICE_V2_FRESH_LEGACIES = [PRICE_V2_FRESH_LEGACY2, PRICE_V2_FRESH_LEGACY];
 export const PRICE_V2_OTHER = 250;
+/* Pause (05.11.2026, synchron mit ops/src/reviewsPricing.ts): Bewertungen älter als 4 Wochen und ohne Text (alle 250er, damit
+   auch Express) sind 2026 nicht mehr bestellbar → „Wieder verfügbar ab Januar 2027". Bestandsaufträge laufen weiter. */
+export const REVIEWS_OTHER_PAUSED = true;
+/** Neue Bewertung pausiert? r: { old?, nt?, sw?, days? } */
+export const isPausedReview = (r) => {
+  if (!REVIEWS_OTHER_PAUSED || !r) return false;
+  const d = Number(r.days);
+  return !!(r.old || r.nt || r.sw) || (r.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
+};
+export const REVIEW_PAUSE_COPY = {
+  de: "Wieder verfügbar ab Januar 2027", en: "Available again from January 2027", es: "Disponible de nuevo a partir de enero de 2027",
+  fr: "De nouveau disponible à partir de janvier 2027", it: "Di nuovo disponibile da gennaio 2027", nl: "Weer beschikbaar vanaf januari 2027",
+  pt: "Disponível novamente a partir de janeiro de 2027", ja: "2027年1月から再び受付", sv: "Tillgängligt igen från januari 2027",
+  da: "Tilgængelig igen fra januar 2027", no: "Tilgjengelig igjen fra januar 2027",
+};
+export const reviewPauseText = (lang) => REVIEW_PAUSE_COPY[lang] || REVIEW_PAUSE_COPY.en;
+/** Hinweis, wenn der Kunde trotzdem eine pausierte Bewertung im Auftrag hat (Fehlermeldung beim Bestellen). */
+export const REVIEW_PAUSE_ERR = {
+  de: "Bewertungen älter als 4 Wochen und reine Sternebewertungen ohne Text nehmen wir derzeit nicht an – wieder verfügbar ab Januar 2027. Bitte entfernen Sie sie aus der Auswahl.",
+  en: "We currently don't accept reviews older than 4 weeks or star-only ratings without text – available again from January 2027. Please remove them from your selection.",
+  es: "Ahora mismo no aceptamos reseñas de más de 4 semanas ni valoraciones sin texto – disponible de nuevo a partir de enero de 2027. Quítalas de tu selección.",
+  fr: "Nous n'acceptons pas actuellement les avis de plus de 4 semaines ni les notes sans texte – de nouveau disponible à partir de janvier 2027. Retirez-les de votre sélection.",
+  it: "Al momento non accettiamo recensioni più vecchie di 4 settimane né valutazioni senza testo – di nuovo disponibile da gennaio 2027. Rimuovile dalla selezione.",
+  nl: "We nemen momenteel geen reviews ouder dan 4 weken of beoordelingen zonder tekst aan – weer beschikbaar vanaf januari 2027. Haal ze uit je selectie.",
+  pt: "De momento não aceitamos avaliações com mais de 4 semanas nem classificações sem texto – disponível novamente a partir de janeiro de 2027. Retire-as da seleção.",
+  ja: "投稿から4週間を超えた口コミと、本文のない星だけの評価は現在お受けしていません（2027年1月から再び受付）。選択から外してください。",
+  sv: "Vi tar just nu inte emot omdömen äldre än 4 veckor eller betyg utan text – tillgängligt igen från januari 2027. Ta bort dem från ditt urval.",
+  da: "Vi tager i øjeblikket ikke imod anmeldelser ældre end 4 uger eller bedømmelser uden tekst – tilgængelig igen fra januar 2027. Fjern dem fra dit valg.",
+  no: "Vi tar for øyeblikket ikke imot omtaler eldre enn 4 uker eller vurderinger uten tekst – tilgjengelig igjen fra januar 2027. Fjern dem fra utvalget ditt.",
+};
+export const reviewPauseErr = (lang) => REVIEW_PAUSE_ERR[lang] || REVIEW_PAUSE_ERR.en;
 export const EXPRESS_FEE = 100;
 export const EXPRESS_HOURS = 30;
 /* Express-Frist (17.10.2026, synchron mit ops/src/reviewsPricing.ts): Start Mo 0:00 – Fr 12:00 Wiener Zeit → 30 Std.;
@@ -119,8 +154,8 @@ export const listPriceV2 = (it) => {
   const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
   return it && (it.nt || it.sw || old) ? PRICE_V2_OTHER : PRICE_V2_FRESH;
 };
-export const lpOf = (it) => { const v = Number(it && it.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY || v === PRICE_V2_OTHER ? v : 0; };
-export const isFreshLp = (v) => v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY;
+export const lpOf = (it) => { const v = Number(it && it.lp); return v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v) || v === PRICE_V2_OTHER ? v : 0; };
+export const isFreshLp = (v) => v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v);
 /** Bestellung (neu): Preismodell 2. items: [{ old?, nt?, sw?, days?, cp?, lp?, x? }]. opts.legacy = Bestandsauftrag:
  *  Bewertungen ohne lp nach Preismodell 1 rechnen (179/+50/300). opts.express = Express für alle 250er (Bestellprozess). */
 export function reviewQuote(items, lang, opts = {}) {
@@ -136,7 +171,8 @@ export function reviewQuote(items, lang, opts = {}) {
   const xTotal = nX * EXPRESS_FEE;
   const n = list.length;
   const pct = reviewDiscountPct(n);
-  const subV2 = nFreshNew * PRICE_V2_FRESH + nFreshOld * PRICE_V2_FRESH_LEGACY + n250 * PRICE_V2_OTHER;
+  const subFreshOld = v2.map(lpOf).filter((v) => isFreshLp(v) && v !== PRICE_V2_FRESH).reduce((a, b) => a + b, 0); // Bestand 179/99 je mit IHREM lp
+  const subV2 = nFreshNew * PRICE_V2_FRESH + subFreshOld + n250 * PRICE_V2_OTHER;
   const subStd = subV2 + (v1.subtotal - v1.cpTotal);
   const total = Math.round(subStd * (100 - pct) / 100) + v1.cpTotal + xTotal;
   const subtotal = subStd + v1.cpTotal + xTotal;

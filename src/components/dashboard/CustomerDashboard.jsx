@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
-import { reviewQuote, vatNote, listPriceV2, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { reviewQuote, vatNote, listPriceV2, reviewPauseText, reviewPauseErr, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue } from "@/lib/express-copy";
 import { useExpressOn, useDurations } from "@/lib/express-status";
 import { searchProfiles } from "@/lib/places";
@@ -732,6 +732,8 @@ const TfLine = ({ n99, n250 }) => {
   const xp = xpCopy(LANG);
   return <div className="sp-tf"><Clock />{n99 && n250 ? xp.tfLine(xp.d99, xp.cmpStdV) : n99 ? xp.tf99 : xp.stdD}</div>;
 };
+/** Pause 05.11.2026: Bewertung älter als 4 Wochen oder ohne Text → nicht wählbar („Wieder verfügbar ab Januar 2027"). */
+const dashPaused = (r) => REVIEWS_OTHER_PAUSED && !!r && (!String(r.text || "").trim() || Number(r.days) > 28);
 const lpCount = (items) => { let n99 = 0, n250 = 0; for (const it of items) { if (listPriceV2(it) === PRICE_V2_OTHER) n250++; else n99++; } return { n99, n250 }; };
 
 function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
@@ -873,7 +875,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     try {
       const r = await call("new-order", { token, lang: LANG, agb: true, riskConsent: true, riskConsentVersion: RISK_CONSENT_VERSION, ids: pick, express: canX && xOn && xAvail, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
       setOid(r.orderId); setDoneN(pick.length); setStep("done");
-    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_paused" ? reviewPauseErr(LANG) : T("noErr"), true); }
     setBusy(false);
   };
   const okRows = rows.filter((r) => r.st === "ok");
@@ -883,7 +885,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const usd = isPick ? !!place && place.cc === "US" : !!cc0 && cc0.cc === "US";
   const selQ = isPick
     ? sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; })
-    : okRows.map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw }));
+    : okRows.filter((r) => !r.r.paused).map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw })); // pausierte zählen nicht
   const q2 = reviewQuote(selQ, LANG);
   // Eigene Preise des Kunden (Admin → Kunden & Preise) gelten auch von Hand: Staffel nach Anzahl + Software-Preis.
   const own = binfo && binfo.pricing && binfo.pricing.custom && binfo.pricing.tiers && binfo.pricing.tiers.length ? binfo.pricing : null;
@@ -908,12 +910,13 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg || !risk) { setCErr(true); return; }
     if (scanning || !okRows.length) return;
+    if (okRows.some((x) => x.r.paused)) { showToast(reviewPauseErr(LANG), true); return; } // Pause 05.11.2026
     if (canX && step !== "speed") { setSpFrom("links"); setStep("speed"); return; }
     setBusy(true);
     try {
       const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, riskConsent: true, riskConsentVersion: RISK_CONSENT_VERSION, express: canX && xOn && xAvail, links: okRows.map((x) => x.url) });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
-    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : T("noErr"), true); }
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : e.code === "reviews_paused" ? reviewPauseErr(LANG) : T("noErr"), true); }
     setBusy(false);
   };
   const ag = AGB_CONSENT[LANG] || AGB_CONSENT.en, fg = FAGG_CONSENT[LANG] || FAGG_CONSENT.en, rk = RISK_CONSENT[LANG] || RISK_CONSENT.en;
@@ -1056,12 +1059,12 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                       {list.map((r) => {
                         const on = pick.includes(r.id);
                         return (
-                          <button key={r.id} type="button" disabled={r.ordered || busy} className={"ar-row" + (on ? " on" : "") + (r.ordered ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
+                          <button key={r.id} type="button" disabled={r.ordered || busy || (dashPaused(r) && !on)} className={"ar-row" + (on ? " on" : "") + (r.ordered || (dashPaused(r) && !on) ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
                             <span className="cb">{on || r.ordered ? <Check /> : null}</span>
                             <span className="t">
                               <span className="a">{r.name}<span className="stars" aria-label={r.rating + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < r.rating ? "f" : ""} />)}</span></span>
                               <span className={"x" + (r.text ? "" : " none")}>{r.text || T("noText")}</span>
-                              {r.ordered ? <span className="in">{T("arIn")}</span> : null}
+                              {r.ordered ? <span className="in">{T("arIn")}</span> : dashPaused(r) ? <span className="in">{reviewPauseText(LANG)}</span> : null}
                             </span>
                           </button>
                         );
@@ -1129,9 +1132,9 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                               </>
                             ) : <><span className="a">{T("lnUnread")}</span><span className="x">{T("lnUnreadS")}</span></>}
                             {row.r.place ? <span className="pl"><MapPin />{row.r.place.name}</span> : null}
-                            {row.r.sw ? <span className="tg">{T("lnSw")}</span> : row.r.old ? <span className="tg">{T("lnOld")}</span> : null}
+                            {row.r.paused ? <span className="tg pz">{(row.r.nt ? T("noText") : T("lnOld")) + " · " + reviewPauseText(LANG)}</span> : row.r.sw ? <span className="tg">{T("lnSw")}</span> : row.r.old ? <span className="tg">{T("lnOld")}</span> : null}
                           </div>
-                          <b className="pr">{money(unitOf(row.r), handCur)}</b>
+                          {row.r.paused ? null : <b className="pr">{money(unitOf(row.r), handCur)}</b>}
                         </div>
                       ) : null}
                     </div>
@@ -1202,7 +1205,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
     if (canX && !spd) { setSpd(true); return; }
     setBusy(true);
     try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn && xAvail, riskConsent: true, riskConsentVersion: RISK_CONSENT_VERSION }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
-    catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
+    catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_paused" ? reviewPauseErr(LANG) : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
   return (
@@ -1230,12 +1233,12 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
                   {list.map((r) => {
                     const on = pick.includes(r.id);
                     return (
-                      <button key={r.id} type="button" disabled={r.ordered || busy} className={"ar-row" + (on ? " on" : "") + (r.ordered ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
+                      <button key={r.id} type="button" disabled={r.ordered || busy || (dashPaused(r) && !on)} className={"ar-row" + (on ? " on" : "") + (r.ordered || (dashPaused(r) && !on) ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
                         <span className="cb">{on || r.ordered ? <Check /> : null}</span>
                         <span className="t">
                           <span className="a">{r.name}<span className="stars" aria-label={r.rating + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < r.rating ? "f" : ""} />)}</span></span>
                           <span className={"x" + (r.text ? "" : " none")}>{r.text || T("noText")}</span>
-                          {r.ordered ? <span className="in">{T("arIn")}</span> : null}
+                          {r.ordered ? <span className="in">{T("arIn")}</span> : dashPaused(r) ? <span className="in">{reviewPauseText(LANG)}</span> : null}
                         </span>
                       </button>
                     );
