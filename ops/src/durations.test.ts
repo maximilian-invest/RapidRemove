@@ -47,7 +47,8 @@ await ok("Ungültige Werte → Standard", () => {
   assert.deepEqual(B.normDur({ fresh: { min: "7", max: "21", unit: "d" } }), { fresh: { min: 7, max: 21, unit: "d" }, other: { min: 1, max: 2, unit: "w" } });
 });
 await ok("Website und Backend formatieren identisch", () => {
-  const texts = ["Meist in {DF} gelöscht", "innerhalb von {DO}", "{DA}", "{DF:de} {DO}"];
+  // {DA} weicht seit 05.11.2026 bewusst ab: Website = nur frische Dauer (ältere/textlose pausiert), Backend-Mails = Spanne (Bestandsaufträge).
+  const texts = ["Meist in {DF} gelöscht", "innerhalb von {DO}", "{DF:de} {DO}"];
   for (const d of [B.DUR_DEFAULT, D721, { fresh: { min: 1, max: 1, unit: "w" }, other: { min: 3, max: 3, unit: "d" } }] as B.Durations[])
     for (const l of LANGS) for (const t of texts) assert.equal(W.fillDur(t, l, d), B.fillDur(t, l, d), `${l} ${t}`);
 });
