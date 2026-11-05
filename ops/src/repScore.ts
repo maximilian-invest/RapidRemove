@@ -74,10 +74,11 @@ async function placesSearch(q: string): Promise<J[]> {
   if (!res.ok) throw new Error(j.error?.message || "Places HTTP " + res.status);
   return Array.isArray(j.places) ? j.places : [];
 }
-async function placeDetails(placeId: string): Promise<J> {
+const PROFILE_FIELDS = ",regularOpeningHours,nationalPhoneNumber,internationalPhoneNumber,photos,businessStatus";
+async function placeDetails(placeId: string, full = false): Promise<J> {
   if (!gkey()) throw new Error("GOOGLE_MAPS_API_KEY fehlt");
   const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=de`, {
-    headers: { "X-Goog-Api-Key": gkey(), "X-Goog-FieldMask": PLACE_FIELDS },
+    headers: { "X-Goog-Api-Key": gkey(), "X-Goog-FieldMask": PLACE_FIELDS + (full ? PROFILE_FIELDS : "") },
     signal: AbortSignal.timeout(10_000),
   });
   const j = (await res.json().catch(() => ({}))) as J;
@@ -165,6 +166,30 @@ async function askPerplexity(prompt: string): Promise<string> {
     if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); return ""; }
     return String(j.choices?.[0]?.message?.content || "").replace(/\[\d+\]/g, "").trim();
   } catch (e) { console.warn("Rep-Scan Perplexity", (e as Error).message); return ""; }
+}
+/* Ältere Scans ohne Zusammenfassungen: aus den gespeicherten Antworten nachträglich zusammenfassen (einmalig, ohne Websuche) */
+const kiBusy = new Set<string>();
+const needsKiSum = (r: J | null) => !!r && !r.kiSummary && Array.isArray(r.ki) && r.ki.some((x: J) => Array.isArray(x.answers) && x.answers.some((a: J) => a.text && !a.sum));
+async function backfillKiSums(scanId: string, r: J): Promise<void> {
+  if (kiBusy.has(scanId) || !pool) return;
+  kiBusy.add(scanId);
+  try {
+    const ais = (r.ki as J[]).filter((x) => Array.isArray(x.answers));
+    const body = ais.map((x, i) => `### KI ${i + 1}: ${x.name}\n` + (x.answers as J[]).map((a: J, k: number) => `F${k + 1} (${a.q}): ${a.text ? String(a.text).slice(0, 900) : "(keine Antwort)"}`).join("\n")).join("\n\n");
+    const t = await askClaude("Du fasst KI-Antworten über ein Unternehmen für dessen Inhaber zusammen. Sachlich, Deutsch, in EIGENEN Worten, niemals wörtlich zitieren. Aussagen, die nur von der eigenen Website stammen, nicht als Beleg werten.",
+      `Unternehmen: ${r.location?.name || r.query || ""}\n\n${body}\n\nGib NUR JSON zurück: {"kiSummary":"2–3 Sätze Gesamtfazit aller KIs, Kritik zuerst","ais":[{"sum":"1 Satz Fazit dieser KI, max 20 Wörter","answers":["1 Satz je Frage F1–F5 in eigenen Worten, max 18 Wörter, leer wenn keine Antwort"]}] – ais in derselben Reihenfolge wie oben}`, { maxTokens: 2500 });
+    const j = parseJson(t);
+    if (!j || !j.kiSummary) { console.warn("Rep-Scan KI-Zusammenfassung: keine gültige Antwort"); return; }
+    ais.forEach((x, i) => {
+      const y = Array.isArray(j.ais) ? j.ais[i] || {} : {};
+      if (y.sum) x.sum = String(y.sum).slice(0, 240);
+      (x.answers as J[]).forEach((a: J, k: number) => { const v = Array.isArray(y.answers) ? y.answers[k] : ""; if (v && a.text) a.sum = String(v).slice(0, 220); });
+    });
+    r.kiSummary = String(j.kiSummary).slice(0, 600);
+    await pool.query(`UPDATE rep_scans SET result=$2 WHERE id=$1`, [scanId, JSON.stringify(r)]);
+    console.log("Rep-Scan KI-Zusammenfassung nachgetragen:", scanId);
+  } catch (e) { console.warn("Rep-Scan KI-Zusammenfassung", (e as Error).message); }
+  finally { kiBusy.delete(scanId); }
 }
 function parseJson(t: string): J | null {
   const s = t.replace(/^```(?:json)?/m, "").replace(/```\s*$/m, "");
@@ -292,7 +317,7 @@ const PRESS = /forbes|journal|zeitung|zeitschrift|news|nachrichten|kurier|krone\
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
 
 type Social = { net: string; url: string; followers?: string; inGoogle?: boolean | null };
-type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; about?: string; sent?: string; type?: string; note?: string };
+type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; votes?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
   ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
@@ -302,8 +327,20 @@ export type Ctx = {
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
 const W = { search: 25, reviews: 20, press: 15, ki: 15, social: 10, web: 15 } as const;
 type AreaKey = keyof typeof W;
-type Fix = { negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
+type Fix = { gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
 
+const gbpMissing = (g: J) => [!g.website && "Website", !g.phone && "Telefonnummer", !g.hours && "Öffnungszeiten", g.photos < 8 && "Fotos"].filter(Boolean) as string[];
+function gbpChecks(g: J, rv: { total: number; unanswered: number }, n: number): J[] {
+  return [
+    { key: "status", ok: g.status === "OPERATIONAL", label: g.status === "OPERATIONAL" ? "Als geöffnet angezeigt" : g.status === "CLOSED_TEMPORARILY" ? "Als vorübergehend geschlossen angezeigt" : "Als dauerhaft geschlossen angezeigt", detail: g.status === "OPERATIONAL" ? "Kunden sehen, dass Sie erreichbar sind." : "Kunden halten Sie für geschlossen – bitte im Profil korrigieren." },
+    { key: "website", ok: !!g.website, label: "Website hinterlegt", detail: g.website ? "Kunden kommen mit einem Klick auf Ihre Seite." : "Ohne Website wirkt das Profil unvollständig." },
+    { key: "phone", ok: !!g.phone, label: "Telefonnummer hinterlegt", detail: g.phone ? "Anrufen direkt aus Google möglich." : "Kunden können Sie aus Google nicht anrufen." },
+    { key: "hours", ok: !!g.hours, label: "Öffnungszeiten hinterlegt", detail: g.hours ? "Kunden sehen, wann Sie erreichbar sind." : "Fehlende Öffnungszeiten kosten Vertrauen und Anfragen." },
+    { key: "photos", ok: g.photos >= 8, label: g.photos >= 10 ? "10+ Fotos" : `${g.photos} ${g.photos === 1 ? "Foto" : "Fotos"}`, detail: g.photos >= 8 ? "Genug Bilder, damit Kunden sich ein Bild machen." : "Profile mit vielen Fotos bekommen deutlich mehr Klicks – Ziel: mind. 10." },
+    { key: "count", ok: n >= 30, label: `${n} Bewertungen`, detail: n >= 30 ? "Genug Bewertungen, damit der Schnitt glaubwürdig ist." : "Unter 30 Bewertungen wirkt der Schnitt wenig belastbar – einzelne Ausreißer zählen stark." },
+    ...(rv.total ? [{ key: "answers", ok: rv.unanswered === 0, label: rv.unanswered ? `${rv.unanswered} von ${rv.total} neuesten Bewertungen ohne Antwort` : "Alle neuesten Bewertungen beantwortet", detail: rv.unanswered ? "Antworten zeigt Kunden, dass Sie sich kümmern." : "Sehr gut – Kunden sehen, dass Sie reagieren." }] : []),
+  ];
+}
 function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   const self = c.items.filter((x) => x.about !== "other");
   const g = self.filter((x) => x.src === "google");
@@ -319,12 +356,16 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   if (selfP1 < 4) search -= 1.5;
   // Bewertungen
   const r = Number(c.loc.rating) || 0, n = Number(c.loc.reviews) || 0;
-  const others = self.filter((x) => typeof x.rating === "number" && x.rating! > 0 && x.type === "review").map((x) => x.rating as number);
-  const avg = others.length ? (r * 2 + others.reduce((a, b) => a + b, 0)) / (2 + others.length) : r;
+  // andere Portale nach Anzahl ihrer Bewertungen gewichten (2 Trustpilot-Bewertungen zählen nicht so viel wie 10 auf Google)
+  const others = self.filter((x) => typeof x.rating === "number" && x.rating! > 0 && x.type === "review").map((x) => ({ r: x.rating as number, n: Math.max(1, Number(x.votes) || 3) }));
+  const gw = Math.max(3, n);
+  const avg = others.length && r ? (r * gw + others.reduce((a, b) => a + b.r * b.n, 0)) / (gw + others.reduce((a, b) => a + b.n, 0)) : r || (others.length ? others[0].r : 0);
   let reviews = r ? ((avg - 2.9) / 1.8) * 10 : 3;
   if (n < 10) reviews -= 2; else if (n < 30) reviews -= 1; else if (n >= 100) reviews += 1;
   if (!fix.answer && c.reviews.total >= 4 && c.reviews.unanswered / c.reviews.total >= 0.5) reviews -= 1;
   if (!fix.answer && c.reviews.negUnanswered > 0) reviews -= 0.5;
+  const gb = c.loc.gbp as J | undefined;
+  if (gb && !fix.gbp) reviews -= Math.min(1.5, 0.5 * gbpMissing(gb).length);
   // Presse & Foren
   const pf = self.filter((x) => x.type === "press" || x.type === "forum" || x.src === "news");
   const seen = new Set<string>();
@@ -375,6 +416,8 @@ export function evaluate(c: Ctx): J {
   const negSug = c.suggestions.filter((s) => s.neg);
   if (negSug.length) todos.push({ key: "suggest", title: `„${negSug[0].q}“ in den Google-Vorschlägen`, who: "wir", action: "vorschlag", points: gain({ suggest: true }), area: "search" });
   if (c.reviews.unanswered > 0) todos.push({ key: "answer", title: `${c.reviews.unanswered} von ${c.reviews.total} neuesten Bewertungen ohne Antwort`, who: "selbst", action: "antworten", points: gain({ answer: true }), area: "reviews" });
+  const gbMiss = c.loc.gbp ? gbpMissing(c.loc.gbp) : [];
+  if (gbMiss.length) todos.push({ key: "gbp", title: `Google-Profil unvollständig: ${gbMiss.join(", ")} fehlen`, who: "selbst", action: "gbp", points: gain({ gbp: true }), area: "reviews", glink: c.loc.gbp.url || undefined });
   const kiBad = c.ki.filter((k) => !k.known || k.sent !== "pos");
   if (kiBad.length) todos.push({ key: "ki", title: kiBad.every((k) => !k.known) ? `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "kennen" : "kennt"} Sie noch kaum` : `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "antworten" : "antwortet"} nicht positiv über Sie`, who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
   const notLinked = c.kgSeen ? c.social.filter((x) => x.inGoogle === false) : [];
@@ -442,6 +485,7 @@ export function evaluate(c: Ctx): J {
     kpis: { flags, rating: c.loc.rating, reviews: c.loc.reviews, page1Pos: serp1.filter((x) => x.sent === "pos").length, page1Total: serp1.length },
     kiSummary: c.kiSummary || "",
     ki: [...c.ki, ...(c.aiOverview ? [{ name: "Google KI-Übersicht", known: true, sent: c.aiOverviewSent || "neu", quote: "", sum: c.aiOverviewSum || "" }] : [])],
+    gbp: c.loc.gbp ? { url: c.loc.gbp.url, type: c.loc.gbp.type, rating: c.loc.rating, reviews: c.loc.reviews, checks: gbpChecks(c.loc.gbp, c.reviews, Number(c.loc.reviews) || 0) } : null,
     suggestions: c.suggestions, website: c.web, social: c.social, reviewsInfo: c.reviews, summary: c.summary,
     sources: c.items.length + c.suggestions.length + c.ki.length + (c.web.url ? 2 : 0) + c.reviews.total + 1,
   };
@@ -460,7 +504,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
   const add = (src: Item["src"], pos: number, r: J) => {
     const link = String(r.link || r.url || ""); if (!link) return;
     const rating = Number(r.rich_snippet?.top?.detected_extensions?.rating ?? r.rating) || null;
-    items.push({ i: n++, src, pos, title: String(r.title || "").slice(0, 160), snippet: String(r.snippet || r.description || "").slice(0, 260), link, date: String(r.date || ""), rating });
+    items.push({ i: n++, src, pos, title: String(r.title || "").slice(0, 160), snippet: String(r.snippet || r.description || "").slice(0, 260), link, date: String(r.date || ""), rating, votes: Number(r.rich_snippet?.top?.detected_extensions?.reviews ?? r.rich_snippet?.top?.detected_extensions?.votes ?? r.reviews) || null });
   };
   // Fortschritt nie rückwärts (parallele Abfragen melden sich in beliebiger Reihenfolge)
   let pmax = 0;
@@ -469,8 +513,14 @@ async function runScan(scanId: string, loc: J): Promise<void> {
   try {
     await say(4, `Lese das Google-Profil von „${short(name)}“`);
     if (loc.place_id) {
-      const p = placeView(await placeDetails(loc.place_id).catch(() => ({})));
+      const raw = await placeDetails(loc.place_id, true).catch(() => ({} as J));
+      const p = placeView(raw);
       if (p.name) {
+        loc.gbp = {
+          url: p.mapsUrl || loc.maps_url || "", website: !!p.website, phone: !!(raw.nationalPhoneNumber || raw.internationalPhoneNumber),
+          hours: !!(raw.regularOpeningHours && (raw.regularOpeningHours.periods || raw.regularOpeningHours.weekdayDescriptions)),
+          photos: Array.isArray(raw.photos) ? raw.photos.length : 0, status: String(raw.businessStatus || "OPERATIONAL"), type: p.type,
+        };
         loc.rating = p.rating; loc.reviews = p.reviews; loc.website = loc.website || p.website; loc.type = p.type;
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
@@ -656,12 +706,14 @@ export function registerRepScore(app: FastifyInstance): void {
       const s = await pool!.query(`SELECT id, status, progress, step, score, result, error, created_at, finished_at FROM rep_scans WHERE location_id=$1 ORDER BY created_at DESC LIMIT 24`, [l.id]);
       const done = s.rows.filter((x) => x.status === "done");
       const cur = s.rows[0] || null;
+      const kiPending = !!done[0] && needsKiSum(done[0].result) && !!process.env.ANTHROPIC_API_KEY;
+      if (kiPending) void backfillKiSums(done[0].id, done[0].result);
       out.push({
         id: l.id, name: l.name, address: l.address, city: l.city, website: l.website, mapsUrl: l.maps_url,
         scan: cur ? (cur.status === "running" && Date.now() - new Date(cur.created_at).getTime() > 12 * 60_000
           ? { id: cur.id, status: "error", progress: cur.progress, step: cur.step, error: "abgebrochen", at: cur.created_at }
           : { id: cur.id, status: cur.status, progress: cur.progress, step: cur.step, error: cur.error, at: cur.created_at }) : null,
-        latest: done[0] ? { ...done[0].result, at: done[0].finished_at } : null,
+        latest: done[0] ? { ...done[0].result, at: done[0].finished_at, kiPending } : null,
         prevScore: done[1] ? done[1].score : null, prevAt: done[1] ? done[1].finished_at : null,
         history: done.slice().reverse().map((x) => ({ at: x.finished_at, score: x.score })),
       });

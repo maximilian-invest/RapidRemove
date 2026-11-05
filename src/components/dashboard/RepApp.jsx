@@ -23,11 +23,12 @@ export function useRep(token, enabled, call) {
   }, [token, enabled, call]);
   React.useEffect(() => { load(); }, [load]);
   const running = st.locations.some((l) => l.scan && l.scan.status === "running");
+  const kiPending = st.locations.some((l) => l.latest && l.latest.kiPending);
   React.useEffect(() => {
-    if (!running) return undefined;
-    const t = setInterval(load, 2000);
+    if (!running && !kiPending) return undefined;
+    const t = setInterval(load, running ? 2000 : 4000);
     return () => clearInterval(t);
-  }, [running, load]);
+  }, [running, kiPending, load]);
   const scan = React.useCallback(async (body) => { const r = await call("rep/scan", { token, ...body }); await load(); return r; }, [token, call, load]);
   const request = React.useCallback((locationId, action) => call("rep/request", { token, locationId, action }), [token, call]);
   const search = React.useCallback((q) => call("rep/search", { token, q }), [token, call]);
@@ -226,8 +227,8 @@ function Chart({ history }) {
     </div>
   );
 }
-const TODO_ICON = { neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
-const TODO_COL = { neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
+const TODO_ICON = { gbp: Star, neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
+const TODO_COL = { gbp: ["#d97706", "#fff4e0"], neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
 
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
@@ -474,7 +475,7 @@ function RepArea({ a, r, onBack, onAsk }) {
         <p style={{ color: fg }}>{a.text}</p>
       </section>
       )}
-      {a.facts && a.facts.length && a.key !== "ki" ? (
+      {a.facts && a.facts.length && a.key !== "ki" && !(a.key === "reviews" && r.gbp) ? (
         <section className="rp-facts">
           {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
         </section>
@@ -526,7 +527,23 @@ function RepArea({ a, r, onBack, onAsk }) {
         </section>
       ) : (
         <section className="rp-list">
-          <div className="rp-box-h"><b>Was Kunden finden</b><span>{a.items.length} Treffer</span></div>
+          {a.key === "reviews" && r.gbp ? (() => {
+            const ck = r.gbp.checks || [];
+            return (
+              <div className="rp-gbp">
+                <a className="rp-gbp-h" href={r.gbp.url || undefined} target="_blank" rel="noopener noreferrer">
+                  <span className="rp-gbp-i"><Star /></span>
+                  <span className="rp-t"><b>Google-Unternehmensprofil</b><span>{r.gbp.rating ? String(r.gbp.rating).replace(".", ",") + " ★ · " + (r.gbp.reviews || 0) + " Bewertungen" : "noch keine Bewertungen"}{r.gbp.type ? " · " + r.gbp.type : ""}</span></span>
+                  <em>{ck.filter((c) => c.ok).length}/{ck.length}</em>
+                  {r.gbp.url ? <ExternalLink /> : null}
+                </a>
+                {[...ck.filter((c) => !c.ok), ...ck.filter((c) => c.ok)].map((c) => (
+                  <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+                ))}
+              </div>
+            );
+          })() : null}
+          <div className="rp-box-h"><b>{a.key === "reviews" ? "Andere Bewertungsportale" : "Was Kunden finden"}</b><span>{a.items.length} Treffer</span></div>
           {a.key === "search" && r.suggestions && r.suggestions.length ? (
             <div className="rp-sugg">{r.suggestions.slice(0, 8).map((s) => <span key={s.q} className={s.neg ? "neg" : ""}>{s.q}</span>)}</div>
           ) : null}
