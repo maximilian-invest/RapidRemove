@@ -229,7 +229,7 @@ function areaDigest(r: J): J {
     const d: J = { bereich: a.name, score: a.score10 + "/10", fakten: (a.facts || []).map((f: J) => `${f.label}: ${f.value}`) };
     if (a.key === "search") { d.treffer = pickI(a.items); d.vorschlaege = (r.suggestions || []).slice(0, 8).map((x: J) => x.q + (x.neg ? " (negativ)" : "")); }
     else if (a.key === "social") d.profile = (a.items || []).map((x: J) => `${x.title}${x.followers ? " · " + x.followers : ""}${x.inGoogle === true ? " · im Google-Profil" : x.inGoogle === false ? " · nicht im Google-Profil" : ""}`);
-    else if (a.key === "web") d.suchbegriffe = (r.kws || []).map((k: J) => `${k.q}: Google ${k.g ? "Platz " + k.g : "nicht in Top 30"}, Maps ${k.pack ? "Top 3 (Platz " + k.pack + ")" : k.maps ? "Platz " + k.maps : "nicht gefunden"}${k.lead ? ", Maps-Platz 1: " + k.lead : ""}`), d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
+    else if (a.key === "web") d.suchbegriffe = (r.kws || []).map((k: J) => `${k.q}: ${k.mine ? k.mine.length + " von " + (k.top || 10) + " Treffern auf Seite 1 gehören dem Unternehmen oder nennen es (" + k.mine.map((m: J) => "#" + m.p + " " + m.h).join(", ") + "); " : ""}eigene Website ${k.g ? "Platz " + k.g : "nicht in Top 30"}, Maps ${k.pack ? "Top 3 (Platz " + k.pack + ")" : k.maps ? "Platz " + k.maps : "nicht gefunden"}${k.lead ? ", Maps-Platz 1: " + k.lead : ""}`), d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
     else if (a.key === "reviews") { d.googleProfil = r.gbp ? (r.gbp.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) : undefined; d.portale = pickI(a.items); }
     else d.treffer = pickI(a.items);
     out[a.key] = d;
@@ -292,10 +292,15 @@ const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCo
 type Check = { key: string; label: string; ok: boolean; detail: string };
 /* Recherche-Zusätze: so sucht jemand, der schon einen Anbieter im Kopf hat – nicht jemand, der einen sucht */
 const RESEARCH_RE = /\b(seriös|serioes|erfahrung(en)?|bewertung(en)? (zu|von)|test|kosten|kostenlos|gratis|preis(e)?|selber|selbst|anleitung|tutorial|reddit|forum|gutefrage|wiki|definition|was ist|wie (geht|funktioniert)|job(s)?|gehalt|ausbildung|abzocke|betrug|kündigen|stornieren|login|anmelden)\b/i;
-type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string; err?: boolean; noMaps?: boolean };
+type KwHit = { p: number; u: string; h: string; t: string; k: string };
+type Kw = { mine?: KwHit[]; top?: number; q: string; g: number | null; pack: number | null; maps: number | null; lead?: string; err?: boolean; noMaps?: boolean };
 const kwOk = (k: Kw) => !k.err;
 const kwVal = (k: Kw) => {
-  const o0 = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : k.g <= 10 ? 6 : k.g <= 20 ? 3.5 : 2;
+  const firstMine = k.mine && k.mine.length ? Math.min(...k.mine.map((m) => m.p)) : null;
+  const best = k.g != null && firstMine != null ? Math.min(k.g, firstMine) : k.g ?? firstMine;
+  const share = k.mine ? k.mine.length : 0;
+  k = { ...k, g: best };
+  const o0 = share >= 4 ? 10 : share >= 2 && best != null && best <= 5 ? 10 : k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : k.g <= 10 ? 6 : k.g <= 20 ? 3.5 : 2;
   if (k.noMaps) return o0;
   const o = o0;
   const l = k.pack != null ? 10 : k.maps == null ? 1 : k.maps <= 3 ? 9 : k.maps <= 10 ? 6 : 3;
@@ -423,6 +428,50 @@ async function readSite(url: string): Promise<{ pages: { url: string; text: stri
   const homeLines = new Set(htmlText(home.html).split("\n").map((l) => l.trim()).filter(Boolean));
   const clean = (p: { url: string; html: string }, i: number) => { const t = htmlText(p.html); return i === 0 ? t : t.split("\n").filter((l) => !homeLines.has(l.trim())).join("\n"); };
   return { pages: [home, ...sub].map((p, i) => ({ url: p.url, text: clean(p, i).slice(0, 6000) })).filter((p) => p.text.length > 80) };
+}
+/* Treffer wirklich lesen: Seite abrufen und prüfen, ob sie das Unternehmen nennt, verlinkt oder ihm gehört */
+type Hit = { k: "own" | "channel" | "links" | "names" | "none" | "blocked"; ex?: string };
+function makeChecker(brand: string[], ownHost: string) {
+  const memo = new Map<string, Promise<Hit>>();
+  const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0 Safari/537.36", "accept-language": "de-AT,de;q=0.9,en;q=0.6" };
+  const names = brand.filter((b) => b.length >= 4).map((b) => b.toLowerCase());
+  let active = 0; const queue: (() => void)[] = [];
+  const slot = async <T,>(fn: () => Promise<T>): Promise<T> => { if (active >= 10) await new Promise<void>((r) => queue.push(r)); active++; try { return await fn(); } finally { active--; queue.shift()?.(); } };
+  const check = (url: string): Promise<Hit> => {
+    const key = url.replace(/[#?].*$/, "");
+    if (memo.has(key)) return memo.get(key)!;
+    const pr = slot(async (): Promise<Hit> => {
+      const h = host(url);
+      if (ownHost && h.endsWith(ownHost)) return { k: "own" };
+      try {
+        const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(9000), headers: /youtube\.com|youtu\.be/.test(h) ? { ...UA, cookie: "SOCS=CAI; CONSENT=YES+1" } : UA });
+        if (!r.ok) return { k: "blocked" };
+        const html = (await r.text()).slice(0, 1_500_000);
+        const low = html.toLowerCase();
+        if (/youtube\.com|youtu\.be/.test(h)) {
+          // Kanalname zuverlässig über oEmbed (die Videoseite zeigt oft nur ein Cookie-Banner)
+          const oe = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(6000) }).then((x) => (x.ok ? x.json() : null)).catch(() => null) as J | null;
+          const an = String(oe?.author_name || "").toLowerCase();
+          if (an && names.some((n) => an.replace(/\s+/g, "").includes(n.replace(/\s+/g, "")))) return { k: "channel", ex: `YouTube-Kanal: ${oe!.author_name} – ${String(oe!.title || "")}` };
+        }
+        if (/youtube\.com|youtu\.be/.test(h)) {
+          const ch = (html.match(/"ownerChannelName":"([^"]+)"/)?.[1] || html.match(/<link itemprop="name" content="([^"]+)"/)?.[1] || "").toLowerCase();
+          if (ch && names.some((n) => ch.includes(n) || n.includes(ch))) return { k: "channel", ex: `YouTube-Kanal: ${ch}` };
+        }
+        const linked = !!ownHost && new RegExp(`href=["'][^"']*${ownHost.replace(/\./g, "\\.")}`, "i").test(html);
+        const text = htmlText(html);
+        const tl = text.toLowerCase();
+        const at = names.map((n) => tl.indexOf(n)).filter((i) => i >= 0).sort((a, b) => a - b)[0] ?? -1;
+        const ex = at >= 0 ? text.slice(Math.max(0, at - 160), at + 200).replace(/\s+/g, " ").trim() : undefined;
+        if (linked) return { k: "links", ex };
+        if (at >= 0 || (ownHost && low.includes(ownHost)) || names.some((n) => low.includes(n))) return { k: "names", ex };
+        return { k: "none" };
+      } catch { return { k: "blocked" }; }
+    });
+    memo.set(key, pr);
+    return pr;
+  };
+  return { check, memo };
 }
 type Profile = { summary: string; services: string[]; notOffered: string[]; customers: string; reach: string; countries: string[]; usp: string[]; recQuestions: string[]; pages: number };
 async function buildProfile(fullName: string, loc: J, city: string, site: string): Promise<Profile | null> {
@@ -582,11 +631,11 @@ export function evaluate(c: Ctx): J {
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
-  const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
+  const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), read: ((x as J).hit as Hit | undefined)?.k, rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
   // Suche: ALLE Treffer von Google Seite 1–5 + Bing zeigen (auch „andere Firma“), sortiert nach Position
   const allSearch = [...new Map(c.items.filter((x) => x.src === "google" || x.src === "bing").sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos)
     .map((x) => [x.src + x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].slice(0, 60)
-    .map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
+    .map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), read: ((x as J).hit as Hit | undefined)?.k, rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
   const AREAS: { key: AreaKey; name: string; text: (v: number) => string; items: J[] }[] = [
     { key: "press", name: "Presse & Foren", text: () => (negP1.some((x) => x.type !== "own") ? "Ein negativer Treffer steht auf Seite 1 bei Google. Viele Kunden sehen ihn, bevor sie Kontakt aufnehmen." : "Wir prüfen Zeitungen, Online-Magazine und Foren auf Beiträge über Sie."), items: pick((x) => x.type === "press" || x.type === "forum" || x.src === "news") },
     { key: "search", name: "Google- & Bing-Suche", text: () => "Was Kunden sehen, wenn sie Ihren Namen bei Google oder Bing suchen.", items: allSearch },
@@ -632,8 +681,10 @@ export function evaluate(c: Ctx): J {
       const ks = (c.kws || []).filter(kwOk);
       if (!ks.length) return [];
       const p1 = ks.filter((k) => k.g != null && k.g <= 10).length;
+      const mineN = ks.reduce((a2, k) => a2 + (k.mine ? k.mine.length : 0), 0), topN = ks.reduce((a2, k) => a2 + (k.top || 0), 0);
       return [
-        { label: "Google Seite 1", value: `${p1} von ${ks.length}`, tone: p1 >= ks.length / 2 ? "good" as const : "bad" as const },
+        ...(ks.some((k) => k.mine) ? [{ label: "Plätze auf Seite 1, die Ihnen gehören oder Sie nennen", value: `${mineN} von ${topN}`, tone: mineN >= topN * 0.3 ? "good" as const : "bad" as const }] : []),
+        { label: "Website auf Seite 1", value: `${p1} von ${ks.length}`, tone: p1 >= ks.length / 2 ? "good" as const : "bad" as const },
         { label: "Google Top 30", value: `${ks.filter((k) => k.g != null).length} von ${ks.length}` },
         ...(ks.some((k) => !k.noMaps) ? [{ label: "Maps Top 3", value: `${ks.filter((k) => k.pack != null || (k.maps != null && k.maps <= 3)).length} von ${ks.length}` }] : []),
       ];
@@ -706,7 +757,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 6;
+    const CACHE_V = 7;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -776,6 +827,11 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     }
     if (!cache && serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("Suchdienst vorübergehend nicht verfügbar");
     const itemsRaw = items.map((x) => ({ ...x }));
+    const checker = makeChecker([name, name.replace(/\s+/g, ""), fullName !== name ? fullName : ""].filter(Boolean), own0);
+    const cachedHits: Record<string, Hit> = cache && cache.hits ? cache.hits : {};
+    for (const [u, h] of Object.entries(cachedHits)) checker.memo.set(u, Promise.resolve(h));
+    // alle Treffer der Namenssuche/Erwähnungen/News lesen (läuft parallel zu den KI-Fragen)
+    const hitsP = Promise.all(items.filter((x) => x.src !== "bing" || x.pos <= 10).slice(0, 90).map(async (x) => { (x as J).hit = await checker.check(x.link); }));
     await say(64, `${items.filter((x) => x.src === "mention" || x.src === "news").length} Erwähnungen gefunden · lese jetzt die neuesten Google-Bewertungen`);
     const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
     if (loc.place_id) {
@@ -821,26 +877,29 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const one = async (q0: string): Promise<Kw> => {
         const mP = national ? Promise.resolve({} as J) : retry({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) });
         // Google Platz 1–30: nächste Seite nur abfragen, wenn die eigene Website noch nicht gefunden ist
-        let g: J = {}; let gPos: number | null = null; let gErr = false;
+        let g: J = {}; let gPos: number | null = null; let gErr = false; let top10: { p: number; u: string; t: string }[] = [];
         for (let pg = 0; pg < 3; pg++) {
           const j0 = await retry({ engine: "google", q: q0, gl, hl: "de", num: "10", start: String(pg * 10) });
           if (!j0) { if (pg === 0) gErr = true; break; }
           const j = j0;
           if (pg === 0) g = j;
           const org: J[] = Array.isArray(j.organic_results) ? j.organic_results : [];
+          if (pg === 0) top10 = org.slice(0, 10).map((x, k2) => ({ p: Number(x.position) > 0 && Number(x.position) <= 10 ? Number(x.position) : k2 + 1, u: String(x.link || ""), t: String(x.title || "").slice(0, 120) })).filter((x) => x.u);
           const oi = own0 ? org.findIndex((x) => host(String(x.link || "")).endsWith(own0)) : -1;
           if (oi >= 0) { gPos = pg * 10 + (Number(org[oi].position) > 0 && Number(org[oi].position) <= 10 ? Number(org[oi].position) : oi + 1); break; }
           if (!own0 || org.length < 5) break;
         }
         const m = (await mP) || {};
+        const mine: KwHit[] = [];
+        for (const x of top10) { const hh = await checker.check(x.u); if (hh.k !== "none" && hh.k !== "blocked") mine.push({ p: x.p, u: x.u, h: host(x.u), t: x.t, k: hh.k }); }
         const pk: J[] = Array.isArray(g.local_results?.places) ? g.local_results.places : Array.isArray(g.local_results) ? g.local_results : [];
         const pi = pk.findIndex(isMe);
         const ml: J[] = Array.isArray(m.local_results) ? m.local_results : m.place_results ? [m.place_results] : [];
         const mi = ml.findIndex(isMe);
         const lead = mi === 0 ? undefined : String(ml[0]?.title || "") || undefined;
         done++;
-        void say(77, `Suchbegriff „${short(q0)}“: ${gErr ? "Google nicht erreichbar" : gPos ? "Google Platz " + gPos : "nicht in Google Top 30"}${national ? "" : " · " + (mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps")} (${done} von ${kws.length})`);
-        return { q: q0, g: gPos, pack: national || pi < 0 ? null : pi + 1, maps: national || mi < 0 ? null : mi + 1, lead: national ? undefined : lead, ...(gErr ? { err: true } : {}), ...(national ? { noMaps: true } : {}) } as Kw;
+        void say(77, `Suchbegriff „${short(q0)}“: ${gErr ? "Google nicht erreichbar" : `${mine.length} von ${top10.length} Treffern auf Seite 1 gehören zu Ihnen oder nennen Sie`}${national ? "" : " · " + (mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps")} (${done} von ${kws.length})`);
+        return { q: q0, mine, top: top10.length, g: gPos, pack: national || pi < 0 ? null : pi + 1, maps: national || mi < 0 ? null : mi + 1, lead: national ? undefined : lead, ...(gErr ? { err: true } : {}), ...(national ? { noMaps: true } : {}) } as Kw;
       };
       const out: Kw[] = new Array(kws.length);
       let next = 0;
@@ -905,7 +964,10 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}${srcTxt(gptSrc[i])}`).join("\n\n") : "";
     await say(86, `Ordne ${items.length} Fundstellen ein: positiv, negativ oder andere Firma`);
     const ownHost = host(site);
-    const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
+    await say(87, `Lese ${checker.memo.size} gefundene Seiten: nennen oder verlinken sie Sie?`);
+    await hitsP;
+    const hitTxt: Record<string, string> = { own: "eigene Website", channel: "eigener Kanal", links: "Seite verlinkt das Unternehmen", names: "Seite nennt das Unternehmen", none: "Seite gelesen – Unternehmen kommt NICHT vor", blocked: "Seite nicht lesbar" };
+    const list = items.slice(0, 90).map((x) => { const h = (x as J).hit as Hit | undefined; return { i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link), ...(h ? { gelesen: hitTxt[h.k], ...(h.ex ? { textstelle: h.ex.slice(0, 360) } : {}) } : {}) }; });
     const cls = fromCache && cache!.cls ? (cache!.cls as J) : parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F${QUESTIONS.length}):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
@@ -913,7 +975,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       `Fragen: ${QUESTIONS.map((x, i) => `F${i + 1} [${x.key}] ${x.q}`).join(" | ")}. Die Fragen mit [rec…] sind Empfehlungsfragen OHNE Firmennamen: "mentioned" = nennt die Antwort dieses Unternehmen (${name}${own0 ? " / " + own0 : ""})? "rank" = an welcher Stelle unter den genannten Anbietern (1 = zuerst), sonst null; "others" = die anderen genannten Anbieter; "sent" = pos wenn empfohlen, neg wenn nicht genannt. ` +
       (profile ? `Steckbrief des Unternehmens: ${profile.summary} Angeboten: ${profile.services.join("; ")}.${profile.notOffered.length ? " NICHT angeboten: " + profile.notOffered.join("; ") + " – fehlende Treffer dazu sind keine Schwäche." : ""} ` : "") +
       `Regeln zu den KI-Antworten: Bei "kiSummary" und "dims": Sprich allgemein von „KI-Systemen“ (z. B. „KI-Systeme raten zu …“, „KI-Systeme kennen …“) – nie „beide KIs“, „zwei KIs“, „alle drei“ oder andere Anzahlen, und nenne keine einzelnen KI-Namen. "sent" bewertet immer, ob die Antwort für das Unternehmen gut (pos) oder schlecht (neg) ist – bei der Kritik-Frage [kritik] also pos, wenn keine Kritik bekannt ist, und neg, wenn Kritik genannt wird. ` +
-      `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
+      `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. Bei vielen Treffern steht unter "gelesen" das Ergebnis, nachdem wir die Seite wirklich geöffnet haben, und unter "textstelle" der Text rund um die Erwähnung – das hat Vorrang vor Titel/Snippet: "Seite nennt/verlinkt das Unternehmen" → "about":"self" und "sent" nach der Textstelle (Empfehlung = pos, Warnung/Kritik = neg); "kommt NICHT vor" → meist "other", außer der Titel nennt das Unternehmen eindeutig. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
       { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
     if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
@@ -922,7 +984,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (!fromCache && cls && [claudeAns, gptAns, pplxAns].some((a) => a.some(Boolean))) {
       const kwsNow = await kwPromise;
       await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
-        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, claudeAns, gptAns, pplxAns, claudeSrc, gptSrc, pplxSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
+        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, hits: Object.fromEntries(await Promise.all([...checker.memo.entries()].map(async ([u, p2]) => [u, await p2] as const))), claudeAns, gptAns, pplxAns, claudeSrc, gptSrc, pplxSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
     }
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
     for (const x of items) {
@@ -964,7 +1026,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
-    const result: J = { ...evaluate(ctx), profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
+    const result: J = { ...evaluate(ctx), pagesRead: checker.memo.size, profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
     await say(97, "Schreibe die Zusammenfassungen für jeden Bereich");
     result.sumV = SUM_V;
     result.areaSums = await summarizeAreas(result).catch((e) => { console.warn("Rep-Scan Bereichs-Zusammenfassung", (e as Error).message); return {}; });

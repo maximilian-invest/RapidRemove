@@ -1469,3 +1469,12 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-chips span{background:#f2f2f2;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#2a2a2a}
 .rra .rp-chips.no span{background:#fdecec;color:#7f1d1d}
 .rra .rp-dim-rec{background:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;display:flex;flex-direction:column;gap:12px}
+
+/* Reputation: Suchbegriffe mit eigenen Treffern auf Seite 1 */
+.rra .rp-kw-w{background:#f6f6f6;border-radius:16px}
+.rra .rp-kw-w .rp-kw{width:100%;border:0;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rra .rp-kw-w .rp-kw:disabled{cursor:default}
+.rra .rp-kw-b{background:#fff;border-radius:12px;margin:0 8px 8px;padding:2px 12px}
+.rra .rp-kw-b .rp-li{border-bottom:1px solid #f0f0f0}
+.rra .rp-kw-b .rp-li:last-child{border-bottom:0}
+.rra .rp-kw-p{min-width:34px;font-weight:800;font-size:14px;color:#6b6b6b}
