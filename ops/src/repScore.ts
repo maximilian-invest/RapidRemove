@@ -55,6 +55,15 @@ const GLOC: Record<string, string> = { at: "Austria", de: "Germany", ch: "Switze
 const GDOM: Record<string, string> = { at: "google.at", de: "google.de", ch: "google.ch", li: "google.li", it: "google.it", lu: "google.lu" };
 /* Postgres-jsonb verträgt kein \u0000 und keine halben Unicode-Zeichen (kommen aus gelesenen Webseiten) */
 const pgJson = (v: unknown) => JSON.stringify(v).replace(/\\u0000/g, "").replace(/\\ud[89ab][0-9a-f]{2}(?!\\ud[c-f][0-9a-f]{2})/gi, "").replace(/(?<!\\ud[89ab][0-9a-f]{2})\\ud[c-f][0-9a-f]{2}/gi, "");
+/* Warum eine KI nicht geantwortet hat (Guthaben leer, Key ungültig …) – wird je Scan ausgewertet */
+const aiErr = new Map<string, { why: string; at: number }>();
+const aiErrTold = new Map<string, number>();
+function noteAi(ai: string, status: number, msg: string) {
+  const m = String(msg || "");
+  const why = /credit|billing|quota|exceeded|insufficient/i.test(m) || status === 402 ? "kein Guthaben" : status === 401 || status === 403 || /invalid api key|api key not valid|unauthor/i.test(m) ? "Key ungültig" : status === 429 ? "Limit erreicht" : "Fehler " + status;
+  aiErr.set(ai, { why, at: Date.now() });
+  if (why !== "Limit erreicht" && Date.now() - (aiErrTold.get(ai) || 0) > 6 * 3600_000) { aiErrTold.set(ai, Date.now()); void notifyTeam(`${ai}: ${why}`, `Reputations-Scans: ${ai} antwortet nicht (${why}). ${m.slice(0, 140)}`).catch(() => {}); }
+}
 /* DataForSEO (Basic Auth: DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD) – Suchvolumen, Ranking-Keywords, Backlinks, Erwähnungen */
 const dfsOn = () => !!(process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD);
 const DFS_LOC: Record<string, number> = { at: 2040, de: 2276, ch: 2756, li: 2438, it: 2380, lu: 2442 };
@@ -154,7 +163,7 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
       }),
     });
     const j = (await res.json().catch(() => ({}))) as J;
-    if (!res.ok) throw new Error(j.error?.message || "Claude HTTP " + res.status);
+    if (!res.ok) { if (withSearch === false || res.status === 401 || res.status === 402 || /credit|billing/i.test(String(j.error?.message || ""))) noteAi("Claude", res.status, String(j.error?.message || "")); throw new Error(j.error?.message || "Claude HTTP " + res.status); }
     const content = Array.isArray(j.content) ? j.content : [];
     // Websuche kann pausieren (stop_reason „pause_turn“) → Antwort mit dem bisherigen Verlauf fortsetzen
     if (j.stop_reason === "pause_turn") { messages = [{ role: "user", content: user }, { role: "assistant", content }]; continue; }
@@ -184,7 +193,7 @@ async function askChatGPT(prompt: string, sink?: Src[]): Promise<string> {
         body: JSON.stringify({ model, input: prompt, ...(tools ? { tools } : {}) }),
       });
       const j = (await res.json().catch(() => ({}))) as J;
-      if (!res.ok) { console.warn("Rep-Scan ChatGPT", res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 401 || res.status === 429) return ""; continue; }
+      if (!res.ok) { console.warn("Rep-Scan ChatGPT", res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 401 || res.status === 429) { noteAi("ChatGPT", res.status, String(j.error?.message || "")); return ""; } continue; }
       for (const o of Array.isArray(j.output) ? j.output : []) for (const c of Array.isArray(o.content) ? o.content : []) for (const an of Array.isArray(c.annotations) ? c.annotations : []) if (an.type === "url_citation") pushSrc(sink, an.url, an.title);
       if (typeof j.output_text === "string" && j.output_text.trim()) return j.output_text.trim();
       const txt = (Array.isArray(j.output) ? j.output : []).filter((o: J) => o.type === "message")
@@ -207,7 +216,7 @@ async function askGemini(prompt: string, sink?: Src[]): Promise<string> {
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], tools: [{ google_search: {} }] }),
       });
       const j = (await res.json().catch(() => ({}))) as J;
-      if (!res.ok) { console.warn("Rep-Scan Gemini", model, res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 404) continue; return ""; }
+      if (!res.ok) { console.warn("Rep-Scan Gemini", model, res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 404) continue; noteAi("Gemini", res.status, String(j.error?.message || "")); return ""; }
       const c = j.candidates?.[0] || {};
       for (const ch of Array.isArray(c.groundingMetadata?.groundingChunks) ? c.groundingMetadata.groundingChunks : []) if (ch.web) pushSrc(sink, ch.web.uri, ch.web.title);
       return (Array.isArray(c.content?.parts) ? c.content.parts : []).map((x: J) => x.text || "").join("").trim();
@@ -226,7 +235,7 @@ async function askPerplexity(prompt: string, sink?: Src[]): Promise<string> {
       body: JSON.stringify({ model: process.env.PERPLEXITY_MODEL || "sonar", messages: [{ role: "user", content: prompt }], max_tokens: 500 }),
     });
     const j = (await res.json().catch(() => ({}))) as J;
-    if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); return ""; }
+    if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); noteAi("Perplexity", res.status, String(j.error?.message || j.detail || "")); return ""; }
     if (Array.isArray(j.search_results)) for (const r of j.search_results) pushSrc(sink, r.url, r.title);
     else if (Array.isArray(j.citations)) for (const u of j.citations) pushSrc(sink, u, "");
     return String(j.choices?.[0]?.message?.content || "").replace(/\[\d+\]/g, "").trim();
@@ -583,7 +592,7 @@ type Item = { senti?: string; i: number; src: "google" | "bing" | "news" | "ment
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
   ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
-  kws?: Kw[]; backlinks?: { rank: number; domains: number; links: number } | null;
+  kiWhy?: Record<string, string>; kws?: Kw[]; backlinks?: { rank: number; domains: number; links: number } | null;
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
 };
@@ -741,7 +750,7 @@ export function evaluate(c: Ctx): J {
     ],
     ki: [
       { label: "Gefragt", value: (c.kiTried && c.kiTried.length ? c.kiTried : answered).join(", ") + (c.aiOverview ? " + Google KI-Übersicht" : "") },
-      ...(missing.length ? [{ label: "Nicht geantwortet", value: missing.join(", "), tone: "bad" as const }] : []),
+      ...(missing.length ? [{ label: "Nicht geantwortet", value: missing.map((n) => (c.kiWhy && c.kiWhy[n] ? `${n} (${c.kiWhy[n]})` : n)).join(", "), tone: "bad" as const }] : []),
     ],
     social: [
       { label: "Gefunden", value: c.social.length ? [...new Set(c.social.map((x) => x.net))].join(", ") : "keine Profile", tone: c.social.length >= 2 ? "good" : "bad" },
@@ -783,6 +792,7 @@ async function setStep(scanId: string, progress: number, step: string) {
   await pool!.query(`UPDATE rep_scans SET progress=$2, step=$3 WHERE id=$1`, [scanId, progress, step]).catch(() => {});
 }
 async function runScan(scanId: string, loc: J): Promise<void> {
+  const scanStart = Date.now();
   const fullName = String(loc.name || ""), city = String(loc.city || "");
   const name = fullName.split(/\s+[|–—·:]\s+|\s+-\s+/)[0].trim() || fullName;
   const gl = String(loc.country || "at") || "at";
@@ -1147,7 +1157,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
     // Neu recherchiert und brauchbar → für eine Woche merken
     if (!cache && serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("Suchdienst vorübergehend nicht verfügbar");
-    if (!fromCache && cls && [claudeAns, gptAns, pplxAns, gemAns].some((a) => a.some(Boolean))) {
+    if (!fromCache && cls && [claudeAns, gptAns, pplxAns, gemAns].filter((a) => a.some(Boolean)).length >= 2) {
       const kwsNow = await kwPromise;
       await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
         [loc.id, pgJson({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, backlinkSum, hits: Object.fromEntries(await Promise.all([...checker.memo.entries()].map(async ([u, p2]) => [u, await p2] as const))), claudeAns, gptAns, pplxAns, gemAns, googAns, googSrc, claudeSrc, gptSrc, pplxSrc, gemSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
@@ -1192,7 +1202,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
-      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kiWhy: Object.fromEntries([...aiErr.entries()].filter(([, v]) => v.at >= scanStart).map(([k, v]) => [k, v.why])), backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), pagesRead: checker.memo.size, profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

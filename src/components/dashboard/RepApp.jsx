@@ -688,6 +688,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
         </section>
       ) : null}
+      {a.key === "ki" && (a.facts || []).some((f) => f.label === "Nicht geantwortet") ? <p className="rp-kimiss">Nicht beantwortet: {(a.facts || []).find((f) => f.label === "Nicht geantwortet").value}</p> : null}
       {a.key === "ki" ? <KiSimple r={r} a={a} pending={!!r.kiPending} /> : a.key === "social" ? (
         <section className="rp-list">
           <div className="rp-box-h"><b>Ihre Profile</b><span>{a.items.length} gefunden</span></div>
