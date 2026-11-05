@@ -360,8 +360,8 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
 }
 
 /* KI-Antworten: Ampel-Tabelle (Fragen × KIs) mit Einzelscore je KI; Feld antippen → ganze Antwort */
-const AI_COL = { ChatGPT: "#10a37f", Claude: "#d97757", Perplexity: "#20808d" };
-const AI_INI = { ChatGPT: "G", Claude: "C", Perplexity: "P" };
+const AI_COL = { ChatGPT: "#10a37f", Claude: "#d97757", Gemini: "#4285f4", Perplexity: "#20808d" };
+const AI_INI = { ChatGPT: "G", Claude: "C", Gemini: "Ge", Perplexity: "P" };
 const KI_LBL = { kennen: ["Kennen", "Kennst du die Firma?"], serioes: ["Seriös?", "Ist die Firma seriös?"], erfahrungen: ["Erfahrungen", "Welche Erfahrungen haben Kunden gemacht?"], beauftragen: ["Beauftragen?", "Soll ich die Firma beauftragen?"], besser: ["Bessere?", "Gibt es in der Region bessere Anbieter?"] };
 const kiSent = (x) => (!x || x.sent === "none" ? "none" : !x.known ? "neu" : x.sent);
 const kiVal = (x) => (!x.known ? 4 : x.sent === "pos" ? 9 : x.sent === "neg" ? 3 : 6.5);
