@@ -316,7 +316,8 @@ function perfScore(m: { fcp: number | null; lcp: number | null; cls: number | nu
 function seoChecks(html: string, finalUrl: string, robotsOk: boolean | null, sitemapOk: boolean | null): Check[] {
   const h = html.slice(0, 800_000);
   const title = decode((h.match(/<title[^>]*>([\s\S]{0,300}?)<\/title>/i)?.[1] || "").replace(/\s+/g, " ").trim());
-  const metaC = (name: string) => decode(h.match(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]*content=["']([^"']*)`, "i"))?.[1] || h.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:name|property)=["']${name}["']`, "i"))?.[1] || "").trim();
+  // Attributwert in "…" darf ' enthalten (z. B. „we're“) und umgekehrt – sonst wird die Beschreibung beim Apostroph abgeschnitten
+  const metaC = (name: string) => { const m = h.match(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]*content=(?:"([^"]*)"|'([^']*)')`, "i")) || h.match(new RegExp(`<meta[^>]+content=(?:"([^"]*)"|'([^']*)')[^>]*(?:name|property)=["']${name}["']`, "i")); return decode((m?.[1] ?? m?.[2] ?? "")).trim(); };
   const desc = metaC("description");
   const robots = metaC("robots").toLowerCase();
   const h1 = (h.match(/<h1[\s>]/gi) || []).length;
@@ -444,7 +445,7 @@ async function homepage(url: string): Promise<{ https: boolean; title: string; d
     const html = (await res.text()).slice(0, 600_000);
     out.ok = res.ok;
     out.title = decode((html.match(/<title[^>]*>([^<]{0,200})/i)?.[1] || "").trim());
-    out.desc = decode((html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{0,400})/i)?.[1] || "").trim());
+    { const dm = html.match(/<meta[^>]+name=["']description["'][^>]+content=(?:"([^"]{0,400})|'([^']{0,400}))/i); out.desc = decode((dm?.[1] ?? dm?.[2] ?? "").trim()); }
     const links = [...html.matchAll(/href=["'](https?:\/\/[^"'#\s]+)/gi)].map((m) => m[1]);
     for (const [net, re] of SOCIAL) { const hit = links.find((l) => re.test(l.replace(/^https?:\/\//, ""))); if (hit) out.social.push({ net, url: hit }); }
   } catch { /* Website nicht erreichbar */ }
