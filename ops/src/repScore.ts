@@ -42,7 +42,8 @@ async function init(): Promise<void> {
     created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS rep_scans_loc ON rep_scans (location_id, created_at DESC)`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
-  await pool.query(`UPDATE rep_scans SET status='error', error='abgebrochen', finished_at=now() WHERE status='running' AND created_at < now() - interval '20 minutes'`);
+  // Scans laufen im Prozess: nach einem Neustart (Deploy) ist jeder „laufende“ Scan tot → als abgebrochen markieren
+  await pool.query(`UPDATE rep_scans SET status='error', error='abgebrochen (Server-Neustart)', finished_at=now() WHERE status='running'`);
   ready = true;
 }
 
@@ -604,7 +605,9 @@ export function registerRepScore(app: FastifyInstance): void {
       const cur = s.rows[0] || null;
       out.push({
         id: l.id, name: l.name, address: l.address, city: l.city, website: l.website, mapsUrl: l.maps_url,
-        scan: cur ? { id: cur.id, status: cur.status, progress: cur.progress, step: cur.step, error: cur.error, at: cur.created_at } : null,
+        scan: cur ? (cur.status === "running" && Date.now() - new Date(cur.created_at).getTime() > 12 * 60_000
+          ? { id: cur.id, status: "error", progress: cur.progress, step: cur.step, error: "abgebrochen", at: cur.created_at }
+          : { id: cur.id, status: cur.status, progress: cur.progress, step: cur.step, error: cur.error, at: cur.created_at }) : null,
         latest: done[0] ? { ...done[0].result, at: done[0].finished_at } : null,
         prevScore: done[1] ? done[1].score : null, prevAt: done[1] ? done[1].finished_at : null,
         history: done.slice().reverse().map((x) => ({ at: x.finished_at, score: x.score })),
@@ -653,7 +656,7 @@ export function registerRepScore(app: FastifyInstance): void {
       }
     }
     if (!loc) return reply.code(404).send({ ok: false, error: "location" });
-    const running = await pool!.query(`SELECT id FROM rep_scans WHERE location_id=$1 AND status='running' AND created_at > now() - interval '20 minutes'`, [loc.id]);
+    const running = await pool!.query(`SELECT id FROM rep_scans WHERE location_id=$1 AND status='running' AND created_at > now() - interval '12 minutes'`, [loc.id]);
     if (running.rowCount) return { ok: true, locationId: loc.id, scanId: running.rows[0].id };
     const sid = id();
     await pool!.query(`INSERT INTO rep_scans (id, location_id, email, status, progress, step) VALUES ($1,$2,$3,'running',1,'Start')`, [sid, loc.id, a.email]);

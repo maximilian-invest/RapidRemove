@@ -29,7 +29,7 @@ import PaySheet from "./PaySheet";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
 import { isRepPreview, RepHero, RepTeaser, RepServices } from "./RepPreview";
-import { useRep, RepScoreCard, RepRunning, RepSearchSheet, RepTab } from "./RepApp";
+import { useRep, RepScoreCard, RepRunning, RepFailed, RepSearchSheet, RepTab } from "./RepApp";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -1948,6 +1948,7 @@ export default function CustomerDashboard() {
   const repAsk = (a) => { if (imp || (data && data.adminView)) { showToast("In der Admin-Ansicht nicht möglich", true); return; } rep.request(null, a).then(() => showToast("Danke! Wir melden uns innerhalb von 24 Stunden.")).catch(() => showToast(T("genericErr"), true)); };
   const repLoc = (rep.locations || []).find((l) => l.latest) || null;
   const repRun = (rep.locations || []).find((l) => l.scan && l.scan.status === "running") || null;
+  const repFail = (rep.locations || []).find((l) => l.scan && l.scan.status === "error" && (!l.latest || new Date(l.scan.at) > new Date(l.latest.scannedAt || 0))) || null;
   const repGuess = (orders.find((o) => o.business) || {}).business || "";
   const HomeRepV = () => (
     <>
@@ -1966,7 +1967,7 @@ export default function CustomerDashboard() {
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length && (due.length || swOnly) ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
-          {repLoc ? <RepScoreCard loc={repLoc} onOpen={() => goTab("rep")} /> : repRun ? <RepRunning loc={repRun} /> : (
+          {repRun ? <RepRunning loc={repRun} /> : repFail ? <RepFailed loc={repFail} rep={rep} showToast={showToast} /> : repLoc ? <RepScoreCard loc={repLoc} onOpen={() => goTab("rep")} /> : (
             <>
               <RepHero onScan={() => setRepSearch(true)} />
               <div className="sec"><h2>Ihr Überblick</h2></div>
