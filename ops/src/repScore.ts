@@ -415,8 +415,12 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const rating = Number(r.rich_snippet?.top?.detected_extensions?.rating ?? r.rating) || null;
     items.push({ i: n++, src, pos, title: String(r.title || "").slice(0, 160), snippet: String(r.snippet || r.description || "").slice(0, 260), link, date: String(r.date || ""), rating });
   };
+  // Fortschritt nie rückwärts (parallele Abfragen melden sich in beliebiger Reihenfolge)
+  let pmax = 0;
+  const say = (progress: number, step: string) => { pmax = Math.max(pmax, progress); return setStep(scanId, pmax, step.slice(0, 140)); };
+  const short = (t: string) => (t.length > 46 ? t.slice(0, 44) + "…" : t);
   try {
-    await setStep(scanId, 4, "Google-Profil");
+    await say(4, `Lese das Google-Profil von „${short(name)}“`);
     if (loc.place_id) {
       const p = placeView(await placeDetails(loc.place_id).catch(() => ({})));
       if (p.name) {
@@ -426,16 +430,22 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     }
     // Google Seite 1–5
     let aiOverview: string | null = null; let aiToken = "";
-    await setStep(scanId, 10, "Google-Suche Seite 1–5");
+    await say(8, `Google-Suche nach „${short(q)}“ – Seite 1 bis ${PAGES()}`);
+    let gDone = 0, gHits = 0;
     const gPage = async (pg: number): Promise<J> => {
       for (let t = 0; t < 2; t++) {
-        try { return await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }, 90_000); }
+        try {
+          const j = await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }, 90_000);
+          gDone++; gHits += Array.isArray(j.organic_results) ? j.organic_results.length : 0;
+          void say(8 + gDone * 7, `Google Seite ${pg + 1} gelesen · ${gHits} Treffer bisher (${gDone} von ${PAGES()} Seiten)`);
+          return j;
+        }
         catch (e) { console.warn("Rep-Scan Google Seite", pg + 1, "Versuch", t + 1, (e as Error).message); }
       }
       return {};
     };
     const gPages = await Promise.all(Array.from({ length: PAGES() }, (_, pg) => gPage(pg)));
-    await setStep(scanId, 45, "Google-Suche ausgewertet");
+    await say(45, `${gHits} Google-Treffer zu „${short(q)}“ gesammelt`);
     for (let pg = 0; pg < PAGES(); pg++) {
       const j = gPages[pg];
       (Array.isArray(j.organic_results) ? j.organic_results : []).forEach((r: J, k: number) => add("google", pg * 10 + (Number(r.position) > 0 && Number(r.position) <= 10 ? Number(r.position) : k + 1), r));
@@ -446,27 +456,30 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       }
     }
     if (!aiOverview && aiToken) {
+      await say(47, "Lese Googles KI-Übersicht zu Ihrem Namen");
       const j = await serp({ engine: "google_ai_overview", page_token: aiToken }).catch(() => ({} as J));
       const tb = j.ai_overview?.text_blocks;
       if (Array.isArray(tb)) aiOverview = tb.map((b: J) => b.snippet || "").join(" ").trim() || null;
     }
-    await setStep(scanId, 50, "Google-Vorschläge");
+    await say(50, `Prüfe, was Google beim Tippen von „${short(name)}“ vorschlägt`);
     const ac = await serp({ engine: "google_autocomplete", q: name, gl, hl: "de" }).catch(() => ({} as J));
     const suggestions = (Array.isArray(ac.suggestions) ? ac.suggestions : []).slice(0, 10).map((s: J) => ({ q: String(s.value || ""), neg: NEG_WORDS.test(String(s.value || "")) })).filter((s: { q: string }) => s.q);
-    await setStep(scanId, 55, "Bing-Suche");
+    const negS = suggestions.find((x: { neg: boolean }) => x.neg);
+    if (negS) await say(52, `Achtung: „${short(negS.q)}“ steht in den Google-Vorschlägen`);
+    await say(55, `Suche bei Bing nach „${short(q)}“`);
     const bj = await serp({ engine: "bing", q, cc: gl.toUpperCase() }).catch(() => ({} as J));
     (Array.isArray(bj.organic_results) ? bj.organic_results : []).slice(0, 10).forEach((r: J, k: number) => add("bing", k + 1, r));
-    await setStep(scanId, 60, "Presse & News");
+    await say(60, `Durchsuche Google News nach „${short(name)}“`);
     const nj = await serp({ engine: "google_news", q: `"${name}"`, gl, hl: "de" }).catch(() => ({} as J));
     (Array.isArray(nj.news_results) ? nj.news_results : []).slice(0, 10).forEach((r: J, k: number) => add("news", k + 1, { ...r, snippet: r.snippet || r.source?.name || "" }));
     // Erwähnungen ohne Ort und ohne eigene Website: findet Presse/Magazin-Artikel, die bei „Name + Ort“ untergehen
-    await setStep(scanId, 62, "Erwähnungen im Netz");
+    await say(62, `Suche Artikel und Erwähnungen über „${short(name)}“ im ganzen Netz`);
     const own0 = host(String(loc.website || ""));
     for (let pg = 0; pg < 2; pg++) {
       const mj = await serp({ engine: "google", q: `"${name}"${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
       (Array.isArray(mj.organic_results) ? mj.organic_results : []).forEach((r: J, k: number) => add("mention", pg * 10 + k + 1, r));
     }
-    await setStep(scanId, 64, "Bewertungen");
+    await say(64, `${items.filter((x) => x.src === "mention" || x.src === "news").length} Erwähnungen gefunden · lese jetzt die neuesten Google-Bewertungen`);
     const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
     if (loc.place_id) {
       const rj = await serp({ engine: "google_maps_reviews", place_id: loc.place_id, hl: "de", sort_by: "newestFirst" }).catch(() => ({} as J));
@@ -474,12 +487,15 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       reviews.total = list.length;
       for (const r of list) { const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
     }
-    await setStep(scanId, 70, "Website & SEO");
+    if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
     const site = String(loc.website || "");
+    await say(70, site ? `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit` : "Kein Website-Link im Google-Profil – überspringe Website-Check");
     const [au, hp] = site ? await Promise.all([siteAudit(site), homepage(site)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
+    if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
+    await say(76, "Suche Facebook-, Instagram-, LinkedIn- und YouTube-Profile");
     const social = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
-    await setStep(scanId, 78, "KI-Antworten");
+    await say(78, social.length ? `Gefunden: ${[...new Set(social.map((x) => x.net))].join(", ")} · frage jetzt ChatGPT, Claude & Perplexity` : "Frage jetzt ChatGPT, Claude & Perplexity");
     // Fester Fragenkatalog – so wie echte Kunden fragen. Jede KI bekommt jede Frage einzeln.
     const inCity = city ? ` in ${city}` : "";
     const branche = String(loc.type || "").trim() || "Anbieter";
@@ -491,15 +507,18 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       { key: "besser", q: `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
     ];
     const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
+    let kiDone = 0;
+    const kiTotal = QUESTIONS.length * 3;
+    const told = <T,>(ai: string, x: { q: string }, pr: Promise<T>) => pr.then((v) => { kiDone++; void say(78 + Math.round((kiDone / kiTotal) * 8), `${ai} gefragt: „${short(x.q.replace(/„|“/g, ""))}“ (${kiDone} von ${kiTotal})`); return v; });
     const [claudeAns, gptAns, pplxAns] = await Promise.all([
-      Promise.all(QUESTIONS.map((x) => askClaude(SYS, x.q, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; }))),
-      Promise.all(QUESTIONS.map((x) => askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen."))),
-      Promise.all(QUESTIONS.map((x) => askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen."))),
+      Promise.all(QUESTIONS.map((x) => told("Claude", x, askClaude(SYS, x.q, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; })))),
+      Promise.all(QUESTIONS.map((x) => told("ChatGPT", x, askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
+      Promise.all(QUESTIONS.map((x) => told("Perplexity", x, askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
     ]);
     const kiText = claudeAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${claudeAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
     const pplxText = pplxAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${pplxAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
     const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
-    await setStep(scanId, 86, "Treffer einordnen");
+    await say(86, `Ordne ${items.length} Fundstellen ein: positiv, negativ oder andere Firma`);
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = parseJson(await askClaude(
@@ -539,7 +558,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
       web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
-    await setStep(scanId, 95, "Score berechnen");
+    await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
     await pool!.query(`UPDATE rep_scans SET status='done', progress=100, step='fertig', score=$2, result=$3, finished_at=now() WHERE id=$1`, [scanId, result.score, JSON.stringify(result)]);
   } catch (e) {

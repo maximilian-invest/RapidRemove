@@ -22,7 +22,7 @@ export function useRep(token, enabled, call) {
   const running = st.locations.some((l) => l.scan && l.scan.status === "running");
   React.useEffect(() => {
     if (!running) return undefined;
-    const t = setInterval(load, 3000);
+    const t = setInterval(load, 2000);
     return () => clearInterval(t);
   }, [running, load]);
   const scan = React.useCallback(async (body) => { const r = await call("rep/scan", { token, ...body }); await load(); return r; }, [token, call, load]);
@@ -121,7 +121,7 @@ export function RepRunning({ loc }) {
       </div>
       <div className="rp-ms-t">
         <span className="rp-ms-k">Wir prüfen · {loc.name}</span>
-        <b className="rp-ms-step">{cur.t} …</b>
+        <b className="rp-ms-step" key={loc.scan.step || cur.t}>{loc.scan.step || cur.t + " …"}</b>
         <div className="rp-ms-icons">
           {STEPS.map((x, i) => {
             const st = active === -1 || i < active ? "done" : i === active ? "run" : "wait";
