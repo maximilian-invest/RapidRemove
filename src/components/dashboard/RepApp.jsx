@@ -226,7 +226,7 @@ function Chart({ history }) {
 const TODO_ICON = { neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
 const TODO_COL = { neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
 
-export function RepDetail({ loc, rep, multi, onBack, showToast, imp }) {
+export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
   const [area, setArea] = React.useState(null);
   React.useEffect(() => { setArea(null); }, [loc.id]);
@@ -249,6 +249,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp }) {
       <div className="rp-dh">
         {multi ? <button type="button" className="rp-back" onClick={onBack} aria-label="Alle Standorte"><ArrowLeft /></button> : null}
         <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
+        {onAdd ? <button type="button" className="rp-add" onClick={onAdd}><Plus />Standort</button> : null}
       </div>
       {running ? <RepRunning loc={loc} /> : loc.scan && loc.scan.status === "error" && (!loc.latest || new Date(loc.scan.at) > new Date(loc.latest.scannedAt || 0)) ? <RepFailed loc={loc} rep={rep} showToast={showToast} /> : null}
       <div className="rp-kpis">
@@ -457,9 +458,9 @@ export function RepTab({ rep, showToast, imp, openSearch }) {
   const locs = rep.locations || [];
   const [sel, setSel] = React.useState(null);
   const scanned = locs.filter((l) => l.latest);
-  const cur = sel ? locs.find((l) => l.id === sel) : scanned.length === 1 ? scanned[0] : null;
+  const cur = sel ? locs.find((l) => l.id === sel) : locs.length === 1 && scanned.length === 1 ? scanned[0] : null;
   if (rep.loading) return <div className="rp-empty" style={{ padding: 60 }}><Loader className="spin" /></div>;
-  if (cur && cur.latest) return <RepDetail loc={cur} rep={rep} multi={locs.length > 1} onBack={() => setSel(null)} showToast={showToast} imp={imp} />;
+  if (cur && cur.latest) return <RepDetail loc={cur} rep={rep} multi={locs.length > 1} onBack={() => setSel(null)} showToast={showToast} imp={imp} onAdd={openSearch} />;
   return (
     <div className="rp-detail">
       <div className="rp-dh"><div><h1>Reputation</h1><p>{locs.length ? `${locs.length} ${locs.length === 1 ? "Standort" : "Standorte"}` : "Noch kein Standort geprüft"}</p></div></div>
