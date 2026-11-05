@@ -800,7 +800,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 10;
+    const CACHE_V = 11;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -944,7 +944,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         const cand = [...new Map([...ranked.map((x) => [x.q.toLowerCase(), `${x.q} (≈${x.vol}/Monat, Ihre Website rankt auf Platz ${x.pos ?? "?"})`] as const), ...[...sugg, ...seeds].map((x) => [x.toLowerCase(), `${x} (≈${vols.get(x.toLowerCase()) ?? "?"}/Monat)`] as const)]).values()];
         if (cand.length) {
           await say(76, `${ranked.length} Suchbegriffe gefunden, für die Sie schon ranken · prüfe Suchvolumen`);
-          const t2 = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}${prof}\n\nKandidaten mit echtem monatlichem Google-Suchvolumen:\n${cand.slice(0, 160).map((x) => "- " + x).join("\n")}\n\nWähle die 8 wichtigsten Begriffe, bei denen potenzielle KUNDEN genau eine angebotene Leistung suchen. Bevorzuge hohes Suchvolumen; Begriffe unter 10 Suchen/Monat nur, wenn es nichts Besseres gibt. Nicht: Leistungen aus „NICHT angeboten“, Firmennamen, Anleitungen, Recherche-Zusätze, Jobs. ${national ? "Keine Ortsnamen." : ""} Übernimm die Begriffe wörtlich ohne die Klammer.\n{"keywords":["…"]}`, { maxTokens: 500 }).catch(() => "");
+          const t2 = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}${prof}\n\nKandidaten mit echtem monatlichem Google-Suchvolumen:\n${cand.slice(0, 160).map((x) => "- " + x).join("\n")}\n\nWähle die 8 wichtigsten Begriffe, bei denen potenzielle KUNDEN genau eine angebotene Leistung suchen. Nimm, wenn vorhanden, mindestens 3 Begriffe, für die die Website schon rankt. Bevorzuge hohes Suchvolumen; Begriffe unter 10 Suchen/Monat nur, wenn es nichts Besseres gibt. Nicht: Leistungen aus „NICHT angeboten“, Firmennamen, Anleitungen, Recherche-Zusätze, Jobs. ${national ? "Keine Ortsnamen." : ""} Übernimm die Begriffe wörtlich ohne die Klammer.\n{"keywords":["…"]}`, { maxTokens: 500 }).catch(() => "");
           const k2 = parseJson(t2);
           if (k2 && Array.isArray(k2.keywords) && k2.keywords.length) kjx = k2;
         }
@@ -998,6 +998,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         const lead = mi === 0 ? undefined : String(ml[0]?.title || "") || undefined;
         done++;
         void say(77, `Suchbegriff „${short(q0)}“: ${gErr ? "Google nicht erreichbar" : `${mine.length} von ${top10.length} Treffern auf Seite 1 gehören zu Ihnen oder nennen Sie`}${national ? "" : " · " + (mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps")} (${done} von ${kws.length})`);
+        console.log(`Rep-Scan Suchbegriff „${q0}“ own=${own0 || "-"} quelle=${dr && Array.isArray(dr.items) ? "dataforseo" : "serpapi"} platz=${gPos ?? "-"} top10=${top10.map((x) => x.p + ":" + host(x.u)).join(" ")} meins=${mine.map((m) => m.p + ":" + m.k).join(" ") || "-"}`);
         const vol = kwVol.get(q0.toLowerCase());
         return { ...(vol != null ? { vol } : {}), q: q0, mine, top: top10.length, g: gPos, pack: national || pi < 0 ? null : pi + 1, maps: national || mi < 0 ? null : mi + 1, lead: national ? undefined : lead, ...(gErr ? { err: true } : {}), ...(national ? { noMaps: true } : {}) } as Kw;
       };
@@ -1069,6 +1070,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const ownHost = host(site);
     await say(87, `Lese ${checker.memo.size} gefundene Seiten: nennen oder verlinken sie Sie?`);
     await hitsP;
+    { const cnt2: Record<string, number> = {}; for (const [, p2] of checker.memo) { const h2 = await p2; cnt2[h2.k] = (cnt2[h2.k] || 0) + 1; } console.log(`Rep-Scan Seiten gelesen (own=${own0 || "-"}, website=${site || "-"}):`, JSON.stringify(cnt2)); }
     const hitTxt: Record<string, string> = { own: "eigene Website", channel: "eigener Kanal", links: "Seite verlinkt das Unternehmen", names: "Seite nennt das Unternehmen", none: "Seite gelesen – Unternehmen kommt NICHT vor", blocked: "Seite nicht lesbar" };
     const list = items.slice(0, 160).map((x) => { const h = (x as J).hit as Hit | undefined; return { ...(x.senti ? { stimmung: x.senti } : {}), i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link), ...(h ? { gelesen: hitTxt[h.k], ...(h.ex ? { textstelle: h.ex.slice(0, 360) } : {}) } : {}) }; });
     const cls = fromCache && cache!.cls ? (cache!.cls as J) : parseJson(await askClaude(
