@@ -1270,7 +1270,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-ms-ring b small{font-size:11px;color:#ff6a00;margin-left:1px}
 .rra .rp-ms-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .rra .rp-ms-k{font-size:12px;font-weight:600;color:#9a6a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rra .rp-ms-step{font-size:16px;font-weight:700;letter-spacing:-.3px;background:linear-gradient(90deg,#111 0%,#111 40%,#ff8000 50%,#111 60%,#111 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rpShim 1.8s linear infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .rp-ms-step{font-size:15px;font-weight:700;letter-spacing:-.2px;line-height:1.3;background:linear-gradient(90deg,#111 0%,#111 40%,#ff8000 50%,#111 60%,#111 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rpShim 1.8s linear infinite,rpIn .35s both;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rra .rp-ms-icons{display:flex;gap:5px;margin-top:2px}
 .rra .rp-ms-i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:12px;font-weight:800;background:#f1ece6;color:#b9a58f}
 .rra .rp-ms-i svg{width:13px;height:13px}
