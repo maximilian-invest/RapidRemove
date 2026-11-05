@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert en oprichter",
     date: "2026-10-05",
   },
-  dek: "**Google noemt geen vaste termijn.** Een duidelijke schending kan binnen uren of enkele dagen verdwijnen, een twijfelgeval of een bezwaar kan **meerdere weken** duren. Wanneer wij een review laten verwijderen, duurt het meestal **1–2 weken** bij reviews met tekst tot 4 weken oud en **1–2 weken** bij alle andere. Hieronder ziet u welke stappen er zijn, hoe u de status in de Reviews Management Tool controleert en wat het proces echt versnelt.",
+  dek: "**Google noemt geen vaste termijn.** Een duidelijke schending kan binnen uren of enkele dagen verdwijnen, een twijfelgeval of een bezwaar kan **meerdere weken** duren. Wanneer wij een review laten verwijderen, duurt het meestal **1–2 weken** bij reviews met tekst tot 4 weken oud. Hieronder ziet u welke stappen er zijn, hoe u de status in de Reviews Management Tool controleert en wat het proces echt versnelt.",
   blocks: [
     { t: "h2", id: "short-answer", text: "Het korte antwoord: geen vaste termijn, wel een duidelijk patroon", toc: "Kort antwoord" },
     { t: "p", text: "Google garandeert geen verwerkingstijd voor gemelde reviews. Gemelde reviews worden door geautomatiseerde systemen én door mensen beoordeeld, en de duur varieert van dagen tot weken." },
@@ -20,7 +20,7 @@ const article = {
       "**Twijfelgevallen** (iemand die misschien nooit klant was, vage beschuldigingen): eerder **dagen tot weken**, vaak met een afwijzing en daarna een bezwaar.",
       "**Onrechtmatige inhoud** via een juridisch verzoek (bijv. smaad): meestal de langste route, vaak **meerdere weken**.",
     ] },
-    { t: "p", text: "Met onze [Google review verwijderen service](/nl/review-laten-verwijderen/) is een review met tekst tot 4 weken oud **meestal binnen 1–2 weken weg**, alle andere **meestal binnen 1–2 weken**. U hoeft in die tijd niets te doen – en u betaalt pas als de review echt verdwenen is." },
+    { t: "p", text: "Met onze [Google review verwijderen service](/nl/review-laten-verwijderen/) is een review met tekst tot 4 weken oud **meestal binnen 1–2 weken weg**. U hoeft in die tijd niets te doen – en u betaalt pas als de review echt verdwenen is." },
 
     { t: "h2", id: "timeline", text: "Tijdlijn: alle stappen van melding tot definitieve beslissing", toc: "Tijdlijn" },
     { t: "p", text: "Het verwijderen van een review verloopt in vaste stappen. De tijden hieronder zijn **typische waarden uit de praktijk, geen garantie** – Google kan in elke stap sneller of trager zijn." },
@@ -76,7 +76,7 @@ const article = {
       "**Bewijs en context:** wat ontbreekt er in uw administratie, wat valt op aan het profiel van de schrijver, welke zinnen zijn beledigend of onwaar.",
       "**Snel handelen:** verse reviews zijn veel makkelijker te verwijderen. Bij ons is de slagingskans **ca. 90 % bij reviews tot 4 weken oud** en **ca. 50 % bij oudere reviews**.",
     ] },
-    { t: "p", text: "Daarom kost een review ouder dan 4 weken bij ons **€ 250** in plaats van € 199 – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
+    { t: "p", text: "Daarom is het verwijderen van reviews ouder dan 4 weken bij ons pas **weer beschikbaar vanaf januari 2027** – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
 
     { t: "h2", id: "waiting", text: "Wat u kunt doen terwijl u wacht", toc: "Tijdens het wachten" },
     { t: "p", text: "Wachten betekent niet stilzitten. Zo beperkt u de schade terwijl Google beslist:" },
@@ -95,12 +95,12 @@ const article = {
     { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
-    { q: "Hoe lang duurt het voordat Google een gemelde review verwijdert?", a: "Daar is geen vaste termijn voor. Duidelijke schendingen verdwijnen vaak binnen uren of dagen, twijfelgevallen en bezwaren kunnen **meerdere weken** duren. Via RapidRemove is het bij reviews met tekst tot 4 weken oud meestal 1–2 weken, bij alle andere meestal 1–2 weken." },
+    { q: "Hoe lang duurt het voordat Google een gemelde review verwijdert?", a: "Daar is geen vaste termijn voor. Duidelijke schendingen verdwijnen vaak binnen uren of dagen, twijfelgevallen en bezwaren kunnen **meerdere weken** duren. Via RapidRemove is het bij reviews met tekst tot 4 weken oud meestal 1–2 weken." },
     { q: "Kan ik meer dan één keer bezwaar maken?", a: "Nee. In de Reviews Management Tool kunt u **per review één keer** bezwaar maken. Na de definitieve beslissing blijft alleen een juridisch verwijderingsverzoek over, en dat alleen bij onrechtmatige inhoud." },
     { q: "Waarom staat mijn melding al weken op “Decision pending”?", a: "Sommige meldingen worden handmatig beoordeeld en dat kan langer duren; Google geeft geen termijn. Controleer of u de juiste categorie heeft gekozen – een sterke, correcte melding is de beste versneller." },
     { q: "Hoort de schrijver wie de review heeft gemeld?", a: "Nee. Wanneer wij een verwijdering aanvragen, krijgt de schrijver niet te horen wie daarom heeft gevraagd." },
     { q: "Kan een verwijderde review terugkomen?", a: "Een review die wegens een schending is verwijderd, komt normaal gesproken niet terug. De persoon kan wel een nieuwe review schrijven; die wordt dan opnieuw op zichzelf beoordeeld en kan, als hij weer de regels schendt, opnieuw gemeld worden." },
-    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 199 per verwijderde review** (€ 250 bij reviews ouder dan 4 weken of zonder tekst), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
+    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 199 per verwijderde review** (met tekst, tot 4 weken oud; oudere reviews en reviews zonder tekst: weer beschikbaar vanaf januari 2027), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
   ],
   related: [
     { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },

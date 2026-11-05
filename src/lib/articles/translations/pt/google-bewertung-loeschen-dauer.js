@@ -20,7 +20,7 @@ const article = {
     authorRole: "Fundador",
     date: "2026-10-05",
   },
-  dek: "**O Google não dá nenhum prazo fixo.** Uma infração clara pode desaparecer em horas ou poucos dias; casos duvidosos, recursos e escalamentos podem demorar **várias semanas**. Com a RapidRemove, a remoção demora normalmente **1–2 semanas** em avaliações com texto até 4 semanas e **1–2 semanas** em todas as outras – e só paga quando a avaliação desapareceu de facto. Abaixo: cada fase com a duração típica, como ler o estado na ferramenta de gestão de avaliações, como funciona o recurso e o que acelera realmente o processo.",
+  dek: "**O Google não dá nenhum prazo fixo.** Uma infração clara pode desaparecer em horas ou poucos dias; casos duvidosos, recursos e escalamentos podem demorar **várias semanas**. Com a RapidRemove, a remoção demora normalmente **1–2 semanas** em avaliações com texto até 4 semanas – e só paga quando a avaliação desapareceu de facto. Abaixo: cada fase com a duração típica, como ler o estado na ferramenta de gestão de avaliações, como funciona o recurso e o que acelera realmente o processo.",
   blocks: [
     { t: "h2", id: "short-answer", text: "A resposta curta: não há prazo fixo, mas há intervalos típicos", toc: "Resposta curta" },
     { t: "p", text: "**O Google não promete qualquer prazo de análise para avaliações denunciadas.** As denúncias são verificadas por sistemas automáticos e por pessoas e, consoante o caso, isso vai de algumas horas a várias semanas." },
@@ -28,7 +28,7 @@ const article = {
       "**Infrações evidentes** (spam, insultos, interação falsa óbvia): muitas vezes entre algumas horas e poucos dias.",
       "**Casos duvidosos** que precisam de análise humana: muitas vezes de uma a algumas semanas.",
       "**Recursos e escalamentos**: acrescentam tempo, por vezes várias semanas.",
-      "**Connosco**: avaliações com texto até 4 semanas, normalmente 1–2 semanas; todas as outras, normalmente 1–2 semanas. Se preferir delegar, o nosso [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/) usa apenas os procedimentos oficiais do Google e custa **199 € por avaliação removida** (com texto, até 4 semanas) ou 250 € nas restantes, nada adiantado.",
+      "**Connosco**: avaliações com texto até 4 semanas, normalmente 1–2 semanas. Se preferir delegar, o nosso [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/) usa apenas os procedimentos oficiais do Google e custa **199 € por avaliação removida** (com texto, até 4 semanas), nada adiantado; as restantes: disponível novamente a partir de janeiro de 2027.",
     ] },
     { t: "warn", title: "Prazos típicos, não garantidos", text: "Todas as durações deste artigo são intervalos observados na prática, não compromissos do Google. O tempo de análise varia e ninguém pode prometer uma data – nem uma remoção." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**A categoria certa desde o início** – uma primeira denúncia precisa poupa-lhe o recurso.",
       "**Provas preparadas** – capturas de ecrã da avaliação e do perfil do autor, uma nota a explicar porque não houve contacto com o cliente, datas.",
-      "**Aja em menos de quatro semanas** – as avaliações recentes têm muito mais hipóteses e, connosco, custam 199 € em vez de 250 €.",
+      "**Aja em menos de quatro semanas** – as avaliações recentes têm muito mais hipóteses e, connosco, custam 199 € (as mais antigas: disponível novamente a partir de janeiro de 2027).",
       "**Uma denúncia bem feita, não dez** – denunciar várias vezes a mesma avaliação não o faz passar à frente na fila.",
       "**Vagas de avaliações falsas e chantagem** – se chegarem avaliações de 1 estrela acompanhadas de um pedido de dinheiro, use o formulário próprio do Google e leia o nosso guia sobre [extorsão com avaliações do Google](/pt/revista/extorsao-avaliacoes-google/). Não pague, não responda, guarde capturas de ecrã.",
     ] },
-    { t: "cta", title: "Não espere semanas por uma resposta-padrão", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o preço de imediato. **199 € por avaliação removida**, 250 € se tiver mais de 4 semanas ou não tiver texto – cobrado apenas quando a avaliação desaparecer.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só em caso de sucesso", "Avaliação honesta e gratuita"] },
+    { t: "cta", title: "Não espere semanas por uma resposta-padrão", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o preço de imediato. **199 € por avaliação removida** com texto até 4 semanas (restantes: disponível novamente a partir de janeiro de 2027) – cobrado apenas quando a avaliação desaparecer.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só em caso de sucesso", "Avaliação honesta e gratuita"] },
 
     { t: "h2", id: "while-waiting", text: "O que fazer enquanto espera", toc: "Enquanto espera" },
     { t: "p", text: "**Responda publicamente, de forma breve e calma – é a única coisa que pode fazer sempre, e os futuros clientes leem-na.** Uma boa resposta não discute nem revela dados de clientes." },
@@ -102,7 +102,7 @@ const article = {
     { t: "p", text: "**Cada avaliação é analisada separadamente, por isso, se denunciar cinco, raramente desaparecem no mesmo dia.** Uma pode sair em dois dias, outra precisa de recurso e uma terceira continua pendente ao fim de duas semanas." },
     { t: "p", text: "É por isso que **cobramos por avaliação**: paga cada uma quando é efetivamente removida – a cobrança é feita automaticamente, avaliação a avaliação. As que ainda estamos a tratar não lhe custam nada e, com 3, 5 ou 10 avaliações aceites, o desconto por volume (−10 %, −15 %, −30 %) aplica-se a cada uma que é removida. Todos os preços e comparações estão em [preço para remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/), e a encomenda faz-se na nossa página para [remover uma avaliação do Google específica](/pt/remover-uma-avaliacao/)." },
     { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
-    { t: "cta", title: "Veja que avaliações têm hipóteses reais", text: "Primeiro uma análise gratuita: dizemos-lhe com honestidade se uma avaliação pode ser removida. A encomenda demora cerca de dois minutos – normalmente resolvido em 1–2 semanas em avaliações com texto até 4 semanas, caso contrário em 1–2 semanas.", btn: "Iniciar verificação gratuita", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só procedimentos oficiais do Google", "O autor não sabe quem pediu", "Mais de 1.600 perfis removidos desde 2023"] },
+    { t: "cta", title: "Veja que avaliações têm hipóteses reais", text: "Primeiro uma análise gratuita: dizemos-lhe com honestidade se uma avaliação pode ser removida. A encomenda demora cerca de dois minutos – normalmente resolvido em 1–2 semanas em avaliações com texto até 4 semanas.", btn: "Iniciar verificação gratuita", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só procedimentos oficiais do Google", "O autor não sabe quem pediu", "Mais de 1.600 perfis removidos desde 2023"] },
   ],
   faq: [
     { q: "Quanto tempo demora o Google a remover uma avaliação denunciada?", a: "O Google não publica um prazo fixo. Infrações claras podem desaparecer em horas ou poucos dias; casos duvidosos e recursos demoram muitas vezes **de uma a várias semanas**." },
@@ -110,7 +110,7 @@ const article = {
     { q: "Posso recorrer mais do que uma vez?", a: "Não. Na ferramenta de gestão de avaliações tem **um único recurso por avaliação**. Depois da decisão final, a única outra via oficial é um pedido de remoção por motivos legais – e apenas se o conteúdo for ilegal." },
     { q: "O Google avisa o autor da avaliação?", a: "Ao autor **não é dito quem denunciou a avaliação nem quem pediu a sua remoção** – nem quando denuncia por si, nem quando somos nós a tratar. No máximo, vai reparar que a avaliação deixou de estar visível." },
     { q: "Uma avaliação removida pode voltar?", a: "Uma avaliação removida pelo Google por violar as políticas normalmente não volta. A mesma pessoa pode, no entanto, escrever uma nova avaliação, que é analisada à parte e também pode ser denunciada." },
-    { q: "Quanto tempo demora com a RapidRemove?", a: "Avaliações com texto até 4 semanas demoram normalmente **1–2 semanas**; todas as outras, normalmente **1–2 semanas**. Paga **199 € por avaliação removida** (250 € se tiver mais de 4 semanas ou não tiver texto) – apenas quando desaparecer." },
+    { q: "Quanto tempo demora com a RapidRemove?", a: "Avaliações com texto até 4 semanas demoram normalmente **1–2 semanas**. Paga **199 € por avaliação removida** (mais de 4 semanas ou sem texto: disponível novamente a partir de janeiro de 2027) – apenas quando desaparecer." },
     { q: "Responder à avaliação prejudica as minhas hipóteses?", a: "Não. Uma resposta pública curta e calma é sempre permitida e não influencia a análise. Evite apenas insultos e dados de clientes." },
   ],
   related: [

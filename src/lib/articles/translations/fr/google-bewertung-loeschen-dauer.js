@@ -20,7 +20,7 @@ const article = {
     authorRole: "Expert Google et fondateur",
     date: "2026-10-05",
   },
-  dek: "**Google ne donne aucun délai fixe.** Une infraction évidente peut disparaître en quelques heures ou quelques jours ; les cas limites, les recours et les remontées peuvent prendre **plusieurs semaines**. Avec RapidRemove, la suppression prend en général **1 à 2 semaines** pour les avis avec texte de moins de 4 semaines et **1 à 2 semaines** pour tous les autres – et vous ne payez qu'une fois l'avis réellement supprimé. Voici chaque étape avec sa durée typique, comment lire le statut dans l'outil de gestion des avis, comment fonctionne le recours et ce qui accélère vraiment les choses.",
+  dek: "**Google ne donne aucun délai fixe.** Une infraction évidente peut disparaître en quelques heures ou quelques jours ; les cas limites, les recours et les remontées peuvent prendre **plusieurs semaines**. Avec RapidRemove, la suppression prend en général **1 à 2 semaines** pour les avis avec texte de moins de 4 semaines – et vous ne payez qu'une fois l'avis réellement supprimé. Voici chaque étape avec sa durée typique, comment lire le statut dans l'outil de gestion des avis, comment fonctionne le recours et ce qui accélère vraiment les choses.",
   blocks: [
     { t: "h2", id: "short-answer", text: "La réponse courte : pas de délai fixe, mais des fourchettes typiques", toc: "Réponse courte" },
     { t: "p", text: "**Google ne s'engage sur aucun délai de traitement pour les avis signalés.** Les signalements sont examinés par des systèmes automatiques et par des personnes, ce qui prend selon le cas de quelques heures à plusieurs semaines." },
@@ -28,7 +28,7 @@ const article = {
       "**Infractions évidentes** (spam, insultes, faux engagement manifeste) : souvent de quelques heures à quelques jours.",
       "**Cas limites** qui demandent un examen humain : souvent d'une à quelques semaines.",
       "**Recours et remontées** : ajoutent du temps, parfois plusieurs semaines.",
-      "**Avec nous** : avis avec texte de moins de 4 semaines, en général 1 à 2 semaines ; tous les autres, en général 1 à 2 semaines. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **dès 199 € par avis supprimé**, rien d'avance. Les notes sans texte aussi – procédure plus approfondie, 250 € par note supprimée.",
+      "**Avec nous** : avis avec texte de moins de 4 semaines, en général 1 à 2 semaines. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **199 € par avis supprimé**, rien d'avance. Notes sans texte (procédure plus approfondie) : de nouveau disponible à partir de janvier 2027.",
     ] },
     { t: "warn", title: "Des délais typiques, pas garantis", text: "Toutes les durées de cet article sont des fourchettes observées en pratique, pas des engagements de Google. Le délai de traitement varie, et personne ne peut promettre une date – ni une suppression." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**La bonne catégorie dès le départ** – un premier signalement précis vous évite le recours.",
       "**Des preuves prêtes** – captures de l'avis et du profil de l'auteur, une note expliquant l'absence de contact client, des dates.",
-      "**Agir sous quatre semaines** – les avis récents ont de bien meilleures chances, et chez nous, s'ils comportent un texte, ils coûtent 199 € au lieu de 250 €.",
+      "**Agir sous quatre semaines** – les avis récents ont de bien meilleures chances, et chez nous, s'ils comportent un texte, ils coûtent 199 € (avis plus anciens : de nouveau disponible à partir de janvier 2027).",
       "**Un signalement propre, pas dix** – signaler plusieurs fois le même avis ne fait pas gagner de place dans la file.",
       "**Vagues de faux avis et chantage** – si des avis 1 étoile arrivent avec une demande d'argent, utilisez le formulaire dédié de Google et lisez notre guide sur le [chantage aux avis Google](/fr/magazine/chantage-avis-google/). Ne payez pas, n'entrez pas en discussion, gardez des captures.",
     ] },
-    { t: "cta", title: "N'attendez pas des semaines une réponse type", text: "Recherchez votre entreprise, cochez les avis à faire supprimer et voyez le prix immédiatement. **199 € par avis supprimé**, 250 € au-delà de 4 semaines ou sans texte – facturé uniquement une fois l'avis disparu.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès uniquement", "Avis honnête et gratuit"] },
+    { t: "cta", title: "N'attendez pas des semaines une réponse type", text: "Recherchez votre entreprise, cochez les avis à faire supprimer et voyez le prix immédiatement. **199 € par avis supprimé** avec texte jusqu'à 4 semaines (au-delà ou sans texte : de nouveau disponible à partir de janvier 2027) – facturé uniquement une fois l'avis disparu.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès uniquement", "Avis honnête et gratuit"] },
 
     { t: "h2", id: "while-waiting", text: "Que faire en attendant ?", toc: "En attendant" },
     { t: "p", text: "**Répondez publiquement, brièvement et calmement – c'est la seule chose toujours possible, et les futurs clients la lisent.** Une bonne réponse ne polémique pas et ne révèle aucune donnée client." },
@@ -102,7 +102,7 @@ const article = {
     { t: "p", text: "**Chaque avis est examiné séparément : si vous en signalez cinq, ils disparaissent rarement le même jour.** L'un peut partir en deux jours, un autre nécessite un recours, un troisième est encore en attente après deux semaines." },
     { t: "p", text: "C'est pourquoi nous **facturons par avis** : vous payez chaque avis une fois qu'il est réellement supprimé – chacun est prélevé séparément sur votre carte ou PayPal enregistrés. Les avis encore en cours ne vous coûtent rien, et à partir de 3, 5 ou 10 avis acceptés la remise sur volume (−10 %, −15 %, −30 %) s'applique à chaque avis supprimé. Tous les tarifs et comparaisons sont dans [prix de la suppression d'un avis Google](/fr/magazine/prix-suppression-avis-google/), et la commande se fait sur notre page pour [supprimer un avis Google précis](/fr/supprimer-un-avis/)." },
     { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
-    { t: "cta", title: "Vérifiez quels avis ont une vraie chance", text: "D'abord une évaluation gratuite : nous vous disons honnêtement si un avis peut être supprimé. La commande prend environ deux minutes – en général réglé en 1 à 2 semaines pour les avis avec texte de moins de 4 semaines, sinon en 1 à 2 semaines.", btn: "Lancer la vérification gratuite", href: "/fr/verifier-profil/?start=reviews", trust: ["Uniquement les procédures de Google", "L'auteur ne sait pas qui l'a demandé", "Plus de 1 600 fiches supprimées depuis 2023"] },
+    { t: "cta", title: "Vérifiez quels avis ont une vraie chance", text: "D'abord une évaluation gratuite : nous vous disons honnêtement si un avis peut être supprimé. La commande prend environ deux minutes – en général réglé en 1 à 2 semaines pour les avis avec texte de moins de 4 semaines.", btn: "Lancer la vérification gratuite", href: "/fr/verifier-profil/?start=reviews", trust: ["Uniquement les procédures de Google", "L'auteur ne sait pas qui l'a demandé", "Plus de 1 600 fiches supprimées depuis 2023"] },
   ],
   faq: [
     { q: "Combien de temps Google met-il pour supprimer un avis signalé ?", a: "Google ne publie aucun délai fixe. Les infractions claires peuvent disparaître en quelques heures ou quelques jours ; les cas limites et les recours prennent souvent **d'une à plusieurs semaines**." },
@@ -110,7 +110,7 @@ const article = {
     { q: "Peut-on faire plusieurs recours ?", a: "Non. L'outil de gestion des avis permet **un seul recours par avis**. Après la décision finale, la seule autre voie officielle est une demande de suppression pour raisons légales – uniquement si le contenu est illicite." },
     { q: "Google prévient-il l'auteur de l'avis ?", a: "L'auteur **n'apprend pas qui a signalé l'avis ni qui a demandé sa suppression** – ni quand vous signalez vous-même, ni quand nous nous en chargeons. Il peut simplement constater que son avis n'est plus visible." },
     { q: "Un avis supprimé peut-il réapparaître ?", a: "Un avis supprimé par Google pour infraction au règlement reste normalement supprimé. La même personne peut toutefois publier un nouvel avis, qui est examiné séparément et peut à nouveau être signalé." },
-    { q: "Combien de temps avec RapidRemove ?", a: "Les avis avec texte de moins de 4 semaines prennent en général **1 à 2 semaines**, tous les autres en général **1 à 2 semaines**. Vous payez **199 € par avis supprimé** (250 € au-delà de 4 semaines ou sans texte) – uniquement une fois qu'il a disparu." },
+    { q: "Combien de temps avec RapidRemove ?", a: "Les avis avec texte de moins de 4 semaines prennent en général **1 à 2 semaines**. Vous payez **199 € par avis supprimé** (au-delà de 4 semaines ou sans texte : de nouveau disponible à partir de janvier 2027) – uniquement une fois qu'il a disparu." },
     { q: "Répondre à l'avis réduit-il mes chances ?", a: "Non. Une réponse publique courte et calme est toujours autorisée et n'influence pas l'examen. Évitez seulement les insultes et les données clients." },
   ],
   related: [

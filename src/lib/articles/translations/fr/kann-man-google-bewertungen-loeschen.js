@@ -52,7 +52,7 @@ const article = {
       ["Coût", "Gratuit", "Gratuit", "Gratuit (avocat en plus)", "Gratuit", "**Dès 199 € par avis supprimé**"],
       ["L'avis disparaît ?", "Si Google l'accepte", "Si Google l'accepte", "Si c'est juridiquement fondé", "Seulement si l'auteur agit", "Facturé seulement si oui"],
       ["Effort pour vous", "Faible", "Moyen", "Élevé", "Faible", "Environ 2 minutes"],
-      ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "En général 1 à 2 semaines (≤ 4 semaines, avec texte), sinon 1 à 2 semaines"],
+      ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "En général 1 à 2 semaines (≤ 4 semaines, avec texte)"],
     ] },
     { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis et voyez immédiatement le prix exact. **Dès 199 € par avis supprimé**, rien d'avance, évaluation gratuite d'abord.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "D'abord un avis honnête"] },
 
@@ -81,10 +81,10 @@ const article = {
     { t: "p", text: "Nous utilisons **uniquement les procédures de Google**, au nom du propriétaire de l'établissement : pas de faux comptes, pas de bots, pas de fausses mises en demeure. L'auteur de l'avis n'apprend pas qui a demandé la suppression." },
     { t: "ul", items: [
       "**D'abord une évaluation gratuite :** nous vous disons honnêtement si un avis est supprimable. Sinon, cela ne vous coûte rien.",
-      "**Prix :** 199 € par avis supprimé avec texte jusqu'à 4 semaines ; tous les autres coûtent 250 € – avis de plus de 4 semaines et notes sans texte (procédure plus approfondie). Comme pour tous les avis, vous enregistrez une carte lors de la commande, et elle n'est débitée automatiquement qu'après la suppression de l'avis.",
+      "**Prix :** 199 € par avis supprimé avec texte jusqu'à 4 semaines ; tous les autres – avis de plus de 4 semaines et notes sans texte (procédure plus approfondie) – sont de nouveau disponible à partir de janvier 2027. Comme pour tous les avis, vous enregistrez une carte lors de la commande, et elle n'est débitée automatiquement qu'après la suppression de l'avis.",
       "**Chances de succès :** env. 90 % pour les avis de moins de 4 semaines, env. 50 % pour les plus anciens.",
       "**Remise sur volume** pour les avis que nous acceptons : dès 3, −10 % ; dès 5, −15 % ; dès 10, −30 %.",
-      "**Durée :** avis avec texte de moins de 4 semaines, en général 1 à 2 semaines ; tous les autres, en général 1 à 2 semaines. Chaque avis est prélevé automatiquement sur votre carte ou PayPal enregistrés une fois supprimé.",
+      "**Durée :** avis avec texte de moins de 4 semaines, en général 1 à 2 semaines. Chaque avis est prélevé automatiquement sur votre carte ou PayPal enregistrés une fois supprimé.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google, réalisé plus de 20 000 vérifications gratuites et accompagné des clients dans plus de 50 pays. Pour les faux avis, mieux vaut agir vite : [repérer et supprimer les faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
     { t: "cta", title: "Découvrez quels avis peuvent disparaître", text: "Recherchez votre fiche, cochez les avis : le prix s'affiche aussitôt. **Vous ne payez que les avis réellement supprimés.**", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Évaluation gratuite", "Dès 199 € par avis", "Discret"] },
@@ -95,7 +95,7 @@ const article = {
     { q: "Répondre à un avis négatif, est-ce que ça nuit ?", a: "Non : une réponse calme et factuelle ne nuit pas et montre aux prospects comment vous gérez les problèmes. Évitez les réponses à chaud et ne divulguez jamais de données personnelles du client." },
     { q: "Peut-on savoir qui a écrit un avis anonyme ?", a: "En général, non. Google ne révèle pas qui se cache derrière un avis. En cas de contenu manifestement illicite, des démarches juridiques peuvent exister selon le pays ; c'est une question à poser à un avocat." },
     { q: "Supprimer ma fiche d'établissement efface-t-il les avis ?", a: "Oui, supprimer toute la fiche efface tous les avis, y compris les bons. Si seuls quelques avis posent problème, il vaut généralement mieux les supprimer un par un." },
-    { q: "Peut-on payer pour faire supprimer un avis Google ?", a: "Oui, à condition que seules les procédures de Google soient utilisées. Chez RapidRemove, c'est **199 € par avis supprimé** (250 € s'il a plus de 4 semaines ou s'il est sans texte), et rien à payer si l'avis reste." },
+    { q: "Peut-on payer pour faire supprimer un avis Google ?", a: "Oui, à condition que seules les procédures de Google soient utilisées. Chez RapidRemove, c'est **199 € par avis supprimé** (plus de 4 semaines ou sans texte : de nouveau disponible à partir de janvier 2027), et rien à payer si l'avis reste." },
     { q: "Puis-je demander à un client de supprimer son avis ?", a: "Vous pouvez demander poliment à un vrai client de mettre à jour son avis si vous avez réglé le problème. Offrir une remise, un remboursement ou un cadeau en échange enfreint le règlement de Google." },
   ],
   related: [

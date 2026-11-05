@@ -63,7 +63,7 @@ const article = {
     { t: "h2", id: "graazone", text: "Gråzoner: stjerner uden tekst, tidligere ansatte, konkurrenter, prisklager", toc: "Gråzoner" },
     { t: "p", text: "Ikke alle irriterende anmeldelser passer pænt ind i én kategori. I disse fire tilfælde afhænger det af detaljerne – og af, hvad du kan dokumentere." },
     { t: "ul", items: [
-      "**Kun stjerner, ingen tekst:** Der er ingen tekst, der kan overtræde politikken, så Google ser primært på anmelderen. Har personen aldrig været kunde, eller er bedømmelsen en del af en bølge, er chancerne gode. Via vores service til fjernelse af enkelte anmeldelser kan sådanne bedømmelser også fjernes – med en mere omfattende procedure til 250 € pr. fjernet anmeldelse. Læs mere: [fjern en 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/).",
+      "**Kun stjerner, ingen tekst:** Der er ingen tekst, der kan overtræde politikken, så Google ser primært på anmelderen. Har personen aldrig været kunde, eller er bedømmelsen en del af en bølge, er chancerne gode. Vores fjernelse af sådanne bedømmelser (en mere omfattende procedure) er tilgængelig igen fra januar 2027. Læs mere: [fjern en 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/).",
       "**Tidligere ansatte:** Anmeldelser fra (tidligere) ansatte om arbejdsgiveren hører under **interessekonflikt**. Udfordringen er, at Google ikke ved, hvem der har arbejdet hos dig – navn, indhold om interne forhold og tidspunkt (lige efter en fyring) hjælper.",
       "**Konkurrenter:** også en interessekonflikt, men fjernes kun, hvis det er sandsynliggjort. Typiske tegn: Samme konto roser en konkurrent i nærheden, eller anmeldelsen fremhæver deres tilbud som alternativ.",
       "**Prisklager:** ”Alt for dyrt” fra en rigtig kunde er en **mening** og bliver ikke fjernet. Påstås der et usandt faktum (”tog 1.500 kr. for ingenting”), og kan du bevise det modsatte, kan misinformation eller en juridisk anmodning være en mulighed.",
@@ -94,9 +94,9 @@ const article = {
     { t: "p", text: "Hjælp betaler sig mest ved **friske anmeldelser**: Op til 4 uger gamle er chancen ca. **90 %**, derefter ca. **50 %**. Med vores [service til fjernelse af Google-anmeldelser](/da/fjern-anmeldelse/) betaler du kun for anmeldelser, der faktisk forsvinder." },
     { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Succesrate", "Pris pr. fjernet anmeldelse"], rows: [
       ["Op til 4 uger, med tekst", "ca. 90 %", "**199 €**"],
-      ["Alle andre (ældre end 4 uger eller uden tekst)", "ca. 50 % (ældre end 4 uger)", "**250 €**"],
+      ["Alle andre (ældre end 4 uger eller uden tekst)", "–", "Tilgængelig igen fra januar 2027"],
     ] },
-    { t: "p", text: "For de anmeldelser, vi accepterer efter den gratis vurdering, gælder mængderabat: fra 3 anmeldelser **−10 %**, fra 5 **−15 %**, fra 10 **−30 %** – på hver fjernet anmeldelse. For anmeldelser med tekst op til 4 uger gamle tager det som regel 1–2 uger, for alle andre som regel 1–2 uger. Anmelderen får ikke at vide, hvem der bad om fjernelsen. Mere om priser: [hvad koster det at fjerne en Google-anmeldelse?](/da/magasin/pris-fjerne-google-anmeldelse/)." },
+    { t: "p", text: "For de anmeldelser, vi accepterer efter den gratis vurdering, gælder mængderabat: fra 3 anmeldelser **−10 %**, fra 5 **−15 %**, fra 10 **−30 %** – på hver fjernet anmeldelse. For anmeldelser med tekst op til 4 uger gamle tager det som regel 1–2 uger. Anmelderen får ikke at vide, hvem der bad om fjernelsen. Mere om priser: [hvad koster det at fjerne en Google-anmeldelse?](/da/magasin/pris-fjerne-google-anmeldelse/)." },
     { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Hvilke af dine anmeldelser bryder reglerne?", text: "Søg din profil, sæt flueben ved anmeldelserne, så fortæller vi ærligt, hvilke der kan fjernes. **Du betaler kun, når anmeldelsen faktisk er væk.**", btn: "Få gratis vurdering", href: "/da/tjek-profil/?start=reviews", trust: ["Gratis vurdering", "Kun ved succes", "Kun Googles procedurer"] },
   ],
@@ -105,8 +105,8 @@ const article = {
     { q: "Fjerner Google en anmeldelse, hvis jeg er uenig i den?", a: "Nej. Uenighed alene er **ikke en overtrædelse**. Ærlig kritik fra rigtige kunder bliver stående; her er et venligt offentligt svar det bedste skridt." },
     { q: "Er en 1-stjerne-anmeldelse uden tekst en overtrædelse?", a: "Ikke automatisk. Har anmelderen aldrig været kunde, eller er bedømmelsen en del af en falsk bølge eller en interessekonflikt, er chancerne for fjernelse derimod gode." },
     { q: "Hvor mange gange kan jeg klage over ”ingen overtrædelse”?", a: "**Én gang pr. anmeldelse** i Googles værktøj til administration af anmeldelser. Derefter er afgørelsen endelig; ved ulovligt indhold kan du stadig sende en juridisk anmodning." },
-    { q: "Hvor lang tid går der, før Google vurderer en rapporteret anmeldelse?", a: "Alt fra dage til uger; Google lover ingen tidsramme. Hos os tager en fjernelse som regel 1–2 uger for anmeldelser med tekst op til 4 uger gamle, ellers som regel 1–2 uger." },
-    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**199 €** pr. fjernet anmeldelse op til 4 uger gammel med tekst, **250 €** for alle andre (ældre eller uden tekst). Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd, heller ikke ved rene stjernebedømmelser uden tekst." },
+    { q: "Hvor lang tid går der, før Google vurderer en rapporteret anmeldelse?", a: "Alt fra dage til uger; Google lover ingen tidsramme. Hos os tager en fjernelse som regel 1–2 uger for anmeldelser med tekst op til 4 uger gamle." },
+    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**199 €** pr. fjernet anmeldelse op til 4 uger gammel med tekst; alle andre (ældre eller uden tekst) er tilgængelig igen fra januar 2027. Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd." },
   ],
   related: [
     { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },

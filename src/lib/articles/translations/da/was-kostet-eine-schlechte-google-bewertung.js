@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "Hvor meget omsætning koster en dårlig Google-anmeldelse?", a: "En Harvard-undersøgelse (Michael Luca) sætter effekten af én hel stjerne til 5–9 % i omsætning for uafhængige virksomheder. En enkelt anmeldelse virker forskelligt afhængigt af det samlede antal anmeldelser – jo færre anmeldelser I har, desto mere trækker én dårlig anmeldelse gennemsnittet ned." },
     { q: "Hvornår bliver et dårligt gennemsnit skadeligt for forretningen?", a: "Det bliver kritisk under ca. 4,0 stjerner; under 3 stjerner udelukker I ifølge BrightLocal praktisk talt størstedelen af kunderne, da kun 3 % ville overveje en virksomhed med to stjerner eller færre." },
-    { q: "Kan det betale sig at handle på én enkelt anmeldelse?", a: "Ved uberettigede, falske eller retsstridige anmeldelser som regel ja – det løbende omsætningstab overstiger som regel tydeligt omkostningerne ved en fjernelse (hos RapidRemove 199 € pr. fjernet anmeldelse op til 4 uger med tekst, ellers 250 €, kun ved succes). Saglig, ægte kritik besvarer man hellere frem for at bekæmpe den." },
+    { q: "Kan det betale sig at handle på én enkelt anmeldelse?", a: "Ved uberettigede, falske eller retsstridige anmeldelser som regel ja – det løbende omsætningstab overstiger som regel tydeligt omkostningerne ved en fjernelse (hos RapidRemove 199 € pr. fjernet anmeldelse op til 4 uger med tekst, kun ved succes; ellers tilgængelig igen fra januar 2027). Saglig, ægte kritik besvarer man hellere frem for at bekæmpe den." },
     { q: "Hvordan beregner jeg min konkrete skade?", a: "Månedlig omsætning × konservativt 5 % × synlighedsperiode i måneder. Selv med forsigtige antagelser ligger årsværdien typisk langt over omkostningerne ved en løsning." },
   ],
   related: [

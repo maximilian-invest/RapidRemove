@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert",
     date: "2026-10-05",
   },
-  dek: "**Google anger ingen fast tidsgräns.** En tydlig regelöverträdelse kan försvinna inom några timmar eller dagar, medan ett gränsfall eller ett överklagande kan ta **flera veckor**. När vi tar bort en recension åt dig tar det **oftast 1–2 veckor** för recensioner med text upp till 4 veckor gamla och **oftast 1–2 veckor** för alla andra. Här ser du alla steg, hur du kollar status i Reviews Management Tool och vad som faktiskt gör processen snabbare.",
+  dek: "**Google anger ingen fast tidsgräns.** En tydlig regelöverträdelse kan försvinna inom några timmar eller dagar, medan ett gränsfall eller ett överklagande kan ta **flera veckor**. När vi tar bort en recension åt dig tar det **oftast 1–2 veckor** för recensioner med text upp till 4 veckor gamla. Här ser du alla steg, hur du kollar status i Reviews Management Tool och vad som faktiskt gör processen snabbare.",
   blocks: [
     { t: "h2", id: "short-answer", text: "Det korta svaret: ingen fast tid, men ett tydligt mönster", toc: "Kort svar" },
     { t: "p", text: "Google garanterar ingen handläggningstid för rapporterade recensioner. Rapporterade recensioner granskas av både automatiska system och människor, och tiden varierar från dagar till veckor." },
@@ -20,7 +20,7 @@ const article = {
       "**Gränsfall** (någon som kanske aldrig varit kund, vaga anklagelser): snarare **dagar till veckor**, ofta med ett avslag och sedan ett överklagande.",
       "**Olagligt innehåll** via en juridisk begäran (t.ex. förtal): oftast den längsta vägen, ofta **flera veckor**.",
     ] },
-    { t: "p", text: "Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) är en recension med text upp till 4 veckor gammal **oftast borta inom 1–2 veckor**, alla andra **oftast inom 1–2 veckor**. Du behöver inte göra något under tiden – och du betalar först när recensionen verkligen är borta." },
+    { t: "p", text: "Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) är en recension med text upp till 4 veckor gammal **oftast borta inom 1–2 veckor**. Du behöver inte göra något under tiden – och du betalar först när recensionen verkligen är borta." },
 
     { t: "h2", id: "timeline", text: "Tidslinje: alla steg från rapport till slutligt beslut", toc: "Tidslinje" },
     { t: "p", text: "Att ta bort en recension sker i fasta steg. Tiderna nedan är **typiska värden från praktiken, ingen garanti** – Google kan vara snabbare eller långsammare i varje steg." },
@@ -76,7 +76,7 @@ const article = {
       "**Bevis och sammanhang:** vad som saknas i dina kundregister, vad som sticker ut i skribentens profil, vilka formuleringar som är kränkande eller osanna.",
       "**Agera snabbt:** färska recensioner är mycket lättare att ta bort. Hos oss är chansen **ca 90 % för recensioner upp till 4 veckor gamla** och **ca 50 % för äldre recensioner**.",
     ] },
-    { t: "p", text: "Därför kostar en recension som är äldre än 4 veckor hos oss **250 €** i stället för 199 € – arbetet är större och chansen mindre. Vid en våg av [falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) lönar det sig alltså att agera inom dagar, inte månader." },
+    { t: "p", text: "Därför är borttagning av recensioner som är äldre än 4 veckor hos oss först **tillgängligt igen från januari 2027** – arbetet är större och chansen mindre. Vid en våg av [falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) lönar det sig alltså att agera inom dagar, inte månader." },
 
     { t: "h2", id: "waiting", text: "Det här kan du göra medan du väntar", toc: "Medan du väntar" },
     { t: "p", text: "Att vänta betyder inte att sitta still. Så begränsar du skadan medan Google beslutar:" },
@@ -95,12 +95,12 @@ const article = {
     { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
-    { q: "Hur lång tid tar det innan Google tar bort en rapporterad recension?", a: "Det finns ingen fast tid. Tydliga överträdelser försvinner ofta inom timmar eller dagar, medan gränsfall och överklaganden kan ta **flera veckor**. Via RapidRemove tar det oftast 1–2 veckor för recensioner med text upp till 4 veckor gamla, annars oftast 1–2 veckor." },
+    { q: "Hur lång tid tar det innan Google tar bort en rapporterad recension?", a: "Det finns ingen fast tid. Tydliga överträdelser försvinner ofta inom timmar eller dagar, medan gränsfall och överklaganden kan ta **flera veckor**. Via RapidRemove tar det oftast 1–2 veckor för recensioner med text upp till 4 veckor gamla." },
     { q: "Kan jag överklaga mer än en gång?", a: "Nej. I Reviews Management Tool kan du överklaga **en gång per recension**. Efter det slutliga beslutet återstår bara en juridisk begäran om borttagning, och den gäller bara olagligt innehåll." },
     { q: "Varför har min rapport stått på ”Decision pending” i flera veckor?", a: "Vissa rapporter granskas manuellt och det kan ta längre tid; Google anger ingen tidsgräns. Kontrollera att du valt rätt kategori – en stark och korrekt rapport är det bästa sättet att snabba på." },
     { q: "Får skribenten veta vem som rapporterade recensionen?", a: "Nej. När vi begär en borttagning får skribenten inte veta vem som bad om den." },
     { q: "Kan en borttagen recension komma tillbaka?", a: "En recension som tagits bort på grund av en överträdelse kommer normalt inte tillbaka. Personen kan däremot skriva en ny recension; den granskas då på nytt för sig och kan rapporteras igen om den också bryter mot reglerna." },
-    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **199 € per borttagen recension** (250 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Stjärnbetyg utan text kostar oavsett ålder 250 € per borttaget betyg." },
+    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **199 € per borttagen recension** (upp till 4 veckor, med text), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Recensioner äldre än 4 veckor och stjärnbetyg utan text är tillgängligt igen från januari 2027." },
   ],
   related: [
     { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },

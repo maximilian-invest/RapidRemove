@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "Hvor mye omsetning koster en dårlig Google-anmeldelse?", a: "En Harvard-studie (Michael Luca) anslår effekten av én hel stjerne til 5–9 % av omsetningen hos uavhengige bedrifter. Én enkelt anmeldelse virker ulikt avhengig av det totale antallet – jo færre anmeldelser du har, desto mer trekker én dårlig ned snittet." },
     { q: "Når blir et dårlig snitt forretningsmessig skadelig?", a: "Det blir kritisk under ca. 4,0 stjerner; under 3 stjerner stenger du ifølge BrightLocal ute praktisk talt de fleste kunder, ettersom bare 3 % vil vurdere en bedrift med to eller færre stjerner." },
-    { q: "Lønner det seg å bekjempe én enkelt anmeldelse?", a: "Ved uberettigede, falske eller ulovlige anmeldelser – som regel ja. Det løpende omsetningstapet overstiger nesten alltid kostnadene ved fjerning – hos RapidRemove 199 € per fjernet anmeldelse opptil 4 uker med tekst, ellers 250 €, betalt kun ved suksess. Saklig, ekte kritikk er det bedre å besvare enn å bekjempe." },
+    { q: "Lønner det seg å bekjempe én enkelt anmeldelse?", a: "Ved uberettigede, falske eller ulovlige anmeldelser – som regel ja. Det løpende omsetningstapet overstiger nesten alltid kostnadene ved fjerning – hos RapidRemove 199 € per fjernet anmeldelse opptil 4 uker med tekst, betalt kun ved suksess (ellers tilgjengelig igjen fra januar 2027). Saklig, ekte kritikk er det bedre å besvare enn å bekjempe." },
     { q: "Hvordan beregner jeg mitt konkrete tap?", a: "Månedlig omsetning × konservativt 5 % × antall måneder anmeldelsen er synlig. Selv med forsiktige forutsetninger er årsverdien som regel langt over løsningskostnadene." },
   ],
   related: [

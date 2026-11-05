@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert",
     date: "2026-10-05",
   },
-  dek: "Att själv anmäla en Google-recension är **gratis**, men Google avvisar många anmälningar. En advokat tar oftast betalt **per timme och i förskott**, oavsett resultat. Tjänsterna skiljer sig mycket åt: vissa tar betalt per försök eller i förskott, andra visar inga priser alls. Hos RapidRemove betalar du **199 € per borttagen recension** (250 € om den är äldre än 4 veckor eller saknar text) – och **bara när den faktiskt är borta**.",
+  dek: "Att själv anmäla en Google-recension är **gratis**, men Google avvisar många anmälningar. En advokat tar oftast betalt **per timme och i förskott**, oavsett resultat. Tjänsterna skiljer sig mycket åt: vissa tar betalt per försök eller i förskott, andra visar inga priser alls. Hos RapidRemove betalar du **199 € per borttagen recension** med text upp till 4 veckor (övriga tillgängligt igen från januari 2027) – och **bara när den faktiskt är borta**.",
   blocks: [
     { t: "h2", id: "kort-svar", text: "Kort svar: vad kostar det att ta bort en Google-recension?", toc: "Kort svar" },
     { t: "p", text: "Det beror på vilken väg du väljer: att anmäla själv kostar bara tid, medan advokater och vissa tjänster kostar pengar även om recensionen blir kvar. Den viktiga frågan är alltså inte bara **hur mycket**, utan **när du betalar och för vad**." },
@@ -19,7 +19,7 @@ const article = {
       "**Anmäla själv hos Google:** gratis, men avvisas ofta med ett standardsvar.",
       "**Advokat:** oftast timarvode, ofta med förskott – du betalar även om recensionen står kvar.",
       "**Tjänster med förskott:** vissa tar betalt per försök eller i förväg, andra visar priset först efter ett samtal.",
-      "**RapidRemove:** 199 € per borttagen recension med text upp till 4 veckor, 250 € för äldre recensioner och stjärnbetyg utan text. Inget i förskott, inga avgifter för försök.",
+      "**RapidRemove:** 199 € per borttagen recension med text upp till 4 veckor; äldre recensioner och stjärnbetyg utan text är tillgängligt igen från januari 2027. Inget i förskott, inga avgifter för försök.",
     ] },
     { t: "p", text: "Vill du se priset för just dina recensioner direkt? I vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) bockar du i recensionerna och ser totalbeloppet på en gång." },
 
@@ -33,23 +33,21 @@ const article = {
     { t: "h2", id: "jamforelse", text: "Jämförelse: själv, advokat, förskottstjänst eller RapidRemove", toc: "Jämförelse" },
     { t: "p", text: "Den största skillnaden ligger inte i priset utan i **vem som bär risken** om recensionen blir kvar." },
     { t: "table", rrCol: 4, head: ["Kriterium", "Anmäla själv", "Advokat", "Tjänst med förskott", "RapidRemove"], rows: [
-      ["Kostnadsmodell", "Gratis", "Timarvode, ofta förskott", "Per försök eller fast belopp i förväg", "**199 € per borttagen recension** (upp till 4 veckor, med text); alla andra 250 €"],
+      ["Kostnadsmodell", "Gratis", "Timarvode, ofta förskott", "Per försök eller fast belopp i förväg", "**199 € per borttagen recension** (upp till 4 veckor, med text); alla andra tillgängligt igen från januari 2027"],
       ["Betalar du om recensionen blir kvar?", "–", "Ja", "Ofta ja", "**Nej**"],
       ["Risk för dig", "Förlorad tid, avvisas ofta", "Hög: kostnad oavsett utfall", "Hög: pengarna redan betalda", "**Ingen**: bara vid resultat"],
-      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast 1–2 veckor (≤ 4 veckor, med text), annars 1–2 veckor"],
+      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast 1–2 veckor (≤ 4 veckor, med text)"],
       ["Insats för dig", "Medel (anmäla, följa upp, överklaga)", "Hög (underlag, möten)", "Varierar", "Ca 2 minuter"],
     ] },
     { t: "p", text: "Hur lång tid Google själv tar och hur överklagandet fungerar läser du i [hur lång tid tar det för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
 
     { t: "h2", id: "priser", text: "RapidRemoves priser i korthet", toc: "Våra priser" },
-    { t: "p", text: "Du betalar **199 € per borttagen recension** med text som är högst 4 veckor gammal; alla andra – äldre recensioner, stjärnbetyg utan text och fall som kräver ett specialförfarande – kostar **250 €**. Färska recensioner är billigare eftersom de är betydligt lättare att få bort. Det finns inget separat programvarupris och inget ålderstillägg; profiler i USA betalar samma belopp i $. Visar det sig i ett enskilt fall att en recension à 199 € bara kan tas bort med ett specialförfarande frågar vi dig först – med ditt samtycke kostar den då 250 €." },
+    { t: "p", text: "Du betalar **199 € per borttagen recension** med text som är högst 4 veckor gammal; alla andra – äldre recensioner, stjärnbetyg utan text och fall som kräver ett specialförfarande – är **tillgängligt igen från januari 2027**. Profiler i USA betalar samma belopp i $. Visar det sig i ett enskilt fall att en recension à 199 € bara kan tas bort med ett specialförfarande meddelar vi dig – du betalar ingenting för den." },
     { t: "table", rrCol: 2, head: ["Recensionens ålder", "Chans att lyckas", "Pris per borttagen recension"], rows: [
       ["Upp till 4 veckor (med text)", "ca. 90 %", "**199 €**"],
-      ["Alla andra: äldre än 4 veckor eller stjärnbetyg utan text", "ca. 50 % (äldre än 4 veckor)", "**250 €**"],
+      ["Alla andra: äldre än 4 veckor eller stjärnbetyg utan text", "–", "Tillgängligt igen från januari 2027"],
     ] },
-    { t: "p", text: "**Stjärnbetyg utan text** kostar **250 €** per borttaget betyg, oavsett ålder. Precis som för alla recensioner lägger du in ett kort eller PayPal när du beställer; dragningen sker automatiskt först när betyget har tagits bort. Ligger betyget kvar betalar du ingenting." },
-    { t: "p", text: "**Express** (tillval): för recensioner à 250 € kan du vid beställningen lägga till Express för **+100 € per recension**. Startar arbetet mellan måndag och fredag 12:00 (Wientid) är recensionen borta inom 30 timmar; startar det från fredag 12:00 eller på helgen, senast tisdag midnatt (Express finns inte på helgen). Lyckas det inte dras Express-tillägget av automatiskt och du betalar bara 250 €. För recensioner à 199 € finns ingen Express." },
-    { t: "p", text: "Efter den kostnadsfria bedömningen får du **mängdrabatt** baserat på hur många recensioner vi accepterar – stjärnbetyg utan text räknas in. Rabatten gäller varje recension och varje betyg utan text som tas bort:" },
+    { t: "p", text: "Efter den kostnadsfria bedömningen får du **mängdrabatt** baserat på hur många recensioner vi accepterar. Rabatten gäller varje recension som tas bort:" },
     { t: "table", head: ["Accepterade recensioner", "Rabatt"], rows: [
       ["1 – 2", "–"],
       ["3 – 4", "**−10 %**"],
@@ -59,18 +57,15 @@ const article = {
     { t: "cta", title: "Se direkt vad dina recensioner kostar", text: "Sök ditt företag, bocka i recensionerna som ska bort – priset syns direkt. **Från 199 € per borttagen recension**, inget i förskott.", btn: "Räkna ut priset", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala bara vid resultat", "Kostnadsfri bedömning"] },
 
     { t: "h2", id: "rakneexempel", text: "Räkneexempel: så blir ditt pris", toc: "Räkneexempel" },
-    { t: "p", text: "Uträkningen är enkel: antal borttagna recensioner × 199 € (eller 250 €), minus mängdrabatten. Några exempel:" },
+    { t: "p", text: "Uträkningen är enkel: antal borttagna recensioner × 199 €, minus mängdrabatten. Några exempel:" },
     { t: "ul", items: [
       "**1 färsk falsk recension:** 199 €. Blir den kvar betalar du 0 €.",
-      "**1 recension som är tre månader gammal:** **250 €**.",
-      "**3 färska recensioner:** 537 €, minus 10 % = **483,30 €**.",
-      "**2 färska och 3 äldre recensioner:** 1 108 €, minus 15 % = **941,80 €**.",
-      "**5 färska recensioner accepterade, 4 borttagna:** 4 × 199 € = 716 €, minus 15 % = **608,60 €**. Den femte, som blir kvar, kostar ingenting.",
-      "**10 recensioner (6 färska, 4 äldre):** 2 074 €, minus 30 % = **1 451,80 €**.",
-      "**1 stjärnbetyg utan text:** **250 €**, som dras automatiskt när betyget är borttaget. Ligger betyget kvar betalar du ingenting.",
-      "**2 betyg utan text + 1 färsk recension med text:** 3 recensioner, alltså −10 %. Betygen utan text kostar då **225 €** styck (250 € minus 10 %) och recensionen med text **161,10 €** – allt dras automatiskt först när respektive recension är borta.",
+      "**3 färska recensioner:** 597 €, minus 10 % = **537,30 €**.",
+      "**5 färska recensioner accepterade, 4 borttagna:** 4 × 199 € = 796 €, minus 15 % = **676,60 €**. Den femte, som blir kvar, kostar ingenting.",
+      "**10 färska recensioner:** 1 990 €, minus 30 % = **1 393 €**.",
+      "**Äldre recensioner eller stjärnbetyg utan text:** tillgängligt igen från januari 2027.",
     ] },
-    { t: "tip", title: "Snabbhet lönar sig dubbelt", text: "Efter 4 veckor sjunker chansen från ca. 90 % till ca. 50 % och priset stiger från 199 € till 250 €. Den som agerar direkt mot en färsk falsk recension betalar mindre och har större chans." },
+    { t: "tip", title: "Snabbhet lönar sig dubbelt", text: "Efter 4 veckor sjunker chansen från ca. 90 % till ca. 50 %, och borttagning av äldre recensioner är först tillgängligt igen från januari 2027. Den som agerar direkt mot en färsk falsk recension betalar mindre och har större chans." },
 
     { t: "h2", id: "betalning", text: "Så fungerar betalningen: per borttagen recension", toc: "Betalning" },
     { t: "p", text: "Du betalar först **när en recension faktiskt är borta** – aldrig i förskott och aldrig för ett försök, även för stjärnbetyg utan text. När du beställer lägger du in ett kort eller PayPal; eftersom olika recensioner försvinner vid olika tidpunkter dras betalningen **per recension**." },
@@ -79,7 +74,7 @@ const article = {
       "**Vi sätter igång** via Googles egna procedurer, för din räkning som ägare.",
       "**Recensionen borta?** Då dras beloppet automatiskt – **per recension**, så att du bara betalar för det som redan är borta.",
     ] },
-    { t: "p", text: "Recensioner upp till 4 veckor gamla med text tar oftast **1–2 veckor**, alla andra oftast **1–2 veckor**. Skribenten får inte veta vem som begärt borttagningen." },
+    { t: "p", text: "Recensioner upp till 4 veckor gamla med text tar oftast **1–2 veckor**. Skribenten får inte veta vem som begärt borttagningen." },
 
     { t: "h2", id: "varningssignaler", text: "Varningssignaler hos leverantörer", toc: "Varningssignaler" },
     { t: "p", text: "Ett lågt pris är värdelöst om metoden inte håller. Håll utkik efter de här signalerna:" },
@@ -104,7 +99,7 @@ const article = {
 
     { t: "h2", id: "varfor", text: "Varför företag väljer betalning vid resultat", toc: "Varför RapidRemove" },
     { t: "ul", items: [
-      "**Tydligt pris:** 199 € eller 250 € per borttagen recension, synligt i förväg i guiden.",
+      "**Tydligt pris:** 199 € per borttagen recension, synligt i förväg i guiden.",
       "**Ingen risk:** inget i förskott, inga avgifter för försök.",
       "**Bara officiella vägar:** enbart Googles egna procedurer – inga falska konton, inga bottar, inga falska juridiska anmälningar.",
       "**Erfarenhet:** sedan 2023 över 1 600 borttagna Google-företagsprofiler, över 20 000 kostnadsfria profilkontroller, kunder i över 50 länder och betyget 5,0 på Trustpilot.",
@@ -113,11 +108,11 @@ const article = {
     { t: "cta", title: "Vet på 2 minuter vad det kostar", text: "Välj ditt företag, bocka i recensionerna och se exakt pris inklusive rabatt. Du betalar **bara för recensioner som faktiskt tas bort**.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Från 199 € per borttagen recension", "Inget i förskott", "Dragning först efter borttagning"] },
   ],
   faq: [
-    { q: "Vad kostar det att ta bort en Google-recension?", a: "Hos RapidRemove 199 € per borttagen recension med text upp till 4 veckor, och 250 € för äldre recensioner och stjärnbetyg utan text. Du betalar bara om recensionen faktiskt försvinner." },
+    { q: "Vad kostar det att ta bort en Google-recension?", a: "Hos RapidRemove 199 € per borttagen recension med text upp till 4 veckor; äldre recensioner och stjärnbetyg utan text är tillgängligt igen från januari 2027. Du betalar bara om recensionen faktiskt försvinner." },
     { q: "Kan man ta bort en Google-recension gratis?", a: "Att själv anmäla till Google är gratis. Google avvisar dock ofta anmälningar; då kan du överklaga en gång per recension i Reviews Management Tool." },
     { q: "Vad kostar en advokat för att ta bort en Google-recension?", a: "Advokater tar oftast betalt per timme, ofta med förskott och oavsett resultat. Det lönar sig främst vid verkliga rättsliga tvister som ärekränkning." },
     { q: "Måste jag betala i förskott?", a: "Nej. När du beställer lägger du in ett kort eller PayPal, men **ingenting dras i förskott** och försök kostar inget. Först när en recension är borttagen dras beloppet automatiskt – även för stjärnbetyg utan text." },
-    { q: "Får jag rabatt för flera recensioner?", a: "Ja. Från 3 accepterade recensioner 10 %, från 5 recensioner 15 % och från 10 recensioner 30 % – på varje recension som tas bort. Stjärnbetyg utan text räknas in i antalet." },
+    { q: "Får jag rabatt för flera recensioner?", a: "Ja. Från 3 accepterade recensioner 10 %, från 5 recensioner 15 % och från 10 recensioner 30 % – på varje recension som tas bort." },
     { q: "Kan jag betala för varje recension separat?", a: "Ja. Eftersom recensioner försvinner vid olika tidpunkter dras varje recension separat – automatiskt när den har tagits bort." },
     { q: "Kan någon garantera att en recension tas bort?", a: "Nej. Det är Google som beslutar. Den som lovar en garanti är inte ärlig – därför tar vi bara betalt vid resultat." },
   ],

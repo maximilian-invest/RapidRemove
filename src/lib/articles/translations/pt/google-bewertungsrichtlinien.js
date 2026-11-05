@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "zonas-cinzentas", text: "Zonas cinzentas: só estrelas, ex-funcionários, concorrentes, preços", toc: "Zonas cinzentas" },
     { t: "p", text: "Estes casos não são removíveis automaticamente nem intocáveis automaticamente. O resultado depende de conseguir demonstrar uma violação, não de quão injusta a avaliação lhe parece." },
     { t: "ul", items: [
-      "**Classificações só com estrelas, sem texto:** não há conteúdo que possa violar uma regra, por isso a questão é se a pessoa foi cliente real. As de 1 estrela sem texto vindas de perfis desconhecidos são muitas vezes falsas; explicamos em [avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/). A RapidRemove remove-as com um procedimento mais extenso (250 € por avaliação removida).",
+      "**Classificações só com estrelas, sem texto:** não há conteúdo que possa violar uma regra, por isso a questão é se a pessoa foi cliente real. As de 1 estrela sem texto vindas de perfis desconhecidos são muitas vezes falsas; explicamos em [avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/). O procedimento mais extenso da RapidRemove para elas estará disponível novamente a partir de janeiro de 2027.",
       "**Ex-funcionários:** o Google indica o emprego atual ou anterior como **conflito de interesses**. Uma avaliação de um ex-funcionário sobre a empresa enquanto empregador é um caso sólido, sobretudo se nunca foi cliente.",
       "**Concorrentes:** avaliações publicadas por ou para um concorrente são conflito de interesses. Provas diretas são raras; contam o momento, a redação e as outras avaliações do autor.",
       "**Avaliações sobre preços:** «demasiado caro» é uma opinião e fica. Só passa a ser removível se contiver algo mais, como afirmações falsas, insultos ou um link para um concorrente.",
@@ -92,10 +92,10 @@ const article = {
     { t: "p", text: "Faz sentido quando há várias avaliações, quando uma denúncia já foi rejeitada ou quando simplesmente não tem tempo. A RapidRemove usa apenas os procedimentos do próprio Google, em nome do proprietário da empresa: sem contas falsas, sem bots, sem notificações legais falsas, e o autor não fica a saber quem pediu a remoção." },
     { t: "ul", items: [
       "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação é removível. Se não for, não custa nada.",
-      "**199 € por avaliação removida** com texto até 4 semanas, 250 € para avaliações com mais de 4 semanas. Só paga quando a avaliação desaparecer. Classificações só com estrelas: também 250 € por avaliação removida.",
+      "**199 € por avaliação removida** com texto até 4 semanas. Só paga quando a avaliação desaparecer. Avaliações com mais de 4 semanas e classificações só com estrelas: disponível novamente a partir de janeiro de 2027.",
       "**Probabilidade de sucesso:** cerca de **90 %** em avaliações até 4 semanas, cerca de **50 %** nas mais antigas.",
       "**Desconto de volume** nas avaliações aceites: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Prazo:** avaliações com texto até 4 semanas, normalmente 1–2 semanas; todas as outras, normalmente 1–2 semanas.",
+      "**Prazo:** avaliações com texto até 4 semanas, normalmente 1–2 semanas.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis de Empresa no Google e fizemos mais de 20.000 verificações gratuitas para clientes em mais de 50 países. Preços e encomenda: [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/)." },
     { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
@@ -107,7 +107,7 @@ const article = {
     { q: "Posso apagar eu próprio uma avaliação do Google sendo o proprietário?", a: "Não. Só o autor pode editar ou eliminar a sua avaliação. Como proprietário pode denunciá-la, recorrer uma vez, fazer um pedido legal para conteúdo ilícito e responder publicamente." },
     { q: "Uma classificação de 1 estrela sem texto viola as políticas?", a: "Por si só, não. Passa a ser removível quando há indícios de que é falsa, por exemplo nenhum registo do cliente e um perfil com atividade suspeita, ou uma vaga de classificações semelhantes." },
     { q: "O que acontece se o Google não encontrar violação?", a: "Pode **recorrer uma vez por avaliação** na ferramenta de gestão de avaliações; o recurso pode ser escalado e recebe uma decisão final. Para difamação ou outro conteúdo ilícito existe ainda o pedido legal de remoção." },
-    { q: "Quanto custa remover uma avaliação que viola as políticas?", a: "Com a RapidRemove, **199 € por avaliação removida** (250 € se tiver mais de 4 semanas ou não tiver texto), pagos só depois de a avaliação desaparecer. A análise prévia é gratuita." },
+    { q: "Quanto custa remover uma avaliação que viola as políticas?", a: "Com a RapidRemove, **199 € por avaliação removida** (mais de 4 semanas ou sem texto: disponível novamente a partir de janeiro de 2027), pagos só depois de a avaliação desaparecer. A análise prévia é gratuita." },
   ],
   related: [
     { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
