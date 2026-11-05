@@ -473,7 +473,7 @@ function ReviewPortals({ r, items }) {
         <>
           {ck.length ? <div className="rp-pt-sub">Google-Unternehmensprofil · {ck.filter((c) => c.ok).length} von {ck.length} erfüllt</div> : null}
           {[...ck.filter((c) => !c.ok), ...ck.filter((c) => c.ok)].map((c) => (
-            <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b></span></div>
+            <CheckRow key={c.key} c={c} detail={false} />
           ))}
           {(g && g.url) || (r.location && r.location.mapsUrl) ? <a className="rp-pt-open" href={(g && g.url) || r.location.mapsUrl} target="_blank" rel="noopener noreferrer">Google-Profil öffnen<ExternalLink /></a> : null}
         </>
@@ -544,7 +544,7 @@ function WebArea({ r }) {
           {tile("seo", "SEO-Grundlagen", `${ok.filter((c) => c.ok).length} von ${ok.length} erfüllt`, null, null, (
             <>
               {[...ok.filter((c) => !c.ok), ...ok.filter((c) => c.ok)].map((c) => (
-                <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+                <CheckRow key={c.key} c={c} />
               ))}
               <a className="rp-pt-open" href={w.url} target="_blank" rel="noopener noreferrer">Website öffnen<ExternalLink /></a>
             </>
@@ -552,6 +552,47 @@ function WebArea({ r }) {
         </div>
       ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
     </section>
+  );
+}
+/* Erklärungen zum Antippen – in einfachen Worten: was ist das, warum wichtig, was tun */
+const HELP = {
+  https: ["Das Schloss-Symbol in der Adresszeile. Die Verbindung zur Website ist verschlüsselt.", "Ohne https zeigt der Browser „Nicht sicher“ an – das schreckt Kunden ab und Google stuft die Seite herunter.", "Ihr Webhoster aktiviert ein kostenloses SSL-Zertifikat (meist ein Klick im Hosting-Menü)."],
+  title: ["Der Titel ist die blaue Überschrift, die bei Google über Ihrem Eintrag steht.", "Er entscheidet mit, ob jemand klickt. Ideal: 30–65 Zeichen mit Leistung und Ort, z. B. „Immobilienmakler in Zürich | Firmenname“.", "Im Website-Baukasten bzw. SEO-Plugin den Seitentitel anpassen."],
+  desc: ["Der graue Text unter dem Titel in den Google-Ergebnissen.", "Ein guter Text (50–170 Zeichen) erklärt in einem Satz, was Sie bieten – mehr Klicks von den gleichen Suchenden.", "Im Website-Baukasten bzw. SEO-Plugin die „Meta-Beschreibung“ ausfüllen."],
+  h1: ["Die große Hauptüberschrift auf Ihrer Startseite.", "Google liest daran ab, worum es auf der Seite geht.", "Eine klare Überschrift mit Ihrer Leistung und dem Ort setzen, z. B. „Immobilien kaufen & verkaufen in Zürich“."],
+  viewport: ["Eine technische Angabe, damit die Seite auf dem Handy richtig skaliert.", "Über die Hälfte Ihrer Besucher kommt mit dem Handy – ohne diese Angabe ist alles winzig und Google wertet die Seite ab.", "Ihr Webdesigner ergänzt eine Zeile im Code (bei modernen Baukästen automatisch)."],
+  lang: ["Die Website sagt Google, in welcher Sprache sie geschrieben ist.", "So wird sie Menschen angezeigt, die auf Deutsch suchen.", "Ihr Webdesigner ergänzt die Sprachangabe (z. B. „de“) im Code."],
+  index: ["Ob Google die Website überhaupt in die Suchergebnisse aufnehmen darf.", "Steht sie auf „noindex“, ist sie bei Google unsichtbar – das passiert oft versehentlich nach einem Relaunch.", "Sofort im Baukasten/SEO-Plugin die Sichtbarkeit für Suchmaschinen einschalten."],
+  canonical: ["Ein unsichtbarer Hinweis im Code, welche Adresse die „echte“ Ihrer Seite ist (z. B. mit oder ohne www).", "Ohne ihn sieht Google manchmal mehrere Versionen derselben Seite und teilt die Bewertung auf – Sie ranken schlechter.", "Ihr Webdesigner oder das SEO-Plugin (z. B. Yoast) setzt ihn automatisch – meist eine Einstellung."],
+  alt: ["Ein kurzer Text zu jedem Bild, den Besucher nicht sehen, Google aber liest (z. B. „Wohnung mit Seeblick in Zürich“).", "Google versteht Bilder nur über diese Texte. Mit Beschreibung erscheinen Ihre Bilder auch in der Google-Bildersuche und die Seite wirkt barrierefrei.", "Im Baukasten bei jedem Bild das Feld „Alt-Text“ oder „Bildbeschreibung“ ausfüllen."],
+  schema: ["Ein unsichtbarer Steckbrief im Code: Name, Adresse, Telefon, Öffnungszeiten, Branche.", "Google und KI-Systeme lesen Ihre Firmendaten daraus sicher ab – das hilft bei Maps, im Firmenkasten rechts und in KI-Antworten.", "Ihr Webdesigner oder ein SEO-Plugin ergänzt die Firmendaten („LocalBusiness“-Schema)."],
+  sitemap: ["Die Sitemap ist ein Inhaltsverzeichnis Ihrer Website für Google, robots.txt eine Hausordnung für Suchmaschinen.", "Mit Sitemap findet Google alle Ihre Seiten schneller und vollständiger.", "Die meisten Baukästen und SEO-Plugins erstellen sie mit einem Klick; danach in der Google Search Console einreichen."],
+  status: ["Wie Google Ihr Unternehmen anzeigt: geöffnet, vorübergehend oder dauerhaft geschlossen.", "Steht dort „geschlossen“, rufen Kunden gar nicht erst an.", "Im Google-Unternehmensprofil den Status korrigieren."],
+  website: ["Der Link zu Ihrer Website in Ihrem Google-Eintrag.", "Ohne Link landen Interessenten nicht bei Ihnen, sondern bei der Konkurrenz.", "Im Google-Unternehmensprofil unter „Kontakt“ die Website eintragen."],
+  phone: ["Die Telefonnummer in Ihrem Google-Eintrag.", "Viele Kunden rufen direkt aus Google oder Maps an.", "Im Google-Unternehmensprofil unter „Kontakt“ die Nummer eintragen."],
+  hours: ["Ihre Öffnungs- bzw. Bürozeiten im Google-Eintrag.", "Fehlen sie, wirkt das Profil unvollständig und Google zeigt Sie seltener an.", "Im Google-Unternehmensprofil die Zeiten hinterlegen."],
+  photos: ["Fotos in Ihrem Google-Eintrag: Team, Büro, Projekte, Logo.", "Profile mit vielen Fotos bekommen deutlich mehr Klicks und Anfragen.", "Mindestens 10 gute Fotos im Google-Unternehmensprofil hochladen."],
+  count: ["Wie viele Google-Bewertungen Sie haben.", "Unter 30 Bewertungen wirkt der Schnitt wenig belastbar – einzelne schlechte Bewertungen ziehen stark nach unten.", "Zufriedene Kunden aktiv um eine Bewertung bitten, z. B. per Link oder QR-Code."],
+  answers: ["Ob Sie auf Ihre neuesten Google-Bewertungen geantwortet haben.", "Antworten zeigt Interessenten, dass Sie sich kümmern – gerade bei Kritik.", "Im Google-Unternehmensprofil auf jede Bewertung kurz und freundlich antworten."],
+};
+function CheckRow({ c, detail = true }) {
+  const [on, setOn] = React.useState(false);
+  const h = HELP[c.key];
+  return (
+    <div className={"rp-ck" + (on ? " on" : "")}>
+      <button type="button" className="rp-li rp-ck-h" onClick={() => h && setOn(!on)} disabled={!h}>
+        <span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span>
+        <span className="rp-t"><b>{c.label}</b>{detail && c.detail ? <span>{c.detail}</span> : null}</span>
+        {h ? <span className="rp-ck-q">?</span> : null}
+      </button>
+      {on && h ? (
+        <div className="rp-ck-b">
+          <p><b>Was ist das?</b> {h[0]}</p>
+          <p><b>Warum wichtig?</b> {h[1]}</p>
+          {!c.ok ? <p><b>So beheben:</b> {h[2]}</p> : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 const AREA_ICON = { press: Newspaper, search: Search, ki: Sparkles, reviews: Star, social: Users, web: Globe };

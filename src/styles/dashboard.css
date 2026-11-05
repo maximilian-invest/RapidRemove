@@ -1438,3 +1438,12 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-kw>b{flex:1;min-width:0;font-size:15px;font-weight:700}
 .rra .rp-kw-c{display:flex;flex-direction:column;align-items:flex-end;min-width:54px;font-weight:800;font-size:17px;line-height:1.1}
 .rra .rp-kw-c small{font-size:11px;font-weight:600;color:#8a8a8a;text-transform:uppercase;letter-spacing:.04em}
+
+/* Reputation: Prüfpunkte mit Erklärung */
+.rra .rp-ck-h{width:100%;background:none;border:0;border-bottom:1px solid #f0f0f0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rra .rp-ck-h:disabled{cursor:default}
+.rra .rp-ck-q{width:22px;height:22px;border-radius:50%;background:#efefef;color:#6b6b6b;font-size:13px;font-weight:700;display:grid;place-items:center;flex:none}
+.rra .rp-ck.on .rp-ck-q{background:#111;color:#fff}
+.rra .rp-ck-b{background:#f7f7f7;border-radius:12px;padding:12px 14px;margin:8px 0 10px 36px}
+.rra .rp-ck-b p{margin:0 0 6px;font-size:14px;line-height:1.5;color:#3a3a3a}
+.rra .rp-ck-b p:last-child{margin:0}
