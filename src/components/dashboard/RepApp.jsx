@@ -229,6 +229,27 @@ function Chart({ history }) {
 const TODO_ICON = { rank: Search, gbp: Star, neg: Flag, suggest: Search, answer: MessageCircle, ki: Sparkles, social: Users, glink: Users, web: Globe };
 const TODO_COL = { rank: ["#2b7fff", "#eaf2ff"], gbp: ["#d97706", "#fff4e0"], neg: ["#e23b3b", "#fdecec"], suggest: ["#e23b3b", "#fdecec"], answer: ["#d97706", "#fff4e0"], ki: ["#2b7fff", "#eaf2ff"], social: ["#7c3aed", "#f1eafe"], glink: ["#7c3aed", "#f1eafe"], web: ["#0ea5e9", "#e6f6fd"] };
 
+const REACH = { lokal: "Lokal", regional: "Regional", ueberregional: "Überregional", international: "International" };
+function ProfileBox({ p }) {
+  const [on, setOn] = React.useState(false);
+  return (
+    <section className={"rp-prof" + (on ? " on" : "")}>
+      <button type="button" className="rp-prof-h" onClick={() => setOn(!on)}>
+        <span className="rp-t"><b>So verstehen wir Ihr Unternehmen</b><span>{p.summary}</span></span>
+        <ChevronDown className="rp-pt-chev" />
+      </button>
+      {on ? (
+        <div className="rp-prof-b">
+          {p.services && p.services.length ? <div><em>Leistungen</em><div className="rp-chips">{p.services.map((x) => <span key={x}>{x}</span>)}</div></div> : null}
+          {p.notOffered && p.notOffered.length ? <div><em>Nicht im Angebot</em><div className="rp-chips no">{p.notOffered.map((x) => <span key={x}>{x}</span>)}</div></div> : null}
+          {p.customers ? <div><em>Zielkunden</em><p>{p.customers}</p></div> : null}
+          <div><em>Reichweite</em><p>{REACH[p.reach] || p.reach}{p.countries && p.countries.length ? " · " + p.countries.join(", ") : ""}</p></div>
+          {p.usp && p.usp.length ? <div><em>Besonderheiten</em><div className="rp-chips">{p.usp.map((x) => <span key={x}>{x}</span>)}</div></div> : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
   const [area, setArea] = React.useState(null);
@@ -265,6 +286,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
         <div className="rp-kpi"><span className="rp-kpi-l">Google-Sterne</span><b className="rp-kpi-v">{k.rating ? String(k.rating).replace(".", ",") : "–"}</b><span className="rp-kpi-s">{k.reviews || 0} Bewertungen</span></div>
         <div className="rp-kpi"><span className="rp-kpi-l">Seite 1 positiv</span><b className="rp-kpi-v">{k.page1Pos || 0}/{k.page1Total || 10}</b><span className="rp-kpi-s">Google-Treffer</span></div>
       </div>
+      {r.profile ? <ProfileBox p={r.profile} /> : null}
       <div className="rp-grid">
         <div className="rp-main">
           <section className="rp-box">
@@ -346,13 +368,13 @@ const kiVal = (x) => (!x.known ? 4 : x.sent === "pos" ? 9 : x.sent === "neg" ? 3
 const DIM_DEF = [
   ["kennen", "Bekanntheit", "Kennen KIs Ihr Unternehmen?"], ["angebot", "Leistungen", "Wissen KIs, was Sie anbieten?"], ["serioes", "Seriosität", "Halten KIs Sie für seriös?"],
   ["erfahrungen", "Kundenerfahrungen", "Was KIs über Erfahrungen von Kunden wissen"], ["kritik", "Kritik & Warnungen", "Nennen KIs Kritik oder Beschwerden?"],
-  ["beauftragen", "Empfehlung", "Würden KIs Sie empfehlen?"], ["besser", "Vergleich mit Mitbewerbern", "Schicken KIs Kunden zur Konkurrenz?"],
+  ["rec", "Empfehlung", "Nennen KIs Sie, wenn Kunden nach Ihrer Leistung fragen?"],
 ];
 function kiDimsOf(r) {
   if (Array.isArray(r.kiDims) && r.kiDims.length) return r.kiDims;
   const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
   return DIM_DEF.map(([key, name, hint]) => {
-    const ans = ais.flatMap((ai) => ai.answers.filter((x) => x.key === key && x.sent !== "none"));
+    const ans = ais.flatMap((ai) => ai.answers.filter((x) => (key === "rec" ? String(x.key).startsWith("rec") : x.key === key) && x.sent !== "none"));
     if (!ans.length) return null;
     const v = (x) => (!x.known ? (key === "kennen" ? 2 : 4) : x.sent === "pos" ? 9 : x.sent === "neg" ? 3 : 6.5);
     return { key, name, hint, score: Math.round(ans.reduce((s2, x) => s2 + v(x), 0) / ans.length), n: ans.length, neg: ans.filter((x) => x.known && x.sent === "neg").length, sum: "" };
@@ -418,15 +440,23 @@ function KiTable({ r }) {
 function KiDim({ d }) {
   const [on, setOn] = React.useState(false);
   const refs = d.refs || [];
+  const extra = (d.others && d.others.length) || (d.qs && d.qs.length);
+  const can = refs.length || extra;
   return (
-    <div className={"rp-dim" + (refs.length ? " has" : "") + (on ? " on" : "")}>
-      <button type="button" className="rp-dim-btn" onClick={() => refs.length && setOn(!on)} disabled={!refs.length}>
+    <div className={"rp-dim" + (can ? " has" : "") + (on ? " on" : "")}>
+      <button type="button" className="rp-dim-btn" onClick={() => can && setOn(!on)} disabled={!can}>
         <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
         <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
         {d.sum ? <p>{d.sum}</p> : null}
-        {refs.length ? <span className="rp-dim-more">{refs.length} {refs.length === 1 ? "Quelle" : "Quellen"}<ChevronDown /></span> : null}
+        {can ? <span className="rp-dim-more">{d.key === "rec" ? "Details" : refs.length + (refs.length === 1 ? " Quelle" : " Quellen")}<ChevronDown /></span> : null}
       </button>
-      {on ? (
+      {on && extra ? (
+        <div className="rp-dim-rec">
+          {d.qs && d.qs.length ? <div><em>Gefragt wie ein Kunde</em>{d.qs.map((x) => <p key={x}>„{x}“</p>)}</div> : null}
+          {d.others && d.others.length ? <div><em>Stattdessen genannt</em><div className="rp-chips">{d.others.map((x) => <span key={x}>{x}</span>)}</div></div> : null}
+        </div>
+      ) : null}
+      {on && refs.length ? (
         <div className="rp-dim-refs">
           {refs.map((x) => (
             <a key={x.url} className="rp-li" href={x.url} target="_blank" rel="noopener noreferrer">
