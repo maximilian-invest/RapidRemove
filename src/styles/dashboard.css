@@ -1306,3 +1306,6 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-facts span{font-size:13px;color:var(--g3);flex:none}
 .rra .rp-facts b{font-size:14px;font-weight:700;text-align:right}
 .rra .rp-facts b.t-good{color:#15803d}.rra .rp-facts b.t-bad{color:#b91c1c}
+.rra .rp-dh>div{flex:1;min-width:0}
+.rra .rp-add{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:20px;background:var(--ink);color:#fff;font-size:14px;font-weight:700;flex:none}
+.rra .rp-add svg{width:16px;height:16px}

@@ -2404,7 +2404,7 @@ export default function CustomerDashboard() {
       <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !sfOrder && !cele && !wiseOpen && !detail} items={changedNew}
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
-      {repPrev ? <RepSearchSheet open={repSearch} initial={repGuess} rep={rep} showToast={showToast} onClose={() => setRepSearch(false)} onPicked={() => { setRepSearch(false); goTab("home"); }} /> : null}
+      {repPrev ? <RepSearchSheet open={repSearch} initial={repGuess} rep={rep} showToast={showToast} onClose={() => setRepSearch(false)} onPicked={() => { setRepSearch(false); goTab("rep"); }} /> : null}
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
