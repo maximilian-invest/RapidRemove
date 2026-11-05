@@ -1447,3 +1447,13 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-ck-b{background:#f7f7f7;border-radius:12px;padding:12px 14px;margin:8px 0 10px 36px}
 .rra .rp-ck-b p{margin:0 0 6px;font-size:14px;line-height:1.5;color:#3a3a3a}
 .rra .rp-ck-b p:last-child{margin:0}
+
+/* Reputation: Quellen je KI-Thema */
+.rra .rp-dim-btn{display:block;width:100%;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rra .rp-dim-btn:disabled{cursor:default}
+.rra .rp-dim-more{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:13px;font-weight:600;color:#6b6b6b}
+.rra .rp-dim-more svg{width:15px;height:15px;transition:transform .2s}
+.rra .rp-dim.on .rp-dim-more svg{transform:rotate(180deg)}
+.rra .rp-dim-refs{background:#fff;border-radius:14px;padding:2px 14px;margin-top:12px}
+.rra .rp-dim-refs .rp-li{border-bottom:1px solid #f0f0f0}
+.rra .rp-dim-refs .rp-li:last-child{border-bottom:0}

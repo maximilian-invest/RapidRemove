@@ -107,7 +107,14 @@ function placeView(p: J) {
   };
 }
 
-async function askClaude(system: string, user: string, opts: { search?: boolean; maxTokens?: number } = {}): Promise<string> {
+type Src = { t: string; u: string };
+const pushSrc = (sink: Src[] | undefined, u: unknown, t: unknown) => {
+  if (!sink) return;
+  const url = String(u || "").replace(/[?&]utm_[^&#]*/g, "").replace(/\?$/, "");
+  if (!/^https?:\/\//.test(url) || sink.some((x) => x.u === url) || sink.length >= 8) return;
+  sink.push({ u: url, t: String(t || "").slice(0, 160) });
+};
+async function askClaude(system: string, user: string, opts: { search?: boolean; maxTokens?: number; sink?: Src[] } = {}): Promise<string> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_API_KEY fehlt");
   const call = async (withSearch: boolean) => {
@@ -131,6 +138,7 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
     // Websuche kann pausieren (stop_reason „pause_turn“) → Antwort mit dem bisherigen Verlauf fortsetzen
     if (j.stop_reason === "pause_turn") { messages = [{ role: "user", content: user }, { role: "assistant", content }]; continue; }
     if (withSearch && !content.some((c: J) => c.type === "text" && c.text)) console.warn("Rep-Scan Claude-Websuche leer:", j.stop_reason, content.map((c: J) => c.type + (c.type === "web_search_tool_result" && c.content?.error_code ? ":" + c.content.error_code : "")).join(","));
+    for (const c of content) if (c.type === "text" && Array.isArray(c.citations)) for (const ci of c.citations) pushSrc(opts.sink, ci.url, ci.title);
     return content.filter((c: J) => c.type === "text").map((c: J) => c.text || "").join("").trim();
    }
    return "";
@@ -142,7 +150,7 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
   return call(false);
 }
 /** ChatGPT (OpenAI Responses API, mit Websuche falls verfügbar). Modell: OPENAI_MODEL, Standard gpt-5-mini. */
-async function askChatGPT(prompt: string): Promise<string> {
+async function askChatGPT(prompt: string, sink?: Src[]): Promise<string> {
   const key = (process.env.OPENAI_API_KEY || "").trim();
   if (!key) return "";
   const model = process.env.OPENAI_MODEL || "gpt-5-mini";
@@ -156,6 +164,7 @@ async function askChatGPT(prompt: string): Promise<string> {
       });
       const j = (await res.json().catch(() => ({}))) as J;
       if (!res.ok) { console.warn("Rep-Scan ChatGPT", res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 401 || res.status === 429) return ""; continue; }
+      for (const o of Array.isArray(j.output) ? j.output : []) for (const c of Array.isArray(o.content) ? o.content : []) for (const an of Array.isArray(c.annotations) ? c.annotations : []) if (an.type === "url_citation") pushSrc(sink, an.url, an.title);
       if (typeof j.output_text === "string" && j.output_text.trim()) return j.output_text.trim();
       const txt = (Array.isArray(j.output) ? j.output : []).filter((o: J) => o.type === "message")
         .flatMap((o: J) => (Array.isArray(o.content) ? o.content : [])).filter((c: J) => c.type === "output_text").map((c: J) => c.text || "").join("").trim();
@@ -165,7 +174,7 @@ async function askChatGPT(prompt: string): Promise<string> {
   return "";
 }
 /** Perplexity (Sonar, sucht immer im Web). Modell: PERPLEXITY_MODEL, Standard sonar. */
-async function askPerplexity(prompt: string): Promise<string> {
+async function askPerplexity(prompt: string, sink?: Src[]): Promise<string> {
   const key = (process.env.PERPLEXITY_API_KEY || "").trim();
   if (!key) return "";
   try {
@@ -176,6 +185,8 @@ async function askPerplexity(prompt: string): Promise<string> {
     });
     const j = (await res.json().catch(() => ({}))) as J;
     if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); return ""; }
+    if (Array.isArray(j.search_results)) for (const r of j.search_results) pushSrc(sink, r.url, r.title);
+    else if (Array.isArray(j.citations)) for (const u of j.citations) pushSrc(sink, u, "");
     return String(j.choices?.[0]?.message?.content || "").replace(/\[\d+\]/g, "").trim();
   } catch (e) { console.warn("Rep-Scan Perplexity", (e as Error).message); return ""; }
 }
@@ -196,7 +207,13 @@ function buildDims(ki: J[], sums: J[] | undefined): J[] {
     const ans = ki.flatMap((k) => (Array.isArray(k.answers) ? k.answers : []).filter((a: J) => a.key === d.key && a.sent !== "none").map((a: J) => ({ ...a, ai: k.name })));
     if (!ans.length) return null;
     const score = Math.round(ans.reduce((s2: number, a: J) => s2 + kiAnsVal(d.key, a), 0) / ans.length);
-    return { key: d.key, name: d.name, hint: d.hint, score, n: ans.length, ais: [...new Set(ans.map((a: J) => a.ai))], neg: ans.filter((a: J) => a.known && a.sent === "neg").length, pos: ans.filter((a: J) => a.known && a.sent === "pos").length, sum: (sm.get(d.key) || "").slice(0, 300) };
+    // Quellen, auf die sich die KIs bei diesem Thema stützen (mit kurzer Einordnung, worum es geht)
+    const all: Src[] = [];
+    for (const a of ans as J[]) for (const x of (Array.isArray(a.src) ? a.src : []) as Src[]) if (!all.some((y) => y.u === x.u)) all.push(x);
+    const rf = new Map<string, J>((Array.isArray(sums) ? sums : []).filter((x: J) => x.key === d.key).flatMap((x: J) => (Array.isArray(x.refs) ? x.refs : [])).map((r: J) => [String(r.url || ""), r]));
+    const refs = all.map((x) => { const r = rf.get(x.u) || {}; return { title: x.t || host(x.u), url: x.u, host: host(x.u), about: String(r.about || "").slice(0, 160), sent: String(r.sent || "neu") }; })
+      .sort((p, q) => (p.sent === "neg" ? 0 : p.sent === "neu" ? 1 : 2) - (q.sent === "neg" ? 0 : q.sent === "neu" ? 1 : 2)).slice(0, 8);
+    return { key: d.key, name: d.name, hint: d.hint, score, n: ans.length, ais: [...new Set(ans.map((a: J) => a.ai))], neg: ans.filter((a: J) => a.known && a.sent === "neg").length, pos: ans.filter((a: J) => a.known && a.sent === "pos").length, sum: (sm.get(d.key) || "").slice(0, 300), refs };
   }).filter(Boolean) as J[];
 }
 /* Zusammenfassung je Bereich (Suche, Bewertungen, Presse, Social, Website) aus den Scan-Daten */
@@ -390,7 +407,7 @@ type Social = { net: string; url: string; followers?: string; inGoogle?: boolean
 type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; votes?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
-  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
+  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
   kws?: Kw[];
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
@@ -612,7 +629,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       }
     }
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 2;
+    const CACHE_V = 3;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -765,8 +782,8 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     // Grundlage, falls Claudes eigene Websuche nicht liefert: echte Such-Treffer (Google, News, Erwähnungen) – keine eigene Website
     const snips = items.filter((x) => x.src !== "bing" && !(own0 && host(x.link).endsWith(own0))).slice(0, 30)
       .map((x) => `- ${x.title} (${host(x.link)})${x.snippet ? ": " + x.snippet : ""}`).join("\n");
-    const askClaudeWeb = async (qq: string): Promise<string> => {
-      const t = await askClaude(SYS, qq, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
+    const askClaudeWeb = async (qq: string, sink?: Src[]): Promise<string> => {
+      const t = await askClaude(SYS, qq, { search: true, maxTokens: 700, sink }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
       if (t && !/nicht live|kann .{0,30}nicht .{0,20}(nachsehen|suchen|recherchieren)|keinen (internet|web)zugriff|no (internet|web) access/i.test(t)) return t;
       return askClaude(SYS + " Dir liegen aktuelle Suchergebnisse aus dem Web vor – nutze sie wie eine Websuche, erfinde nichts dazu.", `${qq}\n\nAktuelle Suchergebnisse:\n${snips || "(keine)"}`, { maxTokens: 700 })
         .catch((e) => { console.warn("Rep-Scan KI (Suchergebnisse)", e.message); return t; });
@@ -775,22 +792,27 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const kiTotal = QUESTIONS.length * 3;
     const told = <T,>(ai: string, x: { q: string }, pr: Promise<T>) => pr.then((v) => { kiDone++; void say(78 + Math.round((kiDone / kiTotal) * 8), `${ai} gefragt: „${short(x.q.replace(/„|“/g, ""))}“ (${kiDone} von ${kiTotal})`); return v; });
     const fromCache = !!(cache && cache.qk === QUESTIONS.map((x) => x.key).join(",") && Array.isArray(cache.claudeAns));
+    const newSrc = (): Src[][] => QUESTIONS.map(() => [] as Src[]);
+    const claudeSrc: Src[][] = fromCache && Array.isArray(cache!.claudeSrc) ? cache!.claudeSrc : newSrc();
+    const gptSrc: Src[][] = fromCache && Array.isArray(cache!.gptSrc) ? cache!.gptSrc : newSrc();
+    const pplxSrc: Src[][] = fromCache && Array.isArray(cache!.pplxSrc) ? cache!.pplxSrc : newSrc();
+    const srcTxt = (l: Src[]) => (l && l.length ? `\nQuellen: ${l.map((x) => `${x.t || host(x.u)} <${x.u}>`).join(" | ")}` : "");
     if (fromCache) await say(84, `KI-Antworten vom ${cacheDay} übernommen`);
     const [claudeAns, gptAns, pplxAns]: string[][] = fromCache ? [cache!.claudeAns, cache!.gptAns, cache!.pplxAns] : await Promise.all([
-      Promise.all(QUESTIONS.map((x) => told("Claude", x, askClaudeWeb(x.q)))),
-      Promise.all(QUESTIONS.map((x) => told("ChatGPT", x, askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
-      Promise.all(QUESTIONS.map((x) => told("Perplexity", x, askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
+      Promise.all(QUESTIONS.map((x, i) => told("Claude", x, askClaudeWeb(x.q, claudeSrc[i])))),
+      Promise.all(QUESTIONS.map((x, i) => told("ChatGPT", x, askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen.", gptSrc[i])))),
+      Promise.all(QUESTIONS.map((x, i) => told("Perplexity", x, askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen.", pplxSrc[i])))),
     ]);
-    const kiText = claudeAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${claudeAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
-    const pplxText = pplxAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${pplxAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
-    const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
+    const kiText = claudeAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${claudeAns[i] || "(keine Antwort)"}${srcTxt(claudeSrc[i])}`).join("\n\n") : "";
+    const pplxText = pplxAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${pplxAns[i] || "(keine Antwort)"}${srcTxt(pplxSrc[i])}`).join("\n\n") : "";
+    const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}${srcTxt(gptSrc[i])}`).join("\n\n") : "";
     await say(86, `Ordne ${items.length} Fundstellen ein: positiv, negativ oder andere Firma`);
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = fromCache && cache!.cls ? (cache!.cls as J) : parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F7):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau 7, in Reihenfolge F1–F7]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","dims":[{"key":"kennen|angebot|serioes|erfahrungen|kritik|beauftragen|besser","sum":"1–2 Sätze: was ALLE KIs zusammen zu diesem Punkt sagen, eigene Worte, max 30 Wörter, kein Zitat"} – genau 7, je Frage F1–F7 einer],"kiSummary":"2–3 Sätze Gesamtfazit, was KI-Systeme insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau 7, in Reihenfolge F1–F7]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","dims":[{"key":"kennen|angebot|serioes|erfahrungen|kritik|beauftragen|besser","sum":"1–2 Sätze: was ALLE KIs zusammen zu diesem Punkt sagen, eigene Worte, max 30 Wörter, kein Zitat","refs":[{"url":"exakt eine der bei dieser Frage angegebenen Quellen-URLs","about":"worum es in dieser Quelle geht bzw. was dort kritisiert/gelobt wird, max 14 Wörter, konkret","sent":"pos|neu|neg"}]} – genau 7, je Frage F1–F7 einer],"kiSummary":"2–3 Sätze Gesamtfazit, was KI-Systeme insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
       `Regeln zu den KI-Antworten: Bei "kiSummary" und "dims": Sprich allgemein von „KI-Systemen“ (z. B. „KI-Systeme raten zu …“, „KI-Systeme kennen …“) – nie „beide KIs“, „zwei KIs“, „alle drei“ oder andere Anzahlen, und nenne keine einzelnen KI-Namen. "sent" bewertet immer, ob die Antwort für das Unternehmen gut (pos) oder schlecht (neg) ist – bei F5 (Kritik) also pos, wenn keine Kritik bekannt ist, und neg, wenn Kritik genannt wird; bei F7 (bessere Anbieter) neg, wenn klar Konkurrenten empfohlen werden. ` +
       `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
       { maxTokens: 16000 },
@@ -801,7 +823,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (!fromCache && cls && [claudeAns, gptAns, pplxAns].some((a) => a.some(Boolean))) {
       const kwsNow = await kwPromise;
       await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
-        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, claudeAns, gptAns, pplxAns, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
+        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, claudeAns, gptAns, pplxAns, claudeSrc, gptSrc, pplxSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
     }
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
     for (const x of items) {
@@ -818,18 +840,19 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const cnt = (f: (x: Item) => boolean) => items.filter(f).length;
     console.log(`Rep-Scan ${name}: Treffer google=${cnt((x) => x.src === "google")} bing=${cnt((x) => x.src === "bing")} news=${cnt((x) => x.src === "news")} erwähnt=${cnt((x) => x.src === "mention")} · eingeordnet=${byI.size} · andere Firma=${cnt((x) => x.about === "other")} · negativ=${cnt((x) => x.sent === "neg")} · presse=${cnt((x) => x.type === "press")}`);
     const first = (t: string) => (t || "").split(/(?<=[.!?])\s/)[0] || "";
-    const mk = (nm: string, raw: string[], c: J | undefined) => {
+    const mk = (nm: string, raw: string[], c: J | undefined, srcs: Src[][]) => {
       const ans = QUESTIONS.map((x, i) => {
         const a = Array.isArray(c?.answers) ? c!.answers[i] || {} : {};
-        return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300), sum: String(a.sum || "").slice(0, 220) };
+        const src = raw[i] ? srcs[i] || [] : [];
+        return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300), sum: String(a.sum || "").slice(0, 220), src };
       });
       const kn = ans.filter((a) => a.sent !== "none");
       return { name: nm, known: c?.known !== false && kn.some((a) => a.known), sent: String(c?.sent || "neu"), quote: String((ans.find((a) => a.key === "serioes") || ans[0]).quote || ""), sum: String(c?.sum || "").slice(0, 240), answers: ans };
     };
     const ki = [
-      ...(gptText ? [mk("ChatGPT", gptAns, cls?.gpt)] : []),
-      ...(kiText ? [mk("Claude", claudeAns, cls?.ki)] : []),
-      ...(pplxText ? [mk("Perplexity", pplxAns, cls?.pplx)] : []),
+      ...(gptText ? [mk("ChatGPT", gptAns, cls?.gpt, gptSrc)] : []),
+      ...(kiText ? [mk("Claude", claudeAns, cls?.ki, claudeSrc)] : []),
+      ...(pplxText ? [mk("Perplexity", pplxAns, cls?.pplx, pplxSrc)] : []),
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
