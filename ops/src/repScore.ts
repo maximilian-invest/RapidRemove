@@ -199,7 +199,7 @@ function areaDigest(r: J): J {
     const d: J = { bereich: a.name, score: a.score10 + "/10", fakten: (a.facts || []).map((f: J) => `${f.label}: ${f.value}`) };
     if (a.key === "search") { d.treffer = pickI(a.items); d.vorschlaege = (r.suggestions || []).slice(0, 8).map((x: J) => x.q + (x.neg ? " (negativ)" : "")); }
     else if (a.key === "social") d.profile = (a.items || []).map((x: J) => `${x.title}${x.followers ? " · " + x.followers : ""}${x.inGoogle === true ? " · im Google-Profil" : x.inGoogle === false ? " · nicht im Google-Profil" : ""}`);
-    else if (a.key === "web") d.suchbegriffe = (r.kws || []).map((k: J) => `${k.q}: Google ${k.g ? "Platz " + k.g : "nicht auf Seite 1"}, Maps ${k.pack ? "Top 3 (Platz " + k.pack + ")" : k.maps ? "Platz " + k.maps : "nicht gefunden"}${k.lead ? ", Maps-Platz 1: " + k.lead : ""}`), d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
+    else if (a.key === "web") d.suchbegriffe = (r.kws || []).map((k: J) => `${k.q}: Google ${k.g ? "Platz " + k.g : "nicht in Top 30"}, Maps ${k.pack ? "Top 3 (Platz " + k.pack + ")" : k.maps ? "Platz " + k.maps : "nicht gefunden"}${k.lead ? ", Maps-Platz 1: " + k.lead : ""}`), d.website = r.website ? { url: r.website.url, ladezeit: r.website.perf, metriken: r.website.metrics, checks: (r.website.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) } : "keine Website";
     else if (a.key === "reviews") { d.googleProfil = r.gbp ? (r.gbp.checks || []).map((c: J) => `${c.ok ? "✓" : "✕"} ${c.label}`) : undefined; d.portale = pickI(a.items); }
     else d.treffer = pickI(a.items);
     out[a.key] = d;
@@ -262,7 +262,7 @@ const decode = (t: string) => t.replace(/&#(\d+);/g, (_, n) => String.fromCharCo
 type Check = { key: string; label: string; ok: boolean; detail: string };
 type Kw = { q: string; g: number | null; pack: number | null; maps: number | null; lead?: string };
 const kwVal = (k: Kw) => {
-  const o = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : 6;
+  const o = k.g == null ? 1 : k.g <= 3 ? 10 : k.g <= 6 ? 8 : k.g <= 10 ? 6 : k.g <= 20 ? 3.5 : 2;
   const l = k.pack != null ? 10 : k.maps == null ? 1 : k.maps <= 3 ? 9 : k.maps <= 10 ? 6 : 3;
   return Math.max(o, l);
 };
@@ -543,7 +543,8 @@ export function evaluate(c: Ctx): J {
     ],
     web: (c.kws || []).length ? [
       { label: "Suchbegriffe geprüft", value: String(c.kws!.length) },
-      { label: "Google Seite 1", value: `${c.kws!.filter((k) => k.g != null).length} von ${c.kws!.length}`, tone: c.kws!.filter((k) => k.g != null).length >= c.kws!.length / 2 ? "good" : "bad" },
+      { label: "Google Seite 1", value: `${c.kws!.filter((k) => k.g != null && k.g <= 10).length} von ${c.kws!.length}`, tone: c.kws!.filter((k) => k.g != null && k.g <= 10).length >= c.kws!.length / 2 ? "good" : "bad" },
+      { label: "Google Top 30", value: `${c.kws!.filter((k) => k.g != null).length} von ${c.kws!.length}` },
       { label: "Maps Top 3", value: `${c.kws!.filter((k) => k.pack != null || (k.maps != null && k.maps <= 3)).length} von ${c.kws!.length}` },
     ] : [],
   };
@@ -594,13 +595,14 @@ async function runScan(scanId: string, loc: J): Promise<void> {
           hours: !!(raw.regularOpeningHours && (raw.regularOpeningHours.periods || raw.regularOpeningHours.weekdayDescriptions)),
           photos: Array.isArray(raw.photos) ? raw.photos.length : 0, status: String(raw.businessStatus || "OPERATIONAL"), type: p.type,
           lat: Number(raw.location?.latitude) || null, lng: Number(raw.location?.longitude) || null,
+          state: String(comp(raw, "administrative_area_level_1")?.longText || ""), district: String(comp(raw, "administrative_area_level_2")?.longText || ""),
         };
         loc.rating = p.rating; loc.reviews = p.reviews; loc.website = loc.website || p.website; loc.type = p.type;
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
     }
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 1;
+    const CACHE_V = 2;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -683,31 +685,41 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
     const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
     const kwPromise: Promise<Kw[]> = cache && Array.isArray(cache.kws) && cache.kws.length ? Promise.resolve(cache.kws as Kw[]) : (async () => {
-      const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
+      const g0 = loc.gbp as J | undefined;
+      const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, g0?.district && `Bezirk: ${g0.district}`, g0?.state && `Bundesland/Region: ${g0.state}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
         ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
-      const t = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nNenne 6–8 Suchbegriffe auf Deutsch, mit denen potenzielle Kunden bei Google nach genau den Leistungen dieses Unternehmens suchen würden – OHNE den Firmennamen. Mische: Branche + Ort, konkrete Leistung + Ort, Leistung + Region/Bezirk. Kurz und realistisch (2–4 Wörter), so wie Menschen tippen.\n{"keywords":["…"]}`, { maxTokens: 400 }).catch(() => "");
+      const t = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\n` +
+        `Nenne 8 Suchbegriffe auf Deutsch, mit denen jemand bei Google einen Anbieter wie dieses Unternehmen sucht – OHNE den Firmennamen. Regeln:\n` +
+        `- Suche nach der DIENSTLEISTUNG bzw. dem Anbieter (z. B. „Bauträger Salzburg“, „Immobilienmakler Salzburg Umgebung“), NICHT nach einzelnen Produkten oder Objekten (also nicht „Wohnung kaufen …“, „Haus mieten …“, „Neubauwohnungen …“).\n` +
+        `- Region größer denken: Bauträger, Makler, Projektentwickler, Agenturen, Kanzleien, Handwerksbetriebe usw. arbeiten regional – nutze vor allem Bundesland, Landeshauptstadt/Großraum, Bezirk und gängige Regionsnamen (z. B. „Salzburg“, „Salzburg Umgebung“, „Flachgau“, „Salzkammergut“). Den kleinen Ort nur 1× verwenden. Nur bei klar lokalen Betrieben (Restaurant, Friseur, Arztpraxis) vor allem Ort und Nachbarorte.\n` +
+        `- Mische Branchenbegriff + Region und konkrete Leistung + Region, 2–4 Wörter, so wie Menschen tippen.\n{"keywords":["…"]}`, { maxTokens: 400 }).catch(() => "");
       let kws: string[] = (parseJson(t)?.keywords || []).map((x: unknown) => String(x).trim()).filter((x: string) => x && !norm(x).includes(norm(name).slice(0, 8)));
       if (!kws.length) kws = [`${loc.type || "Anbieter"} ${city}`.trim()];
       kws = [...new Set(kws)].slice(0, 8);
-      const g0 = loc.gbp as J | undefined;
       const ll = g0 && g0.lat && g0.lng ? `@${g0.lat},${g0.lng},12z` : "";
       const isMe = (x: J) => (loc.place_id && x.place_id === loc.place_id) || (!!norm(x.title) && norm(x.title) === norm(name));
       let done = 0;
       return Promise.all(kws.map(async (q0) => {
-        const [g, m] = await Promise.all([
-          serp({ engine: "google", q: q0, gl, hl: "de", num: "10" }, 60_000).catch(() => ({} as J)),
-          serp({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) }, 60_000).catch(() => ({} as J)),
-        ]);
-        const org: J[] = Array.isArray(g.organic_results) ? g.organic_results : [];
-        const oi = own0 ? org.findIndex((x) => host(String(x.link || "")).endsWith(own0)) : -1;
+        const mP = serp({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) }, 60_000).catch(() => ({} as J));
+        // Google Platz 1–30: nächste Seite nur abfragen, wenn die eigene Website noch nicht gefunden ist
+        let g: J = {}; let gPos: number | null = null;
+        for (let pg = 0; pg < 3; pg++) {
+          const j = await serp({ engine: "google", q: q0, gl, hl: "de", num: "10", start: String(pg * 10) }, 60_000).catch(() => ({} as J));
+          if (pg === 0) g = j;
+          const org: J[] = Array.isArray(j.organic_results) ? j.organic_results : [];
+          const oi = own0 ? org.findIndex((x) => host(String(x.link || "")).endsWith(own0)) : -1;
+          if (oi >= 0) { gPos = pg * 10 + (Number(org[oi].position) > 0 && Number(org[oi].position) <= 10 ? Number(org[oi].position) : oi + 1); break; }
+          if (!own0 || org.length < 5) break;
+        }
+        const m = await mP;
         const pk: J[] = Array.isArray(g.local_results?.places) ? g.local_results.places : Array.isArray(g.local_results) ? g.local_results : [];
         const pi = pk.findIndex(isMe);
         const ml: J[] = Array.isArray(m.local_results) ? m.local_results : m.place_results ? [m.place_results] : [];
         const mi = ml.findIndex(isMe);
         const lead = mi === 0 ? undefined : String(ml[0]?.title || "") || undefined;
         done++;
-        void say(77, `Suchbegriff „${short(q0)}“: ${oi >= 0 ? "Google Platz " + (Number(org[oi].position) || oi + 1) : "nicht auf Google Seite 1"} · ${mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps"} (${done} von ${kws.length})`);
-        return { q: q0, g: oi >= 0 ? Number(org[oi].position) || oi + 1 : null, pack: pi >= 0 ? pi + 1 : null, maps: mi >= 0 ? mi + 1 : null, lead } as Kw;
+        void say(77, `Suchbegriff „${short(q0)}“: ${gPos ? "Google Platz " + gPos : "nicht in Google Top 30"} · ${mi >= 0 ? "Maps Platz " + (mi + 1) : "nicht in Maps"} (${done} von ${kws.length})`);
+        return { q: q0, g: gPos, pack: pi >= 0 ? pi + 1 : null, maps: mi >= 0 ? mi + 1 : null, lead } as Kw;
       }));
     })().catch((e) => { console.warn("Rep-Scan Suchbegriffe", (e as Error).message); return [] as Kw[]; });
     await say(76, "Suche Facebook-, Instagram-, LinkedIn- und YouTube-Profile");
