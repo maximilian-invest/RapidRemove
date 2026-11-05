@@ -97,6 +97,8 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_API_KEY fehlt");
   const call = async (withSearch: boolean) => {
+   let messages: J[] = [{ role: "user", content: user }];
+   for (let turn = 0; turn < 4; turn++) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal: AbortSignal.timeout(120_000),
       headers: {
@@ -105,15 +107,23 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
       },
       body: JSON.stringify({
         model: MODEL(), max_tokens: opts.maxTokens || 1500, system,
-        messages: [{ role: "user", content: user }],
-        ...(withSearch ? { tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }] } : {}),
+        messages,
+        ...(withSearch ? { tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }] } : {}),
       }),
     });
     const j = (await res.json().catch(() => ({}))) as J;
     if (!res.ok) throw new Error(j.error?.message || "Claude HTTP " + res.status);
-    return (Array.isArray(j.content) ? j.content : []).filter((c: J) => c.type === "text").map((c: J) => c.text || "").join("").trim();
+    const content = Array.isArray(j.content) ? j.content : [];
+    // Websuche kann pausieren (stop_reason „pause_turn“) → Antwort mit dem bisherigen Verlauf fortsetzen
+    if (j.stop_reason === "pause_turn") { messages = [{ role: "user", content: user }, { role: "assistant", content }]; continue; }
+    return content.filter((c: J) => c.type === "text").map((c: J) => c.text || "").join("").trim();
+   }
+   return "";
   };
-  if (opts.search) { try { return await call(true); } catch (e) { console.warn("Rep-Scan: Websuche nicht verfügbar, ohne Suche:", (e as Error).message); } }
+  if (opts.search) {
+    try { const t = await call(true); if (t) return t; console.warn("Rep-Scan: Claude mit Websuche ohne Text – frage ohne Suche"); }
+    catch (e) { console.warn("Rep-Scan: Websuche nicht verfügbar, ohne Suche:", (e as Error).message); }
+  }
   return call(false);
 }
 /** ChatGPT (OpenAI Responses API, mit Websuche falls verfügbar). Modell: OPENAI_MODEL, Standard gpt-5-mini. */
@@ -261,12 +271,13 @@ const FORUM = /reddit\.|gutefrage\.|forum|community|wer-weiss-was|quora\.|cosmiq
 const REVIEW = /trustpilot|jameda|docfinder|herold|werkenntdenbesten|provenexpert|kununu|yelp|tripadvisor|google\.com\/maps|golocal|11880|ekomi|trusted|bewertung/i;
 const SOCIALD = /facebook\.com|instagram\.com|linkedin\.com|youtube\.com|tiktok\.com|twitter\.com|x\.com|pinterest\./i;
 const DIRS = /herold\.at|gelbeseiten|dasoertliche|firmenabc|wko\.at|firmen\.wko|cylex|meinestadt|branchenbuch|11880|northdata|firmenwissen|compnet/i;
+const PRESS = /forbes|journal|zeitung|zeitschrift|news|nachrichten|kurier|krone\.at|derstandard|diepresse|orf\.at|heute\.at|kleinezeitung|tips\.at|meinbezirk|trend\.at|gewinn\.at|leadersnet|profil\.at|falter\.at|salzburg24|vol\.at|noen\.at|bezirksblaetter|magazin|presse|wirtschaft(?!skammer)|immobilien-?(magazin|redaktion|brief)|handelsblatt|spiegel\.de|welt\.de|faz\.net|sueddeutsche|focus\.de|t-online|merkur|blick\.ch|nzz\.ch|bz-|report|kurier|businessart|economy|regional|lokal|bote|anzeiger|rundschau|tagblatt|echo\b|post\.at|online\.at\/artikel/i;
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
 
-type Item = { i: number; src: "google" | "bing" | "news"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; about?: string; sent?: string; type?: string; note?: string };
+type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null;
-  ki: { name: string; known: boolean; sent: string; quote: string }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
+  ki: { name: string; known: boolean; sent: string; quote: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string }[] }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: { net: string; url: string }[];
   summary: string;
 };
@@ -306,7 +317,8 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
     else if (x.sent === "pos") press += 0.5;
   }
   // KI
-  const one = (k: Ctx["ki"][number]) => (!k.known ? 4 : k.sent === "pos" ? 9 : k.sent === "neg" ? 3 : 6.5);
+  const val = (known: boolean, sent: string) => (!known ? 4 : sent === "pos" ? 9 : sent === "neg" ? 3 : 6.5);
+  const one = (k: Ctx["ki"][number]) => { const a = (k.answers || []).filter((x) => x.sent !== "none"); return a.length ? a.reduce((s2, x) => s2 + val(x.known, x.sent), 0) / a.length : val(k.known, k.sent); };
   let ki = fix.ki ? 9 : !c.ki.length ? 5 : c.ki.reduce((s, k) => s + one(k), 0) / c.ki.length;
   if (c.aiOverview) ki += c.aiOverviewSent === "neg" ? -3 : c.aiOverviewSent === "pos" ? 1 : 0;
   // Social
@@ -350,7 +362,7 @@ export function evaluate(c: Ctx): J {
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
-  const pick = (f: (x: Item) => boolean) => self.filter(f).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link) }));
+  const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link) }));
   const AREAS: { key: AreaKey; name: string; text: (v: number) => string; items: J[] }[] = [
     { key: "press", name: "Presse & Foren", text: () => (negP1.some((x) => x.type !== "own") ? "Ein negativer Treffer steht auf Seite 1 bei Google. Viele Kunden sehen ihn, bevor sie Kontakt aufnehmen." : "Wir prüfen Zeitungen, Online-Magazine und Foren auf Beiträge über Sie."), items: pick((x) => x.type === "press" || x.type === "forum" || x.src === "news") },
     { key: "search", name: "Google- & Bing-Suche", text: () => "Was Kunden sehen, wenn sie Ihren Namen bei Google oder Bing suchen.", items: pick((x) => x.src !== "news") },
@@ -393,15 +405,24 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (loc.place_id) {
       const p = placeView(await placeDetails(loc.place_id).catch(() => ({})));
       if (p.name) {
-        loc.rating = p.rating; loc.reviews = p.reviews; loc.website = loc.website || p.website;
+        loc.rating = p.rating; loc.reviews = p.reviews; loc.website = loc.website || p.website; loc.type = p.type;
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
     }
     // Google Seite 1–5
     let aiOverview: string | null = null; let aiToken = "";
+    await setStep(scanId, 10, "Google-Suche Seite 1–5");
+    const gPage = async (pg: number): Promise<J> => {
+      for (let t = 0; t < 2; t++) {
+        try { return await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }, 90_000); }
+        catch (e) { console.warn("Rep-Scan Google Seite", pg + 1, "Versuch", t + 1, (e as Error).message); }
+      }
+      return {};
+    };
+    const gPages = await Promise.all(Array.from({ length: PAGES() }, (_, pg) => gPage(pg)));
+    await setStep(scanId, 45, "Google-Suche ausgewertet");
     for (let pg = 0; pg < PAGES(); pg++) {
-      await setStep(scanId, 8 + pg * 8, `Google-Suche Seite ${pg + 1}`);
-      const j = await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }).catch((e) => { console.warn("Rep-Scan Google", e.message); return {} as J; });
+      const j = gPages[pg];
       (Array.isArray(j.organic_results) ? j.organic_results : []).forEach((r: J, k: number) => add("google", pg * 10 + (Number(r.position) > 0 && Number(r.position) <= 10 ? Number(r.position) : k + 1), r));
       if (pg === 0 && j.ai_overview) {
         const ao = j.ai_overview as J;
@@ -423,6 +444,13 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     await setStep(scanId, 60, "Presse & News");
     const nj = await serp({ engine: "google_news", q: `"${name}"`, gl, hl: "de" }).catch(() => ({} as J));
     (Array.isArray(nj.news_results) ? nj.news_results : []).slice(0, 10).forEach((r: J, k: number) => add("news", k + 1, { ...r, snippet: r.snippet || r.source?.name || "" }));
+    // Erwähnungen ohne Ort und ohne eigene Website: findet Presse/Magazin-Artikel, die bei „Name + Ort“ untergehen
+    await setStep(scanId, 62, "Erwähnungen im Netz");
+    const own0 = host(String(loc.website || ""));
+    for (let pg = 0; pg < 2; pg++) {
+      const mj = await serp({ engine: "google", q: `"${name}"${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
+      (Array.isArray(mj.organic_results) ? mj.organic_results : []).forEach((r: J, k: number) => add("mention", pg * 10 + k + 1, r));
+    }
     await setStep(scanId, 64, "Bewertungen");
     const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
     if (loc.place_id) {
@@ -437,20 +465,31 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const social = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
     await setStep(scanId, 78, "KI-Antworten");
-    const kiQ = `Was weißt du über „${name}“${city ? " in " + city : ""}? Würdest du das Unternehmen empfehlen?`;
-    const [kiText, gptText] = await Promise.all([
-      askClaude("Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 3–5 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.", kiQ, { search: true, maxTokens: 800 })
-        .catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; }),
-      askChatGPT(kiQ + " Antworte auf Deutsch in 3–5 Sätzen."),
+    // Fester Fragenkatalog – so wie echte Kunden fragen. Jede KI bekommt jede Frage einzeln.
+    const inCity = city ? ` in ${city}` : "";
+    const branche = String(loc.type || "").trim() || "Anbieter";
+    const QUESTIONS = [
+      { key: "kennen", q: `Kennst du die Firma „${name}“${inCity}?` },
+      { key: "serioes", q: `Ist „${name}“${inCity} seriös?` },
+      { key: "erfahrungen", q: `Welche Erfahrungen haben Kunden mit „${name}“${inCity} gemacht?` },
+      { key: "beauftragen", q: `Soll ich „${name}“${inCity} beauftragen?` },
+      { key: "besser", q: `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
+    ];
+    const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
+    const [claudeAns, gptAns] = await Promise.all([
+      Promise.all(QUESTIONS.map((x) => askClaude(SYS, x.q, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; }))),
+      Promise.all(QUESTIONS.map((x) => askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen."))),
     ]);
+    const kiText = claudeAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${claudeAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
+    const gptText = gptAns.filter(Boolean).length ? QUESTIONS.map((x, i) => `F: ${x.q}\nA: ${gptAns[i] || "(keine Antwort)"}`).join("\n\n") : "";
     await setStep(scanId, 86, "Treffer einordnen");
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
-      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntwort von Claude auf „Was weißt du über das Unternehmen?“:\n${kiText || "(keine)"}\n\nAntwort von ChatGPT auf dieselbe Frage:\n${gptText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","quote":"1 Satz aus der Claude-Antwort"},"gpt":{"known":true|false,"sent":"pos|neu|neg","quote":"1 Satz aus der ChatGPT-Antwort"},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
-      `Regeln: "about":"other" wenn der Treffer klar ein anderes Unternehmen/eine andere Person meint. "own" = eigene Website/eigene Profile. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
+      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Regeln: "about":"other" wenn der Treffer klar ein anderes Unternehmen/eine andere Person meint. "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
       { maxTokens: 6000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
@@ -459,14 +498,24 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const h = host(x.link);
       x.about = c?.about || "unclear";
       x.sent = c?.sent || (x.rating && x.rating < 3 ? "neg" : "neu");
-      x.type = c?.type || (ownHost && h.endsWith(ownHost) ? "own" : SOCIALD.test(h) ? "social" : REVIEW.test(h) ? "review" : FORUM.test(h) ? "forum" : DIRS.test(h) ? "directory" : x.src === "news" ? "press" : "other");
+      x.type = c?.type || (ownHost && h.endsWith(ownHost) ? "own" : SOCIALD.test(h) ? "social" : REVIEW.test(h) ? "review" : FORUM.test(h) ? "forum" : DIRS.test(h) ? "directory" : x.src === "news" || PRESS.test(h) ? "press" : "other");
+      // Sicherheitsnetz: Medien-Domain, die die KI nur als „other/unclear“ eingeordnet hat → Presse
+      if ((x.type === "other" || !x.type) && x.about !== "other" && (PRESS.test(h) || x.src === "news")) x.type = "press";
       if (ownHost && h.endsWith(ownHost)) x.type = "own";
       x.note = c?.note || "";
     }
-    const first = (t: string) => t.split(/(?<=[.!?])\s/)[0] || "";
+    const first = (t: string) => (t || "").split(/(?<=[.!?])\s/)[0] || "";
+    const mk = (nm: string, raw: string[], c: J | undefined) => {
+      const ans = QUESTIONS.map((x, i) => {
+        const a = Array.isArray(c?.answers) ? c!.answers[i] || {} : {};
+        return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300) };
+      });
+      const kn = ans.filter((a) => a.sent !== "none");
+      return { name: nm, known: c?.known !== false && kn.some((a) => a.known), sent: String(c?.sent || "neu"), quote: String((ans.find((a) => a.key === "serioes") || ans[0]).quote || ""), answers: ans };
+    };
     const ki = [
-      ...(gptText ? [{ name: "ChatGPT", known: cls?.gpt?.known !== false, sent: String(cls?.gpt?.sent || "neu"), quote: String(cls?.gpt?.quote || first(gptText)).slice(0, 300) }] : []),
-      ...(kiText ? [{ name: "Claude", known: cls?.ki?.known !== false, sent: String(cls?.ki?.sent || "neu"), quote: String(cls?.ki?.quote || first(kiText)).slice(0, 300) }] : []),
+      ...(gptText ? [mk("ChatGPT", gptAns, cls?.gpt)] : []),
+      ...(kiText ? [mk("Claude", claudeAns, cls?.ki)] : []),
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,

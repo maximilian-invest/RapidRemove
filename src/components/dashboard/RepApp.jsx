@@ -106,47 +106,28 @@ function useSmooth(target) {
 export function RepRunning({ loc }) {
   const target = Math.max(2, Math.min(99, loc.scan.progress || 0));
   const p = useSmooth(target);
-  const pi = Math.floor(p);
-  const sources = Math.round(p * 2.14);
   const active = STEPS.findIndex((x) => target < x.at);
+  const cur = STEPS[active === -1 ? STEPS.length - 1 : active];
   return (
-    <div className="rp-scan" role="status" aria-live="polite">
-      <div className="rp-scan-l">
-        <span className="rp-k">Wir prüfen Ihre Reputation</span>
-        <b className="rp-scan-n">{loc.name}</b>
-        <div className="rp-orb">
-          <i className="rp-glow" />
-          <i className="rp-radar" />
-          <svg className="rp-orb-svg" viewBox="0 0 56 56" aria-hidden="true">
-            <defs>
-              <linearGradient id={"sg" + loc.id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffb547" /><stop offset="1" stopColor="#ff4d2e" /></linearGradient>
-            </defs>
-            <circle cx="28" cy="28" r="24" fill="none" stroke="#ffe7d1" strokeWidth="4.5" />
-            <circle cx="28" cy="28" r="24" fill="none" stroke={`url(#sg${loc.id})`} strokeWidth="4.5" strokeLinecap="round" pathLength="100" strokeDasharray={`${p} 100`} className="rp-orb-p" />
-          </svg>
-          <svg className="rp-comet" viewBox="0 0 56 56" aria-hidden="true">
-            <circle cx="52" cy="28" r="2.6" fill="#ffffff" />
-            <circle cx="52" cy="28" r="1.3" fill="#ff8000" />
-          </svg>
-          {FLOAT.map((f, i) => <span key={f} className="rp-float" style={{ "--i": i, "--a": (i * 137) % 360 + "deg" }}>{f}</span>)}
-          <div className="rp-orb-c">
-            <b>{pi}<small>%</small></b>
-            <span>{sources} Quellen geprüft</span>
-          </div>
-        </div>
+    <div className="rp-mini-scan" role="status" aria-live="polite">
+      <div className="rp-ms-ring" aria-hidden="true">
+        <svg viewBox="0 0 56 56" className="rp-ms-p">
+          <defs><linearGradient id={"msg" + loc.id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffb547" /><stop offset="1" stopColor="#ff4d2e" /></linearGradient></defs>
+          <circle cx="28" cy="28" r="23" fill="none" stroke="#ffe7d1" strokeWidth="6" />
+          <circle cx="28" cy="28" r="23" fill="none" stroke={`url(#msg${loc.id})`} strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray={`${p} 100`} />
+        </svg>
+        <svg viewBox="0 0 56 56" className="rp-ms-dot"><circle cx="51" cy="28" r="2.4" fill="#fff" /><circle cx="51" cy="28" r="1.2" fill="#ff8000" /></svg>
+        <b><span>{Math.floor(p)}<small>%</small></span></b>
       </div>
-      <div className="rp-scan-r">
-        {STEPS.map((x, i) => {
-          const st = active === -1 || i < active ? "done" : i === active ? "run" : "wait";
-          return (
-            <div key={x.t} className={"rp-step " + st} style={{ "--d": i * 70 + "ms" }}>
-              <span className="rp-step-i">{st === "done" ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" /></svg> : st === "run" ? <i className="rp-spin" /> : <x.I />}</span>
-              <span className="rp-step-t">{x.t}</span>
-              {st === "run" ? <em>läuft</em> : null}
-            </div>
-          );
-        })}
-        <p className="rp-scan-h">Dauert 1–3 Minuten. Sie können die App schließen – das Ergebnis steht danach hier.</p>
+      <div className="rp-ms-t">
+        <span className="rp-ms-k">Wir prüfen · {loc.name}</span>
+        <b className="rp-ms-step">{cur.t} …</b>
+        <div className="rp-ms-icons">
+          {STEPS.map((x, i) => {
+            const st = active === -1 || i < active ? "done" : i === active ? "run" : "wait";
+            return <span key={x.t} title={x.t} className={"rp-ms-i " + st}>{st === "done" ? "✓" : st === "run" ? <i /> : <x.I />}</span>;
+          })}
+        </div>
       </div>
     </div>
   );
@@ -322,6 +303,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp }) {
               {r.ki.map((x) => (
                 <div key={x.name} className="rp-ki">
                   <span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>
+                  {x.answers ? <span className="rp-ki-sum">{x.answers.filter((a) => a.sent === "pos").length} von {x.answers.filter((a) => a.sent !== "none").length} Antworten positiv{x.answers.some((a) => a.sent === "neg") ? ` · ${x.answers.filter((a) => a.sent === "neg").length} kritisch` : ""}</span> : null}
                   {x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}
                 </div>
               ))}
@@ -357,8 +339,27 @@ function RepArea({ a, r, onBack, onAsk }) {
       </section>
       {a.key === "ki" ? (
         <section className="rp-list">
-          {(r.ki || []).map((x) => <div key={x.name} className="rp-ki big"><span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>{x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}</div>)}
-          <p className="rp-note">{(r.ki || []).some((x) => x.name === "ChatGPT") ? "Gemini und Perplexity kommen als Nächstes dazu." : "ChatGPT, Gemini und Perplexity kommen als Nächstes dazu."}</p>
+          {(() => {
+            const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
+            const LBL = { kennen: "Kennst du die Firma?", serioes: "Ist die Firma seriös?", erfahrungen: "Welche Erfahrungen haben Kunden gemacht?", beauftragen: "Soll ich die Firma beauftragen?", besser: "Gibt es in der Region bessere Anbieter?" };
+            const chip = (x) => (x.sent === "none" ? "keine Antwort" : !x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral");
+            if (!ais.length) return <div className="rp-empty">Keine KI-Antworten in diesem Scan.</div>;
+            return ais[0].answers.map((q0, qi) => (
+              <div key={q0.key} className="rp-q">
+                <b className="rp-q-h">{LBL[q0.key] || q0.q}</b>
+                <span className="rp-q-full">„{q0.q}“</span>
+                {ais.map((ai) => { const x = ai.answers[qi]; return (
+                  <details key={ai.name} className="rp-ans">
+                    <summary><span className="rp-ans-n">{ai.name}</span><em className={"s-" + (x.known ? x.sent : "neu")}>{chip(x)}</em></summary>
+                    {x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}
+                    {x.text ? <p className="rp-ans-t">{x.text}</p> : null}
+                  </details>
+                ); })}
+              </div>
+            ));
+          })()}
+          {(r.ki || []).filter((x) => !x.answers).map((x) => <div key={x.name} className="rp-ki big"><span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>{x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}</div>)}
+          <p className="rp-note">{(r.ki || []).some((x) => x.name === "ChatGPT") ? "Gemini und Perplexity kommen als Nächstes dazu." : "ChatGPT konnte diesmal nicht gefragt werden. Gemini und Perplexity kommen als Nächstes dazu."}</p>
         </section>
       ) : a.key === "web" ? (
         <section className="rp-list">
