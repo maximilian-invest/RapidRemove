@@ -51,6 +51,7 @@ async function init(): Promise<void> {
 }
 
 /* ---------------- Externe Quellen ---------------- */
+const GLOC: Record<string, string> = { at: "Austria", de: "Germany", ch: "Switzerland", li: "Liechtenstein", it: "Italy", lu: "Luxembourg" };
 const GDOM: Record<string, string> = { at: "google.at", de: "google.de", ch: "google.ch", li: "google.li", it: "google.it", lu: "google.lu" };
 /* Postgres-jsonb verträgt kein \u0000 und keine halben Unicode-Zeichen (kommen aus gelesenen Webseiten) */
 const pgJson = (v: unknown) => JSON.stringify(v).replace(/\\u0000/g, "").replace(/\\ud[89ab][0-9a-f]{2}(?!\\ud[c-f][0-9a-f]{2})/gi, "").replace(/(?<!\\ud[89ab][0-9a-f]{2})\\ud[c-f][0-9a-f]{2}/gi, "");
@@ -76,7 +77,8 @@ const QUOTA_RE = /run out of searches|out of searches|exceeded|limit reached|pla
 async function serp(params: Record<string, string>, ms = 45_000): Promise<J> {
   if (!skey()) throw new Error("SERPAPI_KEY fehlt");
   if (serpOutAt && Date.now() - serpOutAt < 10 * 60_000) throw new Error("SerpApi-Kontingent aufgebraucht");
-  const p = new URLSearchParams({ ...(params.engine === "google" && params.gl && GDOM[params.gl] && !params.google_domain ? { google_domain: GDOM[params.gl] } : {}), ...params, api_key: skey() });
+  const geo = params.engine === "google" && params.gl && GDOM[params.gl] ? { ...(!params.google_domain ? { google_domain: GDOM[params.gl] } : {}), ...(!params.location && GLOC[params.gl] ? { location: GLOC[params.gl] } : {}) } : {};
+  const p = new URLSearchParams({ ...geo, ...params, api_key: skey() });
   const res = await fetch(SERP_BASE() + "/search.json?" + p.toString(), { signal: AbortSignal.timeout(ms) });
   const j = (await res.json().catch(() => ({}))) as J;
   if (!res.ok || j.error) {
@@ -798,7 +800,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 9;
+    const CACHE_V = 10;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -966,7 +968,16 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         const mP = national ? Promise.resolve({} as J) : retry({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) });
         // Google Platz 1–30: nächste Seite nur abfragen, wenn die eigene Website noch nicht gefunden ist
         let g: J = {}; let gPos: number | null = null; let gErr = false; let top10: { p: number; u: string; t: string }[] = [];
-        for (let pg = 0; pg < 3; pg++) {
+        const dr = dfsOn() ? await dfs("serp/google/organic/live/advanced", { keyword: q0, location_code: DFS_LOC[gl] || 2040, language_code: "de", device: "desktop", depth: 30 }, 75_000) : null;
+        if (dr && Array.isArray(dr.items)) {
+          const org = (dr.items as J[]).filter((x) => x.type === "organic" && x.url);
+          top10 = org.filter((x) => Number(x.rank_group) <= 10).map((x) => ({ p: Number(x.rank_group), u: String(x.url), t: String(x.title || "").slice(0, 120) }));
+          const me = own0 ? org.find((x) => host(String(x.url)).endsWith(own0)) : undefined;
+          if (me) gPos = Number(me.rank_group) || null;
+          const lp = (dr.items as J[]).find((x) => x.type === "local_pack" || x.type === "maps");
+          if (lp) g = { local_results: { places: (Array.isArray(lp.items) ? lp.items : [lp]).map((x: J) => ({ title: x.title, place_id: x.place_id })) } };
+        }
+        for (let pg = 0; pg < 3 && !(dr && Array.isArray(dr.items)); pg++) {
           const j0 = await retry({ engine: "google", q: q0, gl, hl: "de", num: "10", start: String(pg * 10) });
           if (!j0) { if (pg === 0) gErr = true; break; }
           const j = j0;
