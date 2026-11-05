@@ -295,7 +295,7 @@ type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: numbe
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null;
   ki: { name: string; known: boolean; sent: string; quote: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string }[] }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
-  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean;
+  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
@@ -384,15 +384,54 @@ export function evaluate(c: Ctx): J {
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
   const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link) }));
+  // Suche: ALLE Treffer von Google Seite 1–5 + Bing zeigen (auch „andere Firma“), sortiert nach Position
+  const allSearch = [...new Map(c.items.filter((x) => x.src === "google" || x.src === "bing").sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos)
+    .map((x) => [x.src + x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].slice(0, 60)
+    .map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link) }));
   const AREAS: { key: AreaKey; name: string; text: (v: number) => string; items: J[] }[] = [
     { key: "press", name: "Presse & Foren", text: () => (negP1.some((x) => x.type !== "own") ? "Ein negativer Treffer steht auf Seite 1 bei Google. Viele Kunden sehen ihn, bevor sie Kontakt aufnehmen." : "Wir prüfen Zeitungen, Online-Magazine und Foren auf Beiträge über Sie."), items: pick((x) => x.type === "press" || x.type === "forum" || x.src === "news") },
-    { key: "search", name: "Google- & Bing-Suche", text: () => "Was Kunden sehen, wenn sie Ihren Namen bei Google oder Bing suchen.", items: pick((x) => x.src !== "news") },
+    { key: "search", name: "Google- & Bing-Suche", text: () => "Was Kunden sehen, wenn sie Ihren Namen bei Google oder Bing suchen.", items: allSearch },
     { key: "ki", name: "KI-Antworten", text: () => "Was KI-Assistenten antworten, wenn jemand nach Ihnen fragt.", items: [] },
     { key: "reviews", name: "Bewertungen", text: () => "Ihre Sterne auf Google und anderen Bewertungsplattformen.", items: pick((x) => x.type === "review") },
     { key: "social", name: "Social Media", text: () => "Ihre Profile in sozialen Netzwerken.", items: c.social.map((s) => ({ title: s.net, link: s.url, src: "web", sent: "pos", type: "social", host: host(s.url), followers: s.followers || "", inGoogle: c.kgSeen ? !!s.inGoogle : null })) },
     { key: "web", name: "Website & SEO", text: () => "Ladezeit, Technik und Auffindbarkeit Ihrer Website.", items: [] },
   ];
-  const areas = AREAS.map((x) => { const s10 = Math.max(0, Math.min(10, Math.round(a[x.key] - 0.1))); return { key: x.key, name: x.name, score10: s10, status: status10(s10), text: x.text(a[x.key]), items: x.items }; })
+  // Fakten je Bereich: was geprüft wurde und was herauskam – auch wenn nichts Auffälliges gefunden wurde
+  const own1 = self.find((x) => x.src === "google" && x.type === "own");
+  const g1all = c.items.filter((x) => x.src === "google" && x.pos <= 10);
+  const pressAll = [...new Map(self.filter((x) => x.type === "press" || x.src === "news").map((x) => [x.link, x])).values()];
+  const reviewHosts = [...new Set(self.filter((x) => x.type === "review").map((x) => host(x.link)).filter((h) => h && !/google\./.test(h)))];
+  const negSugs = c.suggestions.filter((x) => x.neg);
+  const answered = c.ki.map((k) => k.name);
+  const missing = (c.kiTried || []).filter((n) => !answered.includes(n));
+  const FACTS: Record<AreaKey, { label: string; value: string; tone?: "good" | "bad" }[]> = {
+    search: [
+      { label: "Google Seite 1", value: `${g1all.filter((x) => x.about !== "other" && x.sent === "pos").length} positiv · ${g1all.filter((x) => x.about !== "other" && x.sent === "neg").length} negativ · ${g1all.filter((x) => x.about === "other").length} andere Firma`, tone: g1all.some((x) => x.about !== "other" && x.sent === "neg") ? "bad" : "good" },
+      { label: "Eigene Website", value: own1 ? `Google Platz ${own1.pos}` : "nicht unter den ersten 50 Treffern", tone: own1 && own1.pos <= 3 ? "good" : "bad" },
+      { label: "Google-Vorschläge", value: negSugs.length ? `kritisch: „${negSugs[0].q}“` : `unauffällig (${c.suggestions.length} geprüft)`, tone: negSugs.length ? "bad" : "good" },
+      { label: "Geprüft", value: `${c.items.filter((x) => x.src === "google").length} Google-Treffer (Seite 1–5) · ${c.items.filter((x) => x.src === "bing").length} Bing-Treffer` },
+    ],
+    press: [
+      { label: "Geprüft", value: "Google News, Google Seite 1–5 und Erwähnungen im ganzen Netz" },
+      { label: "Artikel & Beiträge", value: pressAll.length ? `${pressAll.length} gefunden` : "keine gefunden", tone: pressAll.length ? "good" : undefined },
+      { label: "Davon kritisch", value: String(pressAll.filter((x) => x.sent === "neg").length), tone: pressAll.some((x) => x.sent === "neg") ? "bad" : "good" },
+    ],
+    reviews: [
+      { label: "Google", value: c.loc.rating ? `${String(c.loc.rating).replace(".", ",")} ★ · ${c.loc.reviews || 0} Bewertungen` : "noch keine Bewertungen", tone: Number(c.loc.rating) >= 4.3 ? "good" : Number(c.loc.rating) && Number(c.loc.rating) < 3.8 ? "bad" : undefined },
+      { label: "Neueste Bewertungen", value: c.reviews.total ? `${c.reviews.total} gelesen · ${c.reviews.unanswered} ohne Antwort${c.reviews.negUnanswered ? ` (${c.reviews.negUnanswered} davon kritisch)` : ""}` : "nicht abrufbar", tone: c.reviews.total && c.reviews.unanswered / c.reviews.total >= 0.5 ? "bad" : c.reviews.total ? "good" : undefined },
+      { label: "Andere Bewertungsportale", value: reviewHosts.length ? reviewHosts.slice(0, 5).join(", ") : "keine gefunden" },
+    ],
+    ki: [
+      { label: "Gefragt", value: (c.kiTried && c.kiTried.length ? c.kiTried : answered).join(", ") + (c.aiOverview ? " + Google KI-Übersicht" : "") },
+      ...(missing.length ? [{ label: "Nicht geantwortet", value: missing.join(", "), tone: "bad" as const }] : []),
+    ],
+    social: [
+      { label: "Gefunden", value: c.social.length ? [...new Set(c.social.map((x) => x.net))].join(", ") : "keine Profile", tone: c.social.length >= 2 ? "good" : "bad" },
+      { label: "Im Google-Profil", value: !c.kgSeen ? "nicht feststellbar" : c.social.length ? `${c.social.filter((x) => x.inGoogle).length} von ${c.social.length} sichtbar` : "–" },
+    ],
+    web: [],
+  };
+  const areas = AREAS.map((x) => { const s10 = Math.max(0, Math.min(10, Math.round(a[x.key] - 0.1))); return { key: x.key, name: x.name, score10: s10, status: status10(s10), text: x.text(a[x.key]), items: x.items, facts: FACTS[x.key] }; })
     .sort((p, q) => p.score10 - q.score10);
   const g1 = c.items.filter((x) => x.src === "google" && x.pos <= 10).sort((p, q) => p.pos - q.pos);
   const serp1 = g1.map((x) => ({ pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", title: x.title, link: x.link, host: host(x.link) }));
@@ -544,9 +583,10 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
       `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
-      `Regeln: "about":"other" wenn der Treffer klar ein anderes Unternehmen/eine andere Person meint. "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
-      { maxTokens: 6000 },
+      `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
+      { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
+    if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
     for (const x of items) {
       const c = byI.get(x.i);
@@ -559,6 +599,8 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       if (ownHost && h.endsWith(ownHost)) x.type = "own";
       x.note = c?.note || "";
     }
+    const cnt = (f: (x: Item) => boolean) => items.filter(f).length;
+    console.log(`Rep-Scan ${name}: Treffer google=${cnt((x) => x.src === "google")} bing=${cnt((x) => x.src === "bing")} news=${cnt((x) => x.src === "news")} erwähnt=${cnt((x) => x.src === "mention")} · eingeordnet=${byI.size} · andere Firma=${cnt((x) => x.about === "other")} · negativ=${cnt((x) => x.sent === "neg")} · presse=${cnt((x) => x.type === "press")}`);
     const first = (t: string) => (t || "").split(/(?<=[.!?])\s/)[0] || "";
     const mk = (nm: string, raw: string[], c: J | undefined) => {
       const ans = QUESTIONS.map((x, i) => {
@@ -575,7 +617,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
-      kgSeen, web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

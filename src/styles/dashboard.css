@@ -1300,3 +1300,9 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-fail-t{font-size:16px;font-weight:700}
 .rra .rp-fail-s{font-size:13px;color:var(--g3)}
 .rra .rp-failed .rp-mini{flex:none}
+.rra .rp-facts{background:var(--g1);border-radius:20px;padding:6px 16px;margin:-8px 0 22px}
+.rra .rp-facts>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 0}
+.rra .rp-facts>div+div{border-top:1px solid var(--g2)}
+.rra .rp-facts span{font-size:13px;color:var(--g3);flex:none}
+.rra .rp-facts b{font-size:14px;font-weight:700;text-align:right}
+.rra .rp-facts b.t-good{color:#15803d}.rra .rp-facts b.t-bad{color:#b91c1c}
