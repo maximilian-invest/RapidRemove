@@ -60,6 +60,7 @@ import { serpKey, fetchPlaceReviews, findPlaceReview, serpUsage } from "./review
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
+import { registerRepScore } from "./repScore";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -242,6 +243,7 @@ registerCustomerRoutes(app, {
 
 // Dashboard-Aktivität: Tracking aus dem Kunden-Dashboard, Zählpixel, Admin-Timeline.
 registerCustTrack(app, { sessionInfo: customerSessionInfo, adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN });
+registerRepScore(app); // Reputations-Score (Vorschau, nur REP_PREVIEW_EMAILS)
 // Support-Chatbot im Kunden-Dashboard (Claude API, Fallback ohne Schlüssel) + Team-Anfrage per Mail.
 registerCustChat(app, {
   sessionInfo: customerSessionInfo,

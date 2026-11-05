@@ -12,7 +12,7 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon, Clock,
+  BadgeCheck, Timer, Gauge, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon, Clock,
 } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
@@ -29,6 +29,7 @@ import PaySheet from "./PaySheet";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
 import { isRepPreview, RepHero, RepTeaser, RepServices } from "./RepPreview";
+import { useRep, RepScoreCard, RepRunning, RepSearchSheet, RepTab } from "./RepApp";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -1328,6 +1329,8 @@ export default function CustomerDashboard() {
   const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
   const [noLinks, setNoLinks] = React.useState(null); // Bulk-Software-Storno → „Einzeln beauftragen" mit vorbefülltem Link
   const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
+  const rep = useRep(token, !!(data && isRepPreview(data.email)), call); // Reputations-Score (Vorschau)
+  const [repSearch, setRepSearch] = React.useState(false);
   const [noOn, setNoOn] = React.useState(false); // Neubestellung freigeschaltet (Test-Konten / Admin-Schalter)
   const [noModes, setNoModes] = React.useState({ hand: false, bulk: false }); // von Hand (Profil-Suche) / Bulk-Upload
   // Direkt nach der Bestellung (#a=… bzw. ?from=order): erst Einrichtungs-Animation, dann Dashboard, 2 Sek. später „Zahlungsart hinterlegen".
@@ -1942,7 +1945,10 @@ export default function CustomerDashboard() {
   );
 
   /* Reputations-Dashboard als Startseite (Vorschau ohne Funktion, nur für isRepPreview) */
-  const repSoon = () => showToast("Reputations-Scan kommt bald");
+  const repAsk = (a) => { if (imp || (data && data.adminView)) { showToast("In der Admin-Ansicht nicht möglich", true); return; } rep.request(null, a).then(() => showToast("Danke! Wir melden uns innerhalb von 24 Stunden.")).catch(() => showToast(T("genericErr"), true)); };
+  const repLoc = (rep.locations || []).find((l) => l.latest) || null;
+  const repRun = (rep.locations || []).find((l) => l.scan && l.scan.status === "running") || null;
+  const repGuess = (orders.find((o) => o.business) || {}).business || "";
   const HomeRepV = () => (
     <>
       <div className="hhead">
@@ -1960,9 +1966,13 @@ export default function CustomerDashboard() {
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length && (due.length || swOnly) ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
-          <RepHero onScan={repSoon} />
-          <div className="sec"><h2>Ihr Überblick</h2></div>
-          <RepTeaser />
+          {repLoc ? <RepScoreCard loc={repLoc} onOpen={() => goTab("rep")} /> : repRun ? <RepRunning loc={repRun} /> : (
+            <>
+              <RepHero onScan={() => setRepSearch(true)} />
+              <div className="sec"><h2>Ihr Überblick</h2></div>
+              <RepTeaser />
+            </>
+          )}
           <div className="sec rep-sec"><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
           <div className="rep-ords">
             {homeOrders.length ? homeOrders.map((o) => {
@@ -1980,8 +1990,8 @@ export default function CustomerDashboard() {
             }) : <div className="rep-none">{T(orders.length ? "allDone" : "noOrders")}</div>}
           </div>
           {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
-          <div className="sec rep-sec"><h2>Mehr für Ihren Ruf</h2></div>
-          <RepServices onClick={repSoon} />
+          {repLoc ? null : <><div className="sec rep-sec"><h2>Mehr für Ihren Ruf</h2></div>
+          <RepServices onClick={() => repAsk("leistung")} /></>}
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -2336,16 +2346,16 @@ export default function CustomerDashboard() {
     );
   };
 
-  const TABS = [["home", Home, T("tabHome")], ["orders", List, T("tabOrders")], ["pay", Wallet, T("tabPay")], ["acc", User, T("tabAcc")]];
+  const TABS = [["home", Home, T("tabHome")], ["orders", List, T("tabOrders")], ...(repPrev ? [["rep", Gauge, "Reputation"]] : []), ["pay", Wallet, T("tabPay")], ["acc", User, T("tabAcc")]];
   const adminView = imp || (data && data.adminView);
   return (
     <div className={"rra" + (adminView ? " impv" : "") + (intro ? " intro" : "")}>
       {adminView ? <div className="impbar"><span><b>Admin-Ansicht</b> · {data.name || data.email} · nicht getrackt</span><button type="button" onClick={endAdminView}>Beenden</button></div> : null}
       <div className="app">
         <main className="screen" ref={mainRef}>
-          <div className="tabin" key={tab}>{tab === "home" ? (repPrev ? HomeRepV() : HomeV()) : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}</div>
+          <div className="tabin" key={tab}>{tab === "home" ? (repPrev ? HomeRepV() : HomeV()) : tab === "orders" ? OrdersV() : tab === "rep" && repPrev ? <RepTab rep={rep} showToast={showToast} imp={!!adminView} openSearch={() => setRepSearch(true)} /> : tab === "pay" ? PayV() : AccV()}</div>
         </main>
-        <nav className="tabbar">
+        <nav className={"tabbar" + (TABS.length === 5 ? " t5" : "")}>
           <div className="brand"><img src="/assets/rapidremove-icon.png" alt="" />RapidRemove</div>
           {TABS.map(([k, I, l]) => (
             <button key={k} className={"tb" + (tab === k ? " on" : "")} onClick={() => goTab(k)}>
@@ -2393,6 +2403,7 @@ export default function CustomerDashboard() {
       <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !sfOrder && !cele && !wiseOpen && !detail} items={changedNew}
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
+      {repPrev ? <RepSearchSheet open={repSearch} initial={repGuess} rep={rep} showToast={showToast} onClose={() => setRepSearch(false)} onPicked={() => { setRepSearch(false); goTab("home"); }} /> : null}
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
