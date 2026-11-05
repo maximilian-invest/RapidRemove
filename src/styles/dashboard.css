@@ -1254,3 +1254,9 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-scan-h{text-align:left}
 }
 @media (prefers-reduced-motion:reduce){.rra .rp-radar,.rra .rp-comet,.rra .rp-glow,.rra .rp-float,.rra .rp-step.run .rp-step-t{animation:none}.rra .rp-float{display:none}}
+.rra .rp-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 6px}
+.rra .rp-metrics>div{background:var(--g1);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.rra .rp-metrics b{font-size:22px;font-weight:800;letter-spacing:-.6px}
+.rra .rp-metrics span{font-size:11.5px;color:var(--g3);line-height:1.3}
+.rra .rp-chk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:12px;font-weight:800;color:#fff}
+.rra .rp-chk.y{background:#16a34a}.rra .rp-chk.n{background:#e23b3b}

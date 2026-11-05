@@ -364,10 +364,30 @@ function RepArea({ a, r, onBack, onAsk }) {
         <section className="rp-list">
           {r.website && r.website.url ? (
             <>
-              <div className="rp-li"><i style={{ background: r.website.perf == null ? "#d4d4d4" : BAR(r.website.perf / 10) }} /><span className="rp-t"><b>Ladezeit (Handy)</b><span>{r.website.perf == null ? "Konnte diesmal nicht gemessen werden – zählt nicht in den Score" : `${r.website.perf}/100 · Google PageSpeed`}</span></span></div>
-              <div className="rp-li"><i style={{ background: r.website.seo == null ? "#d4d4d4" : BAR(r.website.seo / 10) }} /><span className="rp-t"><b>Technisches SEO</b><span>{r.website.seo == null ? "Konnte diesmal nicht gemessen werden" : `${r.website.seo}/100`}</span></span></div>
-              <div className="rp-li"><i style={{ background: r.website.https ? "#16a34a" : "#e23b3b" }} /><span className="rp-t"><b>Sichere Verbindung (https)</b><span>{r.website.https ? "ja" : "nein"}</span></span></div>
-              <a className="rp-li" href={r.website.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{String(r.website.title || r.website.url).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&amp;/g, "&")}</b><span>{r.website.url}</span></span><ExternalLink /></a>
+              {(() => {
+                const w = r.website, m = w.metrics || {};
+                const sec = (ms) => (ms == null ? "–" : (ms / 1000).toFixed(1).replace(".", ",") + " s");
+                const mb = m.kb == null ? "–" : m.kb >= 1024 ? (m.kb / 1024).toFixed(1).replace(".", ",") + " MB" : m.kb + " KB";
+                const ok = w.checks || [];
+                return (
+                  <>
+                    <div className="rp-box-h"><b>Ladezeit am Handy</b><span>{w.perf == null ? "nicht messbar" : w.perf + "/100"}</span></div>
+                    {w.perf == null ? <div className="rp-empty">Die Website hat beim Laden nicht geantwortet.</div> : (
+                      <div className="rp-metrics">
+                        <div><b style={{ color: m.fcp > 3000 ? "#e23b3b" : m.fcp > 1800 ? "#d97706" : "#16a34a" }}>{sec(m.fcp)}</b><span>bis etwas zu sehen ist</span></div>
+                        <div><b style={{ color: m.lcp > 4000 ? "#e23b3b" : m.lcp > 2500 ? "#d97706" : "#16a34a" }}>{sec(m.lcp)}</b><span>bis die Seite fertig aussieht</span></div>
+                        <div><b style={{ color: m.kb > 4096 ? "#e23b3b" : m.kb > 1640 ? "#d97706" : "#16a34a" }}>{mb}</b><span>Datenmenge{m.requests ? ` · ${m.requests} Dateien` : ""}</span></div>
+                      </div>
+                    )}
+                    <p className="rp-note">Gemessen wie bei Google: Handy mit mittelguter mobiler Verbindung. Ziel: unter 2,5 s bis fertig.</p>
+                    <div className="rp-box-h" style={{ marginTop: 20 }}><b>SEO-Grundlagen</b><span>{ok.filter((c) => c.ok).length} von {ok.length} erfüllt</span></div>
+                    {ok.map((c) => (
+                      <div key={c.key} className="rp-li"><span className={"rp-chk " + (c.ok ? "y" : "n")}>{c.ok ? "✓" : "✕"}</span><span className="rp-t"><b>{c.label}</b><span>{c.detail}</span></span></div>
+                    ))}
+                    <a className="rp-li" href={w.url} target="_blank" rel="noopener noreferrer"><i style={{ background: "#d4d4d4" }} /><span className="rp-t"><b>{String(w.title || w.url).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&amp;/g, "&")}</b><span>{w.url}</span></span><ExternalLink /></a>
+                  </>
+                );
+              })()}
             </>
           ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
         </section>
