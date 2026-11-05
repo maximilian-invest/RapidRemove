@@ -516,7 +516,7 @@ function ReviewPortals({ r, items }) {
 const rankCol = (v) => (v == null ? "#b91c1c" : v <= 3 ? "#15803d" : v <= 10 ? "#b45309" : "#b91c1c");
 function WebArea({ r }) {
   const [open, setOpen] = React.useState(null);
-  const kws = [...(r.kws || [])].map((k) => ({ ...k, best: Math.min(k.g ?? 99, k.pack ?? (k.maps ?? 99)) })).sort((p, q) => q.best - p.best);
+  const kws = [...(r.kws || [])].map((k) => ({ ...k, best: k.err ? -1 : Math.min(k.g ?? 99, k.noMaps ? 99 : k.pack ?? (k.maps ?? 99)) })).sort((p, q) => q.best - p.best);
   const w = r.website || {}, m = w.metrics || {};
   const sec = (ms) => (ms == null ? "–" : (ms / 1000).toFixed(1).replace(".", ",") + " s");
   const mb = m.kb == null ? "–" : m.kb >= 1024 ? (m.kb / 1024).toFixed(1).replace(".", ",") + " MB" : m.kb + " KB";
@@ -544,8 +544,8 @@ function WebArea({ r }) {
             {kws.map((k) => (
               <div key={k.q} className="rp-kw">
                 <b>{k.q}</b>
-                <span className="rp-kw-c" style={{ color: rankCol(k.g) }}><small>Google</small>{k.g ? "#" + k.g : "–"}</span>
-                <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>
+                <span className="rp-kw-c" style={{ color: k.err ? "#9a9a9a" : rankCol(k.g) }}><small>Google</small>{k.err ? "?" : k.g ? "#" + k.g : "–"}</span>
+                {k.noMaps ? null : <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>}
               </div>
             ))}
           </div>

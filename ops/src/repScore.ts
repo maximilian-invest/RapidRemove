@@ -340,9 +340,9 @@ async function okUrl(u: string): Promise<boolean> {
   try { const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(8000), headers: { "user-agent": "Mozilla/5.0 (compatible; RapidRemoveScan/1.0)" } }); if (!r.ok) return false; const t = (await r.text()).slice(0, 2000); return !/<html/i.test(t) || /urlset|sitemapindex/i.test(t); }
   catch { return false; }
 }
-/* Offizielle Google-Messung (PageSpeed Insights, Handy) – nur mit PAGESPEED_API_KEY */
+/* Offizielle Google-Messung (PageSpeed Insights, Handy) – Key in PAGESPEED_API */
 async function pageSpeed(url: string): Promise<{ perf: number; metrics: NonNullable<Audit["metrics"]> } | null> {
-  const key = (process.env.PAGESPEED_API_KEY || "").trim();
+  const key = (process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY || "").trim();
   if (!key) return null;
   try {
     const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&category=performance&url=${encodeURIComponent(url)}&key=${encodeURIComponent(key)}`, { signal: AbortSignal.timeout(90_000) });
