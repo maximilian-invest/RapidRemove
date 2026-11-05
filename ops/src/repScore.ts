@@ -294,8 +294,8 @@ const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./,
 type Social = { net: string; url: string; followers?: string; inGoogle?: boolean | null };
 type Item = { i: number; src: "google" | "bing" | "news" | "mention"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
-  loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null;
-  ki: { name: string; known: boolean; sent: string; quote: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string }[] }[]; reviews: { total: number; unanswered: number; negUnanswered: number };
+  loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
+  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
 };
@@ -440,7 +440,8 @@ export function evaluate(c: Ctx): J {
   return {
     score, tier: tier(score), potential, areas, todos: top, serp1,
     kpis: { flags, rating: c.loc.rating, reviews: c.loc.reviews, page1Pos: serp1.filter((x) => x.sent === "pos").length, page1Total: serp1.length },
-    ki: [...c.ki, ...(c.aiOverview ? [{ name: "Google KI-Übersicht", known: true, sent: c.aiOverviewSent || "neu", quote: c.aiOverview.slice(0, 400) }] : [])],
+    kiSummary: c.kiSummary || "",
+    ki: [...c.ki, ...(c.aiOverview ? [{ name: "Google KI-Übersicht", known: true, sent: c.aiOverviewSent || "neu", quote: "", sum: c.aiOverviewSum || "" }] : [])],
     suggestions: c.suggestions, website: c.web, social: c.social, reviewsInfo: c.reviews, summary: c.summary,
     sources: c.items.length + c.suggestions.length + c.ki.length + (c.web.url ? 2 : 0) + c.reviews.total + 1,
   };
@@ -592,7 +593,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const cls = parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","kiSummary":"2–3 Sätze Gesamtfazit, was die KIs insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
       `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
       { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
@@ -615,10 +616,10 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const mk = (nm: string, raw: string[], c: J | undefined) => {
       const ans = QUESTIONS.map((x, i) => {
         const a = Array.isArray(c?.answers) ? c!.answers[i] || {} : {};
-        return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300) };
+        return { key: x.key, q: x.q, text: String(raw[i] || "").slice(0, 900), sent: raw[i] ? String(a.sent || "neu") : "none", known: raw[i] ? a.known !== false : false, quote: String(a.quote || first(raw[i])).slice(0, 300), sum: String(a.sum || "").slice(0, 220) };
       });
       const kn = ans.filter((a) => a.sent !== "none");
-      return { name: nm, known: c?.known !== false && kn.some((a) => a.known), sent: String(c?.sent || "neu"), quote: String((ans.find((a) => a.key === "serioes") || ans[0]).quote || ""), answers: ans };
+      return { name: nm, known: c?.known !== false && kn.some((a) => a.known), sent: String(c?.sent || "neu"), quote: String((ans.find((a) => a.key === "serioes") || ans[0]).quote || ""), sum: String(c?.sum || "").slice(0, 240), answers: ans };
     };
     const ki = [
       ...(gptText ? [mk("ChatGPT", gptAns, cls?.gpt)] : []),
@@ -626,8 +627,8 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       ...(pplxText ? [mk("Perplexity", pplxAns, cls?.pplx)] : []),
     ];
     const ctx: Ctx = {
-      loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
-      kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
+      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kgSeen, kiTried: ["ChatGPT", "Claude", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };

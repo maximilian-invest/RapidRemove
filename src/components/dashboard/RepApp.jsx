@@ -322,7 +322,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
                 <div key={x.name} className="rp-ki">
                   <span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>
                   {x.answers ? <span className="rp-ki-sum">{x.answers.filter((a) => a.sent === "pos").length} von {x.answers.filter((a) => a.sent !== "none").length} Antworten positiv{x.answers.some((a) => a.sent === "neg") ? ` · ${x.answers.filter((a) => a.sent === "neg").length} kritisch` : ""}</span> : null}
-                  {x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}
+                  {x.sum ? <span className="rp-ki-q">{x.sum}</span> : null}
                 </div>
               ))}
             </section>
@@ -424,7 +424,7 @@ function KiSimple({ r, a }) {
           <div><span className="rp-k">KI-Antworten</span><b>{head}</b></div>
           <span className="rp-ki-score" style={{ color: sc(a.score10) }}>{a.score10}<small>/10</small></span>
         </div>
-        {top ? <p className="rp-ki-top"><em>{top.ai} auf „{(KI_LBL[top.key] || [top.q, top.q])[1]}“</em>„{top.quote}“</p> : null}
+        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : top && top.sum ? <p className="rp-ki-top"><em>{top.ai} · {(KI_LBL[top.key] || [top.q, top.q])[1]}</em>{top.sum}</p> : null}
         <span className="rp-ki-meta">{all.length} Antworten von {ais.map((x) => x.name).join(", ")}{missing ? ` · ${missing.value} hat nicht geantwortet` : ""}</span>
       </section>
       <section className="rp-ki-list">
@@ -432,25 +432,25 @@ function KiSimple({ r, a }) {
           <div key={ai.name} className={"rp-ki-row" + (isOpen ? " open" : "")}>
             <button type="button" className="rp-ki-rh" onClick={() => { setOpen(isOpen ? null : ai.name); setQ(null); }}>
               <i style={{ background: AI_COL[ai.name] || "#111" }}>{AI_INI[ai.name] || ai.name[0]}</i>
-              <span className="rp-ki-rt"><b>{ai.name}</b><span>{verdict(ai)}</span></span>
+              <span className="rp-ki-rt"><b>{ai.name}</b><span>{verdict(ai)}{ai.sum ? " · " + ai.sum : ""}</span></span>
               <span className="rp-ki-dots">{ai.answers.map((x) => <i key={x.key} className={"s-" + kiSent(x)} />)}</span>
               <em style={{ color: sc(v) }}>{v == null ? "–" : v + "/10"}</em>
               <ChevronDown className="rp-ki-chev" />
             </button>
             {isOpen ? (
               <div className="rp-ki-qs">
-                {worstFirst(ai.answers, kiSent).map((x) => { const L = KI_LBL[x.key] || [x.q, x.q]; const qo = q === x.key; return (
-                  <button key={x.key} type="button" className="rp-ki-q2" onClick={() => setQ(qo ? null : x.key)}>
+                {worstFirst(ai.answers, kiSent).map((x) => { const L = KI_LBL[x.key] || [x.q, x.q]; return (
+                  <div key={x.key} className="rp-ki-q2">
                     <span className="h"><i className={"s-" + kiSent(x)} /><b>{L[1]}</b><em className={"s-" + kiSent(x)}>{kiSent(x) === "pos" ? "positiv" : kiSent(x) === "neg" ? "kritisch" : kiSent(x) === "none" ? "keine Antwort" : !x.known ? "kennt Sie kaum" : "neutral"}</em></span>
-                    {qo ? <p>{x.text || x.quote}</p> : x.quote ? <span className="qt">„{x.quote}“</span> : null}
-                  </button>
+                    {x.sum ? <span className="qt">{x.sum}</span> : null}
+                  </div>
                 ); })}
               </div>
             ) : null}
           </div>
         ); })}
       </section>
-      <p className="rp-note">Jede KI bekam dieselben 5 Fragen, die Kunden typischerweise stellen. KI antippen für die einzelnen Antworten.</p>
+      <p className="rp-note">Jede KI bekam dieselben 5 Fragen, die Kunden typischerweise stellen. KI antippen für die Zusammenfassung je Frage.</p>
     </>
   );
 }
