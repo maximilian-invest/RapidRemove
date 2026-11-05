@@ -1210,3 +1210,47 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-chart-x span.on{color:var(--ink)}
 @media (min-width:821px){.rra .rp-chart-plot{height:210px}}
 .rra .rp-chart{padding-right:40px}
+/* ---- Scan läuft (Animation) ---- */
+@keyframes rpSpin{to{transform:rotate(360deg)}}
+@keyframes rpGlow{0%,100%{transform:scale(.92);opacity:.55}50%{transform:scale(1.08);opacity:.95}}
+@keyframes rpFloat{0%{opacity:0;transform:rotate(var(--a)) translateY(-112px) rotate(calc(-1 * var(--a))) scale(.6)}20%{opacity:.95}75%{opacity:.8}100%{opacity:0;transform:rotate(var(--a)) translateY(-146px) rotate(calc(-1 * var(--a))) scale(1)}}
+@keyframes rpShim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes rpPop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes rpDraw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
+@keyframes rpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rra .rp-scan{display:flex;flex-direction:column;align-items:center;gap:18px;margin:0 0 26px;padding:24px 18px 20px;border-radius:28px;background:linear-gradient(180deg,#fff4ea,#fff);box-shadow:inset 0 0 0 1px #ffe2c7;overflow:hidden}
+.rra .rp-scan-l{display:flex;flex-direction:column;align-items:center;text-align:center}
+.rra .rp-scan-n{font-size:17px;font-weight:800;letter-spacing:-.3px;margin-top:2px}
+.rra .rp-orb{position:relative;width:220px;height:220px;margin:34px auto 22px}
+.rra .rp-glow{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,128,0,.35),rgba(255,128,0,0) 70%);animation:rpGlow 2.4s ease-in-out infinite}
+.rra .rp-radar{position:absolute;inset:22px;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,128,0,0) 0deg,rgba(255,128,0,0) 290deg,rgba(255,128,0,.28) 355deg,rgba(255,128,0,0) 360deg);animation:rpSpin 2.6s linear infinite}
+.rra .rp-orb-svg,.rra .rp-comet{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rra .rp-orb-svg{transform:rotate(-90deg)}
+.rra .rp-orb-p{filter:drop-shadow(0 0 3px rgba(255,106,0,.55))}
+.rra .rp-comet{animation:rpSpin 2.2s linear infinite;filter:drop-shadow(0 0 4px rgba(255,128,0,.9)) drop-shadow(0 0 1px #fff)}
+.rra .rp-orb-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rra .rp-orb-c b{font-size:64px;font-weight:800;letter-spacing:-3px;line-height:1;font-variant-numeric:tabular-nums}
+.rra .rp-orb-c b small{font-size:24px;letter-spacing:0;color:#ff6a00;margin-left:2px}
+.rra .rp-orb-c span{font-size:12px;font-weight:600;color:#9a6a3a;margin-top:6px;font-variant-numeric:tabular-nums}
+.rra .rp-float{position:absolute;left:50%;top:50%;margin:-11px 0 0 -40px;width:80px;text-align:center;font-size:10.5px;font-weight:700;color:#9a6a3a;white-space:nowrap;pointer-events:none;opacity:0;animation:rpFloat 3.6s ease-out infinite;animation-delay:calc(var(--i) * .72s)}
+.rra .rp-scan-r{display:flex;flex-direction:column;gap:2px;width:100%;max-width:420px}
+.rra .rp-step{display:flex;align-items:center;gap:12px;padding:9px 6px;border-radius:14px;animation:rpIn .4s both;animation-delay:var(--d)}
+.rra .rp-step-i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;background:#f4f4f4;color:#b0b0b0;transition:background .3s}
+.rra .rp-step-i svg{width:16px;height:16px}
+.rra .rp-step.done .rp-step-i{background:#16a34a;color:#fff;animation:rpPop .45s cubic-bezier(.3,1.6,.5,1) both}
+.rra .rp-step.done .rp-step-i svg{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;animation:rpDraw .4s .15s both}
+.rra .rp-step.run{background:#fff;box-shadow:0 4px 16px rgba(255,106,0,.12)}
+.rra .rp-step.run .rp-step-i{background:#fff4e8}
+.rra .rp-spin{width:16px;height:16px;border-radius:50%;border:2.5px solid #ffd3a6;border-top-color:#ff6a00;animation:rpSpin .8s linear infinite}
+.rra .rp-step-t{flex:1;font-size:15px;font-weight:600;color:#9a9a9a}
+.rra .rp-step.done .rp-step-t{color:var(--ink)}
+.rra .rp-step.run .rp-step-t{font-weight:700;background:linear-gradient(90deg,#111 0%,#111 40%,#ff8000 50%,#111 60%,#111 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rpShim 1.8s linear infinite}
+.rra .rp-step em{font-style:normal;font-size:12px;font-weight:700;color:#ff6a00}
+.rra .rp-scan-h{font-size:12.5px;color:#9a9a9a;text-align:center;margin-top:10px}
+@media (min-width:821px){
+.rra .rp-scan{flex-direction:row;align-items:center;gap:48px;padding:32px 44px;border-radius:32px;background:linear-gradient(120deg,#fff4ea,#fff 70%)}
+.rra .rp-scan-l{flex:none}
+.rra .rp-scan-r{flex:1}
+.rra .rp-scan-h{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.rra .rp-radar,.rra .rp-comet,.rra .rp-glow,.rra .rp-float,.rra .rp-step.run .rp-step-t{animation:none}.rra .rp-float{display:none}}

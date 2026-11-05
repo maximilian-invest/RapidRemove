@@ -74,18 +74,80 @@ export function RepScoreCard({ loc, onOpen }) {
   );
 }
 
-/* Scan läuft */
+/* Scan läuft – lebendige Animation: Ring mit Komet + Radar, Prozent zählt weich, Schritte haken sich ab */
+const STEPS = [
+  { at: 50, t: "Google-Suche, Seite 1–5", I: Search },
+  { at: 60, t: "Google-Vorschläge & Bing", I: Globe },
+  { at: 64, t: "Presse & News", I: Newspaper },
+  { at: 70, t: "Bewertungen", I: Star },
+  { at: 78, t: "Website & Social Media", I: Users },
+  { at: 86, t: "ChatGPT & Co.", I: Sparkles },
+  { at: 100, t: "Auswertung & Score", I: Flag },
+];
+const FLOAT = ["google.at", "bing.com", "herold.at", "facebook.com", "news", "instagram.com", "jameda", "reddit", "ChatGPT", "trustpilot"];
+function useSmooth(target) {
+  const [v, setV] = React.useState(target);
+  const cur = React.useRef(target);
+  React.useEffect(() => {
+    let raf, last = performance.now();
+    const tick = (t) => {
+      const dt = Math.min(0.1, (t - last) / 1000); last = t;
+      let c = cur.current;
+      if (c < target) c = Math.min(target, c + Math.max(4 * dt, (target - c) * 2.5 * dt));
+      else c = Math.min(c + 0.4 * dt, target + 7, 99); // zwischen zwei Abfragen langsam weiterkriechen
+      cur.current = c; setV(c);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+  return v;
+}
 export function RepRunning({ loc }) {
-  const p = Math.max(3, Math.min(99, loc.scan.progress || 0));
+  const target = Math.max(2, Math.min(99, loc.scan.progress || 0));
+  const p = useSmooth(target);
+  const pi = Math.floor(p);
+  const sources = Math.round(p * 2.14);
+  const active = STEPS.findIndex((x) => target < x.at);
   return (
-    <div className="hero rp-run">
-      <span className="hero-img rp-run-ring" aria-hidden="true">
-        <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="#2c2c2c" strokeWidth="5" /><circle cx="28" cy="28" r="23" fill="none" stroke="#ff8000" strokeWidth="5" strokeLinecap="round" pathLength="100" strokeDasharray={`${p} 100`} style={{ transition: "stroke-dasharray .6s" }} /></svg>
-        <i>{p} %</i>
-      </span>
-      <div className="k">Scan läuft · {loc.name}</div>
-      <div className="v rp-run-v">{loc.scan.step || "Start"} …</div>
-      <div className="s">Dauert 1–3 Minuten. Sie können die App schließen – das Ergebnis steht danach hier.</div>
+    <div className="rp-scan" role="status" aria-live="polite">
+      <div className="rp-scan-l">
+        <span className="rp-k">Wir prüfen Ihre Reputation</span>
+        <b className="rp-scan-n">{loc.name}</b>
+        <div className="rp-orb">
+          <i className="rp-glow" />
+          <i className="rp-radar" />
+          <svg className="rp-orb-svg" viewBox="0 0 56 56" aria-hidden="true">
+            <defs>
+              <linearGradient id={"sg" + loc.id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffb547" /><stop offset="1" stopColor="#ff4d2e" /></linearGradient>
+            </defs>
+            <circle cx="28" cy="28" r="24" fill="none" stroke="#ffe7d1" strokeWidth="4.5" />
+            <circle cx="28" cy="28" r="24" fill="none" stroke={`url(#sg${loc.id})`} strokeWidth="4.5" strokeLinecap="round" pathLength="100" strokeDasharray={`${p} 100`} className="rp-orb-p" />
+          </svg>
+          <svg className="rp-comet" viewBox="0 0 56 56" aria-hidden="true">
+            <circle cx="52" cy="28" r="2.6" fill="#ffffff" />
+            <circle cx="52" cy="28" r="1.3" fill="#ff8000" />
+          </svg>
+          {FLOAT.map((f, i) => <span key={f} className="rp-float" style={{ "--i": i, "--a": (i * 137) % 360 + "deg" }}>{f}</span>)}
+          <div className="rp-orb-c">
+            <b>{pi}<small>%</small></b>
+            <span>{sources} Quellen geprüft</span>
+          </div>
+        </div>
+      </div>
+      <div className="rp-scan-r">
+        {STEPS.map((x, i) => {
+          const st = active === -1 || i < active ? "done" : i === active ? "run" : "wait";
+          return (
+            <div key={x.t} className={"rp-step " + st} style={{ "--d": i * 70 + "ms" }}>
+              <span className="rp-step-i">{st === "done" ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" /></svg> : st === "run" ? <i className="rp-spin" /> : <x.I />}</span>
+              <span className="rp-step-t">{x.t}</span>
+              {st === "run" ? <em>läuft</em> : null}
+            </div>
+          );
+        })}
+        <p className="rp-scan-h">Dauert 1–3 Minuten. Sie können die App schließen – das Ergebnis steht danach hier.</p>
+      </div>
     </div>
   );
 }
