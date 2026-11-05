@@ -41,6 +41,8 @@ async function init(): Promise<void> {
     progress integer NOT NULL DEFAULT 0, step text, score integer, result jsonb, error text,
     created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS rep_scans_loc ON rep_scans (location_id, created_at DESC)`);
+  // Wöchentlicher Recherche-Cache je Standort: Suchtreffer, Suchbegriffe, KI-Antworten + Einordnung
+  await pool.query(`CREATE TABLE IF NOT EXISTS rep_cache (location_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
   // Scans laufen im Prozess: nach einem Neustart (Deploy) ist jeder „laufende“ Scan tot → als abgebrochen markieren
   await pool.query(`UPDATE rep_scans SET status='error', error='abgebrochen (Server-Neustart)', finished_at=now() WHERE status='running'`);
@@ -597,57 +599,74 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
     }
-    // Google Seite 1–5
-    let aiOverview: string | null = null; let aiToken = "";
-    await say(8, `Google-Suche nach „${short(q)}“ – Seite 1 bis ${PAGES()}`);
-    let gDone = 0, gHits = 0;
-    const gPage = async (pg: number): Promise<J> => {
-      for (let t = 0; t < 2; t++) {
-        try {
-          const j = await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }, 90_000);
-          gDone++; gHits += Array.isArray(j.organic_results) ? j.organic_results.length : 0;
-          void say(8 + gDone * 7, `Google Seite ${pg + 1} gelesen · ${gHits} Treffer bisher (${gDone} von ${PAGES()} Seiten)`);
-          return j;
-        }
-        catch (e) { console.warn("Rep-Scan Google Seite", pg + 1, "Versuch", t + 1, (e as Error).message); }
-      }
-      return {};
-    };
-    const gPages = await Promise.all(Array.from({ length: PAGES() }, (_, pg) => gPage(pg)));
-    await say(45, `${gHits} Google-Treffer zu „${short(q)}“ gesammelt`);
-    for (let pg = 0; pg < PAGES(); pg++) {
-      const j = gPages[pg];
-      (Array.isArray(j.organic_results) ? j.organic_results : []).forEach((r: J, k: number) => add("google", pg * 10 + (Number(r.position) > 0 && Number(r.position) <= 10 ? Number(r.position) : k + 1), r));
-      if (pg === 0 && j.ai_overview) {
-        const ao = j.ai_overview as J;
-        if (Array.isArray(ao.text_blocks)) aiOverview = ao.text_blocks.map((b: J) => b.snippet || (Array.isArray(b.list) ? b.list.map((l: J) => l.snippet || "").join(" ") : "")).join(" ").trim() || null;
-        aiToken = String(ao.page_token || "");
-      }
-    }
-    if (!aiOverview && aiToken) {
-      await say(47, "Lese Googles KI-Übersicht zu Ihrem Namen");
-      const j = await serp({ engine: "google_ai_overview", page_token: aiToken }).catch(() => ({} as J));
-      const tb = j.ai_overview?.text_blocks;
-      if (Array.isArray(tb)) aiOverview = tb.map((b: J) => b.snippet || "").join(" ").trim() || null;
-    }
-    await say(50, `Prüfe, was Google beim Tippen von „${short(name)}“ vorschlägt`);
-    const ac = await serp({ engine: "google_autocomplete", q: name, gl, hl: "de" }).catch(() => ({} as J));
-    const suggestions = (Array.isArray(ac.suggestions) ? ac.suggestions : []).slice(0, 10).map((s: J) => ({ q: String(s.value || ""), neg: NEG_WORDS.test(String(s.value || "")) })).filter((s: { q: string }) => s.q);
-    const negS = suggestions.find((x: { neg: boolean }) => x.neg);
-    if (negS) await say(52, `Achtung: „${short(negS.q)}“ steht in den Google-Vorschlägen`);
-    await say(55, `Suche bei Bing nach „${short(q)}“`);
-    const bj = await serp({ engine: "bing", q, cc: gl.toUpperCase() }).catch(() => ({} as J));
-    (Array.isArray(bj.organic_results) ? bj.organic_results : []).slice(0, 10).forEach((r: J, k: number) => add("bing", k + 1, r));
-    await say(60, `Durchsuche Google News nach „${short(name)}“`);
-    const nj = await serp({ engine: "google_news", q: `"${name}"`, gl, hl: "de" }).catch(() => ({} as J));
-    (Array.isArray(nj.news_results) ? nj.news_results : []).slice(0, 10).forEach((r: J, k: number) => add("news", k + 1, { ...r, snippet: r.snippet || r.source?.name || "" }));
-    // Erwähnungen ohne Ort und ohne eigene Website: findet Presse/Magazin-Artikel, die bei „Name + Ort“ untergehen
-    await say(62, `Suche Artikel und Erwähnungen über „${short(name)}“ im ganzen Netz`);
+    // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
+    const CACHE_V = 1;
+    const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
+    const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
+    const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
     const own0 = host(String(loc.website || ""));
-    for (let pg = 0; pg < 2; pg++) {
-      const mj = await serp({ engine: "google", q: `"${name}"${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
-      (Array.isArray(mj.organic_results) ? mj.organic_results : []).forEach((r: J, k: number) => add("mention", pg * 10 + k + 1, r));
+    let aiOverview: string | null = null;
+    let suggestions: { q: string; neg: boolean }[] = [];
+    let kg: J | undefined;
+    if (cache) {
+      for (const x of cache.items as Item[]) items.push({ ...x });
+      n = items.length;
+      aiOverview = cache.aiOverview || null; suggestions = cache.suggestions || []; kg = cache.kg || undefined;
+      await say(62, `Suchergebnisse vom ${cacheDay} übernommen (${items.length} Fundstellen) – werden wöchentlich neu geprüft`);
+    } else {
+      // Google Seite 1–5
+      let aiToken = "";
+      await say(8, `Google-Suche nach „${short(q)}“ – Seite 1 bis ${PAGES()}`);
+      let gDone = 0, gHits = 0;
+      const gPage = async (pg: number): Promise<J> => {
+        for (let t = 0; t < 2; t++) {
+          try {
+            const j = await serp({ engine: "google", q, gl, hl: "de", num: "10", start: String(pg * 10) }, 90_000);
+            gDone++; gHits += Array.isArray(j.organic_results) ? j.organic_results.length : 0;
+            void say(8 + gDone * 7, `Google Seite ${pg + 1} gelesen · ${gHits} Treffer bisher (${gDone} von ${PAGES()} Seiten)`);
+            return j;
+          }
+          catch (e) { console.warn("Rep-Scan Google Seite", pg + 1, "Versuch", t + 1, (e as Error).message); }
+        }
+        return {};
+      };
+      const gPages = await Promise.all(Array.from({ length: PAGES() }, (_, pg) => gPage(pg)));
+      await say(45, `${gHits} Google-Treffer zu „${short(q)}“ gesammelt`);
+      for (let pg = 0; pg < PAGES(); pg++) {
+        const j = gPages[pg];
+        (Array.isArray(j.organic_results) ? j.organic_results : []).forEach((r: J, k: number) => add("google", pg * 10 + (Number(r.position) > 0 && Number(r.position) <= 10 ? Number(r.position) : k + 1), r));
+        if (pg === 0 && j.ai_overview) {
+          const ao = j.ai_overview as J;
+          if (Array.isArray(ao.text_blocks)) aiOverview = ao.text_blocks.map((b: J) => b.snippet || (Array.isArray(b.list) ? b.list.map((l: J) => l.snippet || "").join(" ") : "")).join(" ").trim() || null;
+          aiToken = String(ao.page_token || "");
+        }
+      }
+      if (!aiOverview && aiToken) {
+        await say(47, "Lese Googles KI-Übersicht zu Ihrem Namen");
+        const j = await serp({ engine: "google_ai_overview", page_token: aiToken }).catch(() => ({} as J));
+        const tb = j.ai_overview?.text_blocks;
+        if (Array.isArray(tb)) aiOverview = tb.map((b: J) => b.snippet || "").join(" ").trim() || null;
+      }
+      await say(50, `Prüfe, was Google beim Tippen von „${short(name)}“ vorschlägt`);
+      const ac = await serp({ engine: "google_autocomplete", q: name, gl, hl: "de" }).catch(() => ({} as J));
+      suggestions = (Array.isArray(ac.suggestions) ? ac.suggestions : []).slice(0, 10).map((s: J) => ({ q: String(s.value || ""), neg: NEG_WORDS.test(String(s.value || "")) })).filter((s: { q: string }) => s.q);
+      const negS = suggestions.find((x: { neg: boolean }) => x.neg);
+      if (negS) await say(52, `Achtung: „${short(negS.q)}“ steht in den Google-Vorschlägen`);
+      await say(55, `Suche bei Bing nach „${short(q)}“`);
+      const bj = await serp({ engine: "bing", q, cc: gl.toUpperCase() }).catch(() => ({} as J));
+      (Array.isArray(bj.organic_results) ? bj.organic_results : []).slice(0, 10).forEach((r: J, k: number) => add("bing", k + 1, r));
+      await say(60, `Durchsuche Google News nach „${short(name)}“`);
+      const nj = await serp({ engine: "google_news", q: `"${name}"`, gl, hl: "de" }).catch(() => ({} as J));
+      (Array.isArray(nj.news_results) ? nj.news_results : []).slice(0, 10).forEach((r: J, k: number) => add("news", k + 1, { ...r, snippet: r.snippet || r.source?.name || "" }));
+      // Erwähnungen ohne Ort und ohne eigene Website: findet Presse/Magazin-Artikel, die bei „Name + Ort“ untergehen
+      await say(62, `Suche Artikel und Erwähnungen über „${short(name)}“ im ganzen Netz`);
+      for (let pg = 0; pg < 2; pg++) {
+        const mj = await serp({ engine: "google", q: `"${name}"${own0 ? " -site:" + own0 : ""}`, gl, hl: "de", num: "10", start: String(pg * 10) }).catch(() => ({} as J));
+        (Array.isArray(mj.organic_results) ? mj.organic_results : []).forEach((r: J, k: number) => add("mention", pg * 10 + k + 1, r));
+      }
+      kg = gPages[0]?.knowledge_graph as J | undefined;
     }
+    const itemsRaw = items.map((x) => ({ ...x }));
     await say(64, `${items.filter((x) => x.src === "mention" || x.src === "news").length} Erwähnungen gefunden · lese jetzt die neuesten Google-Bewertungen`);
     const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
     if (loc.place_id) {
@@ -663,7 +682,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (site) await say(74, au.metrics?.lcp ? `${host(site)}: fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
     // Suchbegriffe, mit denen Kunden suchen (ohne Firmennamen) → Platz bei Google und Maps
     const norm = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9äöüß]/g, "");
-    const kwPromise: Promise<Kw[]> = (async () => {
+    const kwPromise: Promise<Kw[]> = cache && Array.isArray(cache.kws) && cache.kws.length ? Promise.resolve(cache.kws as Kw[]) : (async () => {
       const ctxTxt = [loc.type && `Kategorie: ${loc.type}`, city && `Ort: ${city}`, loc.address && `Adresse: ${loc.address}`, hp.title && `Website-Titel: ${hp.title}`, hp.desc && `Website-Beschreibung: ${hp.desc}`,
         ...items.filter((x) => x.src === "google").slice(0, 8).map((x) => `Treffer: ${x.title} – ${x.snippet}`)].filter(Boolean).join("\n");
       const t = await askClaude("Du bist SEO-Berater. Antworte NUR mit JSON.", `Unternehmen: ${name}\n${ctxTxt}\n\nNenne 6–8 Suchbegriffe auf Deutsch, mit denen potenzielle Kunden bei Google nach genau den Leistungen dieses Unternehmens suchen würden – OHNE den Firmennamen. Mische: Branche + Ort, konkrete Leistung + Ort, Leistung + Region/Bezirk. Kurz und realistisch (2–4 Wörter), so wie Menschen tippen.\n{"keywords":["…"]}`, { maxTokens: 400 }).catch(() => "");
@@ -695,7 +714,6 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const social: Social[] = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
     // Profile, die Google im Firmenprofil (Knowledge Panel, Bereich „Profile“) zeigt
-    const kg = gPages[0]?.knowledge_graph as J | undefined;
     const kgLinks: string[] = (Array.isArray(kg?.profiles) ? kg!.profiles : []).map((x: J) => String(x.link || "")).filter(Boolean);
     const kgSeen = !!kg && (Array.isArray(kg.profiles) || !!kg.title);
     for (const l of kgLinks) for (const [net, re] of SOCIAL) if (re.test(l.replace(/^https?:\/\//, "")) && !social.some((s) => s.net === net)) social.push({ net, url: l });
@@ -733,7 +751,9 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     let kiDone = 0;
     const kiTotal = QUESTIONS.length * 3;
     const told = <T,>(ai: string, x: { q: string }, pr: Promise<T>) => pr.then((v) => { kiDone++; void say(78 + Math.round((kiDone / kiTotal) * 8), `${ai} gefragt: „${short(x.q.replace(/„|“/g, ""))}“ (${kiDone} von ${kiTotal})`); return v; });
-    const [claudeAns, gptAns, pplxAns] = await Promise.all([
+    const fromCache = !!(cache && cache.qk === QUESTIONS.map((x) => x.key).join(",") && Array.isArray(cache.claudeAns));
+    if (fromCache) await say(84, `KI-Antworten vom ${cacheDay} übernommen`);
+    const [claudeAns, gptAns, pplxAns]: string[][] = fromCache ? [cache!.claudeAns, cache!.gptAns, cache!.pplxAns] : await Promise.all([
       Promise.all(QUESTIONS.map((x) => told("Claude", x, askClaudeWeb(x.q)))),
       Promise.all(QUESTIONS.map((x) => told("ChatGPT", x, askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
       Promise.all(QUESTIONS.map((x) => told("Perplexity", x, askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
@@ -744,7 +764,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     await say(86, `Ordne ${items.length} Fundstellen ein: positiv, negativ oder andere Firma`);
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
-    const cls = parseJson(await askClaude(
+    const cls = fromCache && cache!.cls ? (cache!.cls as J) : parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F7):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
       `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","sum":"1 Satz Fazit dieser KI in eigenen Worten, max 20 Wörter","answers":[{"sent":"pos|neu|neg","known":true|false,"sum":"1 sachlicher Satz, was die KI zu dieser Frage sagt – in EIGENEN Worten zusammengefasst, max 18 Wörter, KEIN wörtliches Zitat"} – genau 7, in Reihenfolge F1–F7]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","aiOverviewSum":"1 Satz, was die Google KI-Übersicht sagt, eigene Worte, max 20 Wörter (leer wenn keine)","dims":[{"key":"kennen|angebot|serioes|erfahrungen|kritik|beauftragen|besser","sum":"1–2 Sätze: was ALLE KIs zusammen zu diesem Punkt sagen, eigene Worte, max 30 Wörter, kein Zitat"} – genau 7, je Frage F1–F7 einer],"kiSummary":"2–3 Sätze Gesamtfazit, was KI-Systeme insgesamt über das Unternehmen sagen – sachlich, eigene Worte, Kritik zuerst nennen","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
@@ -753,6 +773,12 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
     if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
+    // Neu recherchiert und brauchbar → für eine Woche merken
+    if (!fromCache && cls && [claudeAns, gptAns, pplxAns].some((a) => a.some(Boolean))) {
+      const kwsNow = await kwPromise;
+      await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
+        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, claudeAns, gptAns, pplxAns, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
+    }
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
     for (const x of items) {
       const c = byI.get(x.i);
