@@ -359,7 +359,7 @@ function RepArea({ a, r, onBack, onAsk }) {
             ));
           })()}
           {(r.ki || []).filter((x) => !x.answers).map((x) => <div key={x.name} className="rp-ki big"><span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>{x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}</div>)}
-          <p className="rp-note">{(r.ki || []).some((x) => x.name === "ChatGPT") ? "Gemini und Perplexity kommen als Nächstes dazu." : "ChatGPT konnte diesmal nicht gefragt werden. Gemini und Perplexity kommen als Nächstes dazu."}</p>
+          <p className="rp-note">Gefragt wurden ChatGPT, Claude und Perplexity – jeweils mit den gleichen 5 Fragen, so wie Kunden fragen.</p>
         </section>
       ) : a.key === "web" ? (
         <section className="rp-list">
