@@ -351,6 +351,11 @@ function RepArea({ a, r, onBack, onAsk }) {
         <span className="rp-pill" style={{ background: COLORS[st] }}>{st} · {a.score10}/10</span>
         <p style={{ color: fg }}>{a.text}</p>
       </section>
+      {a.facts && a.facts.length ? (
+        <section className="rp-facts">
+          {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
+        </section>
+      ) : null}
       {a.key === "ki" ? (
         <section className="rp-list">
           {(() => {
@@ -428,11 +433,11 @@ function RepArea({ a, r, onBack, onAsk }) {
           ) : null}
           {a.items.length ? a.items.map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
-              <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : "#bdbdbd" }} />
-              <span className="rp-t"><b>{x.title}</b><span>{x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
+              <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : x.sent === "other" ? "#fff" : "#bdbdbd", boxShadow: x.sent === "other" ? "inset 0 0 0 2px #d4d4d4" : "none" }} />
+              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
               <ExternalLink />
             </a>
-          )) : <div className="rp-empty"><I />Keine Treffer in diesem Bereich.</div>}
+          )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge über Sie gefunden – kein Risiko, aber auch keine Pluspunkte." : a.key === "reviews" ? "Außer Google keine weiteren Bewertungsportale mit Ihrem Namen gefunden." : "In diesem Bereich ist nichts Auffälliges aufgetaucht."}</div>}
         </section>
       )}
       {neg.length && (a.key === "press" || a.key === "search") ? (
