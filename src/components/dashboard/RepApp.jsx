@@ -319,11 +319,11 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
           {r.ki && r.ki.length ? (
             <section className="rp-box">
               <div className="rp-box-h"><b>Was KIs sagen</b></div>
-              {worstFirst(r.ki, (x) => (!x.known ? "neu" : x.sent)).map((x) => (
-                <div key={x.name} className="rp-ki">
-                  <span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>
-                  {x.answers ? <span className="rp-ki-sum">{x.answers.filter((a) => a.sent === "pos").length} von {x.answers.filter((a) => a.sent !== "none").length} Antworten positiv{x.answers.some((a) => a.sent === "neg") ? ` · ${x.answers.filter((a) => a.sent === "neg").length} kritisch` : ""}</span> : null}
-                  {x.sum ? <span className="rp-ki-q">{x.sum}</span> : null}
+              {r.kiSummary ? <p className="rp-ki-q" style={{ marginBottom: 10 }}>{r.kiSummary}</p> : null}
+              {[...kiDimsOf(r)].sort((p, q) => p.score - q.score).slice(0, 4).map((d) => (
+                <div key={d.key} className="rp-dim sm">
+                  <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
+                  <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
                 </div>
               ))}
             </section>
@@ -344,6 +344,22 @@ const AI_INI = { ChatGPT: "G", Claude: "C", Perplexity: "P" };
 const KI_LBL = { kennen: ["Kennen", "Kennst du die Firma?"], serioes: ["Seriös?", "Ist die Firma seriös?"], erfahrungen: ["Erfahrungen", "Welche Erfahrungen haben Kunden gemacht?"], beauftragen: ["Beauftragen?", "Soll ich die Firma beauftragen?"], besser: ["Bessere?", "Gibt es in der Region bessere Anbieter?"] };
 const kiSent = (x) => (!x || x.sent === "none" ? "none" : !x.known ? "neu" : x.sent);
 const kiVal = (x) => (!x.known ? 4 : x.sent === "pos" ? 9 : x.sent === "neg" ? 3 : 6.5);
+const DIM_DEF = [
+  ["kennen", "Bekanntheit", "Kennen KIs Ihr Unternehmen?"], ["angebot", "Leistungen", "Wissen KIs, was Sie anbieten?"], ["serioes", "Seriosität", "Halten KIs Sie für seriös?"],
+  ["erfahrungen", "Kundenerfahrungen", "Was KIs über Erfahrungen von Kunden wissen"], ["kritik", "Kritik & Warnungen", "Nennen KIs Kritik oder Beschwerden?"],
+  ["beauftragen", "Empfehlung", "Würden KIs Sie empfehlen?"], ["besser", "Vergleich mit Mitbewerbern", "Schicken KIs Kunden zur Konkurrenz?"],
+];
+function kiDimsOf(r) {
+  if (Array.isArray(r.kiDims) && r.kiDims.length) return r.kiDims;
+  const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
+  return DIM_DEF.map(([key, name, hint]) => {
+    const ans = ais.flatMap((ai) => ai.answers.filter((x) => x.key === key && x.sent !== "none"));
+    if (!ans.length) return null;
+    const v = (x) => (!x.known ? (key === "kennen" ? 2 : 4) : x.sent === "pos" ? 9 : x.sent === "neg" ? 3 : 6.5);
+    return { key, name, hint, score: Math.round(ans.reduce((s2, x) => s2 + v(x), 0) / ans.length), n: ans.length, neg: ans.filter((x) => x.known && x.sent === "neg").length, sum: "" };
+  }).filter(Boolean);
+}
+const dimCol = (v) => (v >= 8 ? "#15803d" : v >= 5 ? "#b45309" : "#b91c1c");
 function KiTable({ r }) {
   const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
   const [sel, setSel] = React.useState(null); // { qi, ai }
@@ -400,58 +416,39 @@ function KiTable({ r }) {
   );
 }
 /* KI-Antworten, einfach: 1) EIN Satz + Score + das Wichtigste, 2) je KI eine Zeile, 3) Details erst auf Tippen */
-function KiSimple({ r, a }) {
+function KiSimple({ r, a, pending }) {
   const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
-  const [open, setOpen] = React.useState(null);
-  const [q, setQ] = React.useState(null);
   if (!ais.length) return <div className="rp-empty"><Sparkles />Keine KI-Antworten in diesem Scan.</div>;
-  const score = (ai) => { const x = ai.answers.filter((y) => y.sent !== "none"); return x.length ? Math.round(x.reduce((s2, y) => s2 + kiVal(y), 0) / x.length) : null; };
-  const all = ais.flatMap((ai) => ai.answers.filter((x) => x.sent !== "none").map((x) => ({ ...x, ai: ai.name })));
-  const negs = all.filter((x) => kiSent(x) === "neg");
-  const unknown = ais.filter((ai) => ai.answers.filter((x) => x.sent !== "none").every((x) => !x.known));
-  const pos = all.filter((x) => kiSent(x) === "pos").length;
-  const head = negs.length ? (negs.length === 1 ? "Eine KI äußert sich kritisch über Sie" : `KIs äußern sich ${negs.length}× kritisch über Sie`)
-    : pos / Math.max(1, all.length) >= 0.6 ? "KIs empfehlen Sie überwiegend" : unknown.length ? "KIs kennen Sie noch kaum" : "KIs äußern sich neutral über Sie";
-  const top = negs[0] || (unknown.length ? null : all.filter((x) => kiSent(x) === "pos")[0]);
-  const tone = negs.length ? "bad" : pos / Math.max(1, all.length) >= 0.6 ? "good" : "mid";
-  const sc = (v) => (v == null ? "#9a9a9a" : v >= 8 ? "#15803d" : v >= 5 ? "#b45309" : "#b91c1c");
-  const verdict = (ai) => { const x = ai.answers.filter((y) => y.sent !== "none"); if (!x.length) return "keine Antwort"; if (x.some((y) => kiSent(y) === "neg")) return "erwähnt Kritik"; if (x.every((y) => !y.known)) return "kennt Sie kaum"; if (x.filter((y) => kiSent(y) === "pos").length >= 3) return "empfiehlt Sie"; return "neutral"; };
+  const dims = [...kiDimsOf(r)].sort((p, q) => p.score - q.score);
+  const all = ais.flatMap((ai) => ai.answers.filter((x) => x.sent !== "none"));
+  const negs = all.filter((x) => x.known && x.sent === "neg").length;
+  const pos = all.filter((x) => x.known && x.sent === "pos").length;
+  const unknown = ais.every((ai) => ai.answers.filter((x) => x.sent !== "none").every((x) => !x.known));
+  const head = negs ? (negs === 1 ? "Eine KI-Antwort ist kritisch" : `KIs äußern sich ${negs}× kritisch über Sie`) : pos / Math.max(1, all.length) >= 0.6 ? "KIs empfehlen Sie überwiegend" : unknown ? "KIs kennen Sie noch kaum" : "KIs äußern sich neutral über Sie";
+  const tone = negs ? "bad" : pos / Math.max(1, all.length) >= 0.6 ? "good" : "mid";
   const missing = (a.facts || []).find((f) => f.label === "Nicht geantwortet");
-  const order = [...ais].sort((p, q2) => (score(p) ?? 99) - (score(q2) ?? 99));
+  const gov = (r.ki || []).some((x) => x.name === "Google KI-Übersicht");
+  const names = ais.map((x) => x.name);
   return (
     <>
       <section className={"rp-ki-hero t-" + tone}>
         <div className="rp-ki-hero-top">
           <div><span className="rp-k">KI-Antworten</span><b>{head}</b></div>
-          <span className="rp-ki-score" style={{ color: sc(a.score10) }}>{a.score10}<small>/10</small></span>
+          <span className="rp-ki-score" style={{ color: dimCol(a.score10) }}>{a.score10}<small>/10</small></span>
         </div>
-        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : top && top.sum ? <p className="rp-ki-top"><em>{top.ai} · {(KI_LBL[top.key] || [top.q, top.q])[1]}</em>{top.sum}</p> : null}
-        <span className="rp-ki-meta">{all.length} Antworten von {ais.map((x) => x.name).join(", ")}{missing ? ` · ${missing.value} hat nicht geantwortet` : ""}</span>
+        {r.kiSummary ? <p className="rp-ki-top">{r.kiSummary}</p> : pending ? <p className="rp-ki-top rp-wait"><Loader className="spin" />Zusammenfassung wird erstellt …</p> : null}
+        <span className="rp-ki-meta">Zusammengefasst aus {all.length} Antworten von {names.length > 1 ? names.slice(0, -1).join(", ") + " und " + names[names.length - 1] : names[0]}{gov ? " + Google KI-Übersicht" : ""}{missing ? ` · ${missing.value} hat nicht geantwortet` : ""}</span>
       </section>
-      <section className="rp-ki-list">
-        {order.map((ai) => { const v = score(ai); const isOpen = open === ai.name; return (
-          <div key={ai.name} className={"rp-ki-row" + (isOpen ? " open" : "")}>
-            <button type="button" className="rp-ki-rh" onClick={() => { setOpen(isOpen ? null : ai.name); setQ(null); }}>
-              <i style={{ background: AI_COL[ai.name] || "#111" }}>{AI_INI[ai.name] || ai.name[0]}</i>
-              <span className="rp-ki-rt"><b>{ai.name}</b><span>{verdict(ai)}{ai.sum ? " · " + ai.sum : ""}</span></span>
-              <span className="rp-ki-dots">{ai.answers.map((x) => <i key={x.key} className={"s-" + kiSent(x)} />)}</span>
-              <em style={{ color: sc(v) }}>{v == null ? "–" : v + "/10"}</em>
-              <ChevronDown className="rp-ki-chev" />
-            </button>
-            {isOpen ? (
-              <div className="rp-ki-qs">
-                {worstFirst(ai.answers, kiSent).map((x) => { const L = KI_LBL[x.key] || [x.q, x.q]; return (
-                  <div key={x.key} className="rp-ki-q2">
-                    <span className="h"><i className={"s-" + kiSent(x)} /><b>{L[1]}</b><em className={"s-" + kiSent(x)}>{kiSent(x) === "pos" ? "positiv" : kiSent(x) === "neg" ? "kritisch" : kiSent(x) === "none" ? "keine Antwort" : !x.known ? "kennt Sie kaum" : "neutral"}</em></span>
-                    {x.sum ? <span className="qt">{x.sum}</span> : null}
-                  </div>
-                ); })}
-              </div>
-            ) : null}
+      <section className="rp-dims">
+        {dims.map((d) => (
+          <div key={d.key} className="rp-dim">
+            <div className="rp-dim-h"><b>{d.name}</b><em style={{ color: dimCol(d.score) }}>{d.score}<small>/10</small></em></div>
+            <div className="rp-dim-bar"><i style={{ width: d.score * 10 + "%", background: dimCol(d.score) }} /></div>
+            <p>{d.sum || (pending ? "Zusammenfassung wird erstellt …" : d.hint)}</p>
           </div>
-        ); })}
+        ))}
       </section>
-      <p className="rp-note">Jede KI bekam dieselben 5 Fragen, die Kunden typischerweise stellen. KI antippen für die Zusammenfassung je Frage.</p>
+      <p className="rp-note">Alle KIs bekamen dieselben Fragen, die Kunden typischerweise stellen. Pro Thema sehen Sie, was sie zusammengenommen sagen – schlechteste Themen zuerst.</p>
     </>
   );
 }
@@ -472,7 +469,7 @@ function RepArea({ a, r, onBack, onAsk }) {
       {a.key === "ki" ? null : (
       <section className="rp-status" style={{ background: bg }}>
         <span className="rp-pill" style={{ background: COLORS[st] }}>{st} · {a.score10}/10</span>
-        <p style={{ color: fg }}>{a.text}</p>
+        <p style={{ color: fg }}>{(r.areaSums && r.areaSums[a.key]) || a.text}</p>
       </section>
       )}
       {a.facts && a.facts.length && a.key !== "ki" && !(a.key === "reviews" && r.gbp) ? (
@@ -480,7 +477,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
         </section>
       ) : null}
-      {a.key === "ki" ? <KiSimple r={r} a={a} /> : a.key === "social" ? (
+      {a.key === "ki" ? <KiSimple r={r} a={a} pending={!!r.kiPending} /> : a.key === "social" ? (
         <section className="rp-list">
           <div className="rp-box-h"><b>Ihre Profile</b><span>{a.items.length} gefunden</span></div>
           {a.items.length ? [...a.items].sort((p, q) => (p.inGoogle === false ? 0 : p.inGoogle == null ? 1 : 2) - (q.inGoogle === false ? 0 : q.inGoogle == null ? 1 : 2)).map((x, i) => (

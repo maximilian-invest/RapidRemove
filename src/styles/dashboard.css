@@ -1401,3 +1401,20 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-gbp-h .rp-t{flex:1;min-width:0}
 .rra .rp-gbp-h em{font-style:normal;font-weight:700;font-size:14px;color:#111}
 .rra .rp-gbp-h>svg{width:17px;height:17px;color:#9a9a9a;flex:none}
+
+/* Reputation: KI nach Themen */
+.rra .rp-dims{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.rra .rp-dim{background:#f6f6f6;border-radius:18px;padding:16px 18px}
+.rra .rp-dim-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.rra .rp-dim-h b{font-size:16px;font-weight:700}
+.rra .rp-dim-h em{font-style:normal;font-weight:800;font-size:18px}
+.rra .rp-dim-h em small{font-size:12px;font-weight:600;opacity:.7}
+.rra .rp-dim-bar{height:6px;border-radius:3px;background:#e6e6e6;margin:9px 0 10px;overflow:hidden}
+.rra .rp-dim-bar i{display:block;height:100%;border-radius:3px}
+.rra .rp-dim p{margin:0;font-size:14px;line-height:1.5;color:#4a4a4a}
+.rra .rp-dim.sm{background:none;padding:6px 0;border-radius:0}
+.rra .rp-dim.sm .rp-dim-h b{font-size:14px;font-weight:600}
+.rra .rp-dim.sm .rp-dim-h em{font-size:14px}
+.rra .rp-dim.sm .rp-dim-bar{margin:6px 0 2px;height:5px}
+.rra .rp-wait{display:flex;align-items:center;gap:8px;color:#8a8a8a}
+.rra .rp-wait svg{width:15px;height:15px}
