@@ -52,6 +52,8 @@ async function init(): Promise<void> {
 
 /* ---------------- Externe Quellen ---------------- */
 const GDOM: Record<string, string> = { at: "google.at", de: "google.de", ch: "google.ch", li: "google.li", it: "google.it", lu: "google.lu" };
+/* Postgres-jsonb verträgt kein \u0000 und keine halben Unicode-Zeichen (kommen aus gelesenen Webseiten) */
+const pgJson = (v: unknown) => JSON.stringify(v).replace(/\\u0000/g, "").replace(/\\ud[89ab][0-9a-f]{2}(?!\\ud[c-f][0-9a-f]{2})/gi, "").replace(/(?<!\\ud[89ab][0-9a-f]{2})\\ud[c-f][0-9a-f]{2}/gi, "");
 /* DataForSEO (Basic Auth: DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD) – Suchvolumen, Ranking-Keywords, Backlinks, Erwähnungen */
 const dfsOn = () => !!(process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD);
 const DFS_LOC: Record<string, number> = { at: 2040, de: 2276, ch: 2756, li: 2438, it: 2380, lu: 2442 };
@@ -306,7 +308,7 @@ async function backfillKiSums(scanId: string, r: J): Promise<void> {
     await Promise.all(jobs.map((p) => p.catch((e) => console.warn("Rep-Scan Zusammenfassung", (e as Error).message))));
     if (!r.areaSums) r.areaSums = {};
     r.sumV = SUM_V;
-    await pool.query(`UPDATE rep_scans SET result=$2 WHERE id=$1`, [scanId, JSON.stringify(r)]);
+    await pool.query(`UPDATE rep_scans SET result=$2 WHERE id=$1`, [scanId, pgJson(r)]);
     console.log("Rep-Scan Zusammenfassungen nachgetragen:", scanId);
   } catch (e) { console.warn("Rep-Scan Zusammenfassung", (e as Error).message); }
   finally { kiBusy.delete(scanId); }
@@ -1075,7 +1077,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     if (!fromCache && cls && [claudeAns, gptAns, pplxAns, gemAns].some((a) => a.some(Boolean))) {
       const kwsNow = await kwPromise;
       await pool!.query(`INSERT INTO rep_cache (location_id, data, created_at) VALUES ($1,$2,now()) ON CONFLICT (location_id) DO UPDATE SET data=EXCLUDED.data, created_at=now()`,
-        [loc.id, JSON.stringify({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, backlinkSum, hits: Object.fromEntries(await Promise.all([...checker.memo.entries()].map(async ([u, p2]) => [u, await p2] as const))), claudeAns, gptAns, pplxAns, gemAns, claudeSrc, gptSrc, pplxSrc, gemSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
+        [loc.id, pgJson({ v: CACHE_V, q, qk: QUESTIONS.map((x) => x.key).join(","), items: itemsRaw, aiOverview, suggestions, kg: kg || null, kws: kwsNow, backlinkSum, hits: Object.fromEntries(await Promise.all([...checker.memo.entries()].map(async ([u, p2]) => [u, await p2] as const))), claudeAns, gptAns, pplxAns, gemAns, claudeSrc, gptSrc, pplxSrc, gemSrc, cls })]).catch((e) => console.warn("Rep-Scan Cache", (e as Error).message));
     }
     const byI = new Map<number, J>((Array.isArray(cls?.items) ? cls!.items : []).map((x: J) => [Number(x.i), x]));
     for (const x of items) {
@@ -1122,7 +1124,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     await say(97, "Schreibe die Zusammenfassungen für jeden Bereich");
     result.sumV = SUM_V;
     result.areaSums = await summarizeAreas(result).catch((e) => { console.warn("Rep-Scan Bereichs-Zusammenfassung", (e as Error).message); return {}; });
-    await pool!.query(`UPDATE rep_scans SET status='done', progress=100, step='fertig', score=$2, result=$3, finished_at=now() WHERE id=$1`, [scanId, result.score, JSON.stringify(result)]);
+    await pool!.query(`UPDATE rep_scans SET status='done', progress=100, step='fertig', score=$2, result=$3, finished_at=now() WHERE id=$1`, [scanId, result.score, pgJson(result)]);
   } catch (e) {
     console.error("Rep-Scan fehlgeschlagen", e);
     await pool!.query(`UPDATE rep_scans SET status='error', error=$2, finished_at=now() WHERE id=$1`, [scanId, String((e as Error).message || e).slice(0, 300)]).catch(() => {});
