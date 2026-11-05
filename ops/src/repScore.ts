@@ -800,7 +800,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const national = scope === "ueberregional";
     if (national) q = name;
     // Recherche im Netz ändert sich nicht stündlich → höchstens einmal pro Woche neu (spart Such- und KI-Kosten)
-    const CACHE_V = 11;
+    const CACHE_V = 12;
     const cRow = await pool!.query(`SELECT data, created_at FROM rep_cache WHERE location_id=$1 AND created_at > now() - make_interval(days => $2)`, [loc.id, Math.max(0, Number(process.env.REP_CACHE_DAYS ?? 7))]).catch(() => ({ rows: [] as J[] }));
     const cache: J | null = cRow.rows[0] && cRow.rows[0].data?.q === q && cRow.rows[0].data?.v === CACHE_V ? cRow.rows[0].data : null;
     const cacheDay = cache ? new Date(cRow.rows[0].created_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) : "";
@@ -959,6 +959,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const ll = g0 && g0.lat && g0.lng ? `@${g0.lat},${g0.lng},12z` : "";
       const isMe = (x: J) => (loc.place_id && x.place_id === loc.place_id) || (!!norm(x.title) && (norm(x.title) === norm(name) || norm(x.title) === norm(fullName)));
       let done = 0;
+      let dbgLogged = false;
       // höchstens 3 Begriffe gleichzeitig + 1 Wiederholung – sonst laufen SerpApi-Abfragen in Timeouts
       const retry = async (pp: Record<string, string>): Promise<J | null> => {
         for (let t2 = 0; t2 < 2; t2++) { try { return await serp(pp, 75_000); } catch (e) { if (/Kontingent/.test((e as Error).message)) return null; console.warn("Rep-Scan Suchbegriff", pp.engine, pp.q, "Versuch", t2 + 1, (e as Error).message); } }
@@ -968,9 +969,22 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         const mP = national ? Promise.resolve({} as J) : retry({ engine: "google_maps", q: q0, hl: "de", type: "search", ...(ll ? { ll } : {}) });
         // Google Platz 1–30: nächste Seite nur abfragen, wenn die eigene Website noch nicht gefunden ist
         let g: J = {}; let gPos: number | null = null; let gErr = false; let top10: { p: number; u: string; t: string }[] = [];
-        const dr = dfsOn() ? await dfs("serp/google/organic/live/advanced", { keyword: q0, location_code: DFS_LOC[gl] || 2040, language_code: "de", device: "desktop", depth: 30 }, 75_000) : null;
+        let dr = dfsOn() ? await dfs("serp/google/organic/live/advanced", { keyword: q0, location_code: DFS_LOC[gl] || 2040, language_code: "de", device: "desktop", depth: 30 }, 75_000) : null;
+        // DataForSEO liefert teils Google-Weiterleitungslinks statt der Ziel-URL → echte Adresse herausholen
+        const realUrl = (x: J): string => {
+          const u = String(x.url || "");
+          if (/(^|\.)google\.[a-z.]+$/i.test(host(u)) && !/support\.google|business\.google|developers\.google/i.test(host(u))) {
+            try { const q2 = new URL(u).searchParams; const t2 = q2.get("q") || q2.get("url") || q2.get("u"); if (t2 && /^https?:\/\//.test(t2)) return t2; } catch { /* */ }
+            if (x.domain && !/google\./i.test(String(x.domain))) return `https://${x.domain}${x.breadcrumb && String(x.breadcrumb).includes("›") ? "" : ""}`;
+          }
+          return u;
+        };
+        if (dr && Array.isArray(dr.items) && !dbgLogged) { dbgLogged = true; console.log("Rep-Scan DataForSEO SERP Beispiel:", JSON.stringify((dr.items as J[]).filter((x) => x.type === "organic").slice(0, 2).map((x) => ({ url: x.url, domain: x.domain, title: x.title, rank: x.rank_group }))).slice(0, 600)); }
+        const dOrg = dr && Array.isArray(dr.items) ? (dr.items as J[]).filter((x) => x.type === "organic" && (x.url || x.domain)).map((x) => ({ ...x, url: realUrl(x) }) as J) : ([] as J[]);
+        // nur Google-Adressen = Antwort unbrauchbar → SerpApi nehmen
+        if (dr && dOrg.length && dOrg.every((x) => /(^|\.)google\./i.test(host(String(x.url))))) { console.warn("Rep-Scan DataForSEO SERP nur Google-Links – nehme SerpApi", q0); dr = null; }
         if (dr && Array.isArray(dr.items)) {
-          const org = (dr.items as J[]).filter((x) => x.type === "organic" && x.url);
+          const org = dOrg;
           top10 = org.filter((x) => Number(x.rank_group) <= 10).map((x) => ({ p: Number(x.rank_group), u: String(x.url), t: String(x.title || "").slice(0, 120) }));
           const me = own0 ? org.find((x) => host(String(x.url)).endsWith(own0)) : undefined;
           if (me) gPos = Number(me.rank_group) || null;
