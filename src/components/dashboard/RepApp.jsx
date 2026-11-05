@@ -360,8 +360,8 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
 }
 
 /* KI-Antworten: Ampel-Tabelle (Fragen × KIs) mit Einzelscore je KI; Feld antippen → ganze Antwort */
-const AI_COL = { ChatGPT: "#10a37f", Claude: "#d97757", Perplexity: "#20808d" };
-const AI_INI = { ChatGPT: "G", Claude: "C", Perplexity: "P" };
+const AI_COL = { ChatGPT: "#10a37f", Claude: "#d97757", Gemini: "#4285f4", Perplexity: "#20808d" };
+const AI_INI = { ChatGPT: "G", Claude: "C", Gemini: "Ge", Perplexity: "P" };
 const KI_LBL = { kennen: ["Kennen", "Kennst du die Firma?"], serioes: ["Seriös?", "Ist die Firma seriös?"], erfahrungen: ["Erfahrungen", "Welche Erfahrungen haben Kunden gemacht?"], beauftragen: ["Beauftragen?", "Soll ich die Firma beauftragen?"], besser: ["Bessere?", "Gibt es in der Region bessere Anbieter?"] };
 const kiSent = (x) => (!x || x.sent === "none" ? "none" : !x.known ? "neu" : x.sent);
 const kiVal = (x) => (!x.known ? 4 : x.sent === "pos" ? 9 : x.sent === "neg" ? 3 : 6.5);
@@ -552,7 +552,7 @@ function KwRow({ k }) {
   return (
     <div className={"rp-kw-w" + (on ? " on" : "")}>
       <button type="button" className="rp-kw" onClick={() => n && setOn(!on)} disabled={!n}>
-        <b>{k.q}</b>
+        <span className="rp-kw-q"><b>{k.q}</b>{k.vol != null ? <small>≈ {k.vol.toLocaleString("de-AT")} Suchen/Monat</small> : null}</span>
         {k.mine ? <span className="rp-kw-c" style={{ color: n >= 3 ? "#15803d" : n >= 1 ? "#b45309" : "#b91c1c" }}><small>Seite 1</small>{n}/{of}</span> : null}
         <span className="rp-kw-c" style={{ color: k.err ? "#9a9a9a" : rankCol(k.g) }}><small>Website</small>{k.err ? "?" : k.g ? "#" + k.g : "–"}</span>
         {k.noMaps ? null : <span className="rp-kw-c" style={{ color: rankCol(k.pack ?? k.maps) }}><small>Maps</small>{k.pack ? "#" + k.pack : k.maps ? "#" + k.maps : "–"}</span>}
@@ -713,7 +713,7 @@ function RepArea({ a, r, onBack, onAsk }) {
           {a.items.length ? worstFirst(a.items).map((x, i) => (
             <a key={i} className="rp-li" href={x.link} target="_blank" rel="noopener noreferrer">
               <i style={{ background: x.sent === "pos" ? "#16a34a" : x.sent === "neg" ? "#e23b3b" : x.sent === "other" ? "#fff" : "#bdbdbd", boxShadow: x.sent === "other" ? "inset 0 0 0 2px #d4d4d4" : "none" }} />
-              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{READ_LBL[x.read] && x.read !== "own" ? " · " + READ_LBL[x.read] : ""}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
+              <span className="rp-t"><b>{x.title}</b><span>{x.sent === "other" ? "andere Firma · " : ""}{x.host}{READ_LBL[x.read] && x.read !== "own" ? " · " + READ_LBL[x.read] : ""}{x.src === "google" && x.pos ? ` · Google Seite ${Math.ceil(x.pos / 10)}, Platz ${x.pos}` : x.src === "bing" ? ` · Bing Platz ${x.pos}` : x.src === "news" ? " · News" : x.src === "link" ? " · verlinkt Sie" : x.src === "web" ? " · Erwähnung im Netz" : ""}{x.date ? " · " + x.date : ""}{x.note ? " · " + x.note : ""}</span></span>
               <ExternalLink />
             </a>
           )) : <div className="rp-empty"><I />{a.key === "press" ? "Keine Artikel oder Forenbeiträge gefunden." : "Keine Treffer."}</div>}
