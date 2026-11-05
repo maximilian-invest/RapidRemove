@@ -115,6 +115,29 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
   if (opts.search) { try { return await call(true); } catch (e) { console.warn("Rep-Scan: Websuche nicht verfügbar, ohne Suche:", (e as Error).message); } }
   return call(false);
 }
+/** ChatGPT (OpenAI Responses API, mit Websuche falls verfügbar). Modell: OPENAI_MODEL, Standard gpt-5-mini. */
+async function askChatGPT(prompt: string): Promise<string> {
+  const key = (process.env.OPENAI_API_KEY || "").trim();
+  if (!key) return "";
+  const model = process.env.OPENAI_MODEL || "gpt-5-mini";
+  const tries: (J[] | null)[] = [[{ type: "web_search" }], [{ type: "web_search_preview" }], null];
+  for (const tools of tries) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST", signal: AbortSignal.timeout(120_000),
+        headers: { "content-type": "application/json", authorization: "Bearer " + key },
+        body: JSON.stringify({ model, input: prompt, ...(tools ? { tools } : {}) }),
+      });
+      const j = (await res.json().catch(() => ({}))) as J;
+      if (!res.ok) { console.warn("Rep-Scan ChatGPT", res.status, String(j.error?.message || "").slice(0, 160)); if (res.status === 401 || res.status === 429) return ""; continue; }
+      if (typeof j.output_text === "string" && j.output_text.trim()) return j.output_text.trim();
+      const txt = (Array.isArray(j.output) ? j.output : []).filter((o: J) => o.type === "message")
+        .flatMap((o: J) => (Array.isArray(o.content) ? o.content : [])).filter((c: J) => c.type === "output_text").map((c: J) => c.text || "").join("").trim();
+      if (txt) return txt;
+    } catch (e) { console.warn("Rep-Scan ChatGPT", (e as Error).message); }
+  }
+  return "";
+}
 function parseJson(t: string): J | null {
   const s = t.replace(/^```(?:json)?/m, "").replace(/```\s*$/m, "");
   const a = s.indexOf("{"), b = s.lastIndexOf("}");
@@ -214,8 +237,8 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
     else if (x.sent === "pos") press += 0.5;
   }
   // KI
-  const k = c.ki[0];
-  let ki = fix.ki ? 9 : !k ? 5 : !k.known ? 4 : k.sent === "pos" ? 9 : k.sent === "neg" ? 3 : 6.5;
+  const one = (k: Ctx["ki"][number]) => (!k.known ? 4 : k.sent === "pos" ? 9 : k.sent === "neg" ? 3 : 6.5);
+  let ki = fix.ki ? 9 : !c.ki.length ? 5 : c.ki.reduce((s, k) => s + one(k), 0) / c.ki.length;
   if (c.aiOverview) ki += c.aiOverviewSent === "neg" ? -3 : c.aiOverviewSent === "pos" ? 1 : 0;
   // Social
   const nets = new Set(c.social.map((s) => s.net));
@@ -251,7 +274,8 @@ export function evaluate(c: Ctx): J {
   const negSug = c.suggestions.filter((s) => s.neg);
   if (negSug.length) todos.push({ key: "suggest", title: `„${negSug[0].q}“ in den Google-Vorschlägen`, who: "wir", action: "vorschlag", points: gain({ suggest: true }), area: "search" });
   if (c.reviews.unanswered > 0) todos.push({ key: "answer", title: `${c.reviews.unanswered} von ${c.reviews.total} neuesten Bewertungen ohne Antwort`, who: "selbst", action: "antworten", points: gain({ answer: true }), area: "reviews" });
-  if (c.ki[0] && (!c.ki[0].known || c.ki[0].sent !== "pos")) todos.push({ key: "ki", title: c.ki[0].known ? "KI-Antworten über Sie sind nicht positiv" : "KIs kennen Sie noch kaum", who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
+  const kiBad = c.ki.filter((k) => !k.known || k.sent !== "pos");
+  if (kiBad.length) todos.push({ key: "ki", title: kiBad.every((k) => !k.known) ? `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "kennen" : "kennt"} Sie noch kaum` : `${kiBad.map((k) => k.name).join(" und ")} ${kiBad.length > 1 ? "antworten" : "antwortet"} nicht positiv über Sie`, who: "wir", action: "ki", points: gain({ ki: true }), area: "ki" });
   if (new Set(c.social.map((s) => s.net)).size < 3) todos.push({ key: "social", title: c.social.length ? "Nur wenige Social-Media-Profile gefunden" : "Keine Social-Media-Profile gefunden", who: "selbst", action: "social", points: gain({ social: true }), area: "social" });
   if (c.web.url && ((c.web.perf != null && c.web.perf < 70) || (c.web.seo != null && c.web.seo < 85))) todos.push({ key: "web", title: "Website ist langsam oder schlecht auffindbar", who: "wir", action: "website", points: gain({ web: true }), area: "web" });
   if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
@@ -344,17 +368,19 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     const social = [...hp.social];
     for (const x of items) for (const [net, re] of SOCIAL) if (!social.some((s) => s.net === net) && re.test(x.link.replace(/^https?:\/\//, "")) && x.about !== "other") social.push({ net, url: x.link });
     await setStep(scanId, 78, "KI-Antworten");
-    const kiText = await askClaude(
-      "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 3–5 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.",
-      `Was weißt du über „${name}“${city ? " in " + city : ""}? Würdest du das Unternehmen empfehlen?`, { search: true, maxTokens: 800 },
-    ).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
+    const kiQ = `Was weißt du über „${name}“${city ? " in " + city : ""}? Würdest du das Unternehmen empfehlen?`;
+    const [kiText, gptText] = await Promise.all([
+      askClaude("Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 3–5 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.", kiQ, { search: true, maxTokens: 800 })
+        .catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; }),
+      askChatGPT(kiQ + " Antworte auf Deutsch in 3–5 Sätzen."),
+    ]);
     await setStep(scanId, 86, "Treffer einordnen");
     const ownHost = host(site);
     const list = items.slice(0, 90).map((x) => ({ i: x.i, src: x.src, pos: x.pos, title: x.title, snippet: x.snippet, host: host(x.link) }));
     const cls = parseJson(await askClaude(
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
-      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nKI-Antwort auf „Was weißt du über das Unternehmen?“:\n${kiText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
-      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","quote":"1 Satz aus der KI-Antwort"},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
+      `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntwort von Claude auf „Was weißt du über das Unternehmen?“:\n${kiText || "(keine)"}\n\nAntwort von ChatGPT auf dieselbe Frage:\n${gptText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
+      `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","quote":"1 Satz aus der Claude-Antwort"},"gpt":{"known":true|false,"sent":"pos|neu|neg","quote":"1 Satz aus der ChatGPT-Antwort"},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
       `Regeln: "about":"other" wenn der Treffer klar ein anderes Unternehmen/eine andere Person meint. "own" = eigene Website/eigene Profile. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
       { maxTokens: 6000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
@@ -368,7 +394,11 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       if (ownHost && h.endsWith(ownHost)) x.type = "own";
       x.note = c?.note || "";
     }
-    const ki = kiText ? [{ name: "Claude (mit Websuche)", known: cls?.ki?.known !== false, sent: String(cls?.ki?.sent || "neu"), quote: String(cls?.ki?.quote || kiText.split(/(?<=[.!?])\s/)[0] || "").slice(0, 300) }] : [];
+    const first = (t: string) => t.split(/(?<=[.!?])\s/)[0] || "";
+    const ki = [
+      ...(gptText ? [{ name: "ChatGPT", known: cls?.gpt?.known !== false, sent: String(cls?.gpt?.sent || "neu"), quote: String(cls?.gpt?.quote || first(gptText)).slice(0, 300) }] : []),
+      ...(kiText ? [{ name: "Claude", known: cls?.ki?.known !== false, sent: String(cls?.ki?.sent || "neu"), quote: String(cls?.ki?.quote || first(kiText)).slice(0, 300) }] : []),
+    ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, ki, reviews,
       web: { url: site, perf: ps.perf, seo: ps.seo, https: hp.https, title: hp.title, desc: hp.desc, ok: hp.ok }, social, summary: String(cls?.summary || ""),

@@ -358,7 +358,7 @@ function RepArea({ a, r, onBack, onAsk }) {
       {a.key === "ki" ? (
         <section className="rp-list">
           {(r.ki || []).map((x) => <div key={x.name} className="rp-ki big"><span className="rp-ki-h"><b>{x.name}</b><em className={"s-" + x.sent}>{!x.known ? "kennt Sie kaum" : x.sent === "pos" ? "positiv" : x.sent === "neg" ? "kritisch" : "neutral"}</em></span>{x.quote ? <span className="rp-ki-q">„{x.quote}“</span> : null}</div>)}
-          <p className="rp-note">ChatGPT, Gemini und Perplexity kommen als Nächstes dazu.</p>
+          <p className="rp-note">{(r.ki || []).some((x) => x.name === "ChatGPT") ? "Gemini und Perplexity kommen als Nächstes dazu." : "ChatGPT, Gemini und Perplexity kommen als Nächstes dazu."}</p>
         </section>
       ) : a.key === "web" ? (
         <section className="rp-list">
