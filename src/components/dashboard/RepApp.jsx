@@ -398,6 +398,62 @@ function KiTable({ r }) {
     </section>
   );
 }
+/* KI-Antworten, einfach: 1) EIN Satz + Score + das Wichtigste, 2) je KI eine Zeile, 3) Details erst auf Tippen */
+function KiSimple({ r, a }) {
+  const ais = (r.ki || []).filter((x) => x.answers && x.answers.length);
+  const [open, setOpen] = React.useState(null);
+  const [q, setQ] = React.useState(null);
+  if (!ais.length) return <div className="rp-empty"><Sparkles />Keine KI-Antworten in diesem Scan.</div>;
+  const score = (ai) => { const x = ai.answers.filter((y) => y.sent !== "none"); return x.length ? Math.round(x.reduce((s2, y) => s2 + kiVal(y), 0) / x.length) : null; };
+  const all = ais.flatMap((ai) => ai.answers.filter((x) => x.sent !== "none").map((x) => ({ ...x, ai: ai.name })));
+  const negs = all.filter((x) => kiSent(x) === "neg");
+  const unknown = ais.filter((ai) => ai.answers.filter((x) => x.sent !== "none").every((x) => !x.known));
+  const pos = all.filter((x) => kiSent(x) === "pos").length;
+  const head = negs.length ? (negs.length === 1 ? "Eine KI äußert sich kritisch über Sie" : `KIs äußern sich ${negs.length}× kritisch über Sie`)
+    : pos / Math.max(1, all.length) >= 0.6 ? "KIs empfehlen Sie überwiegend" : unknown.length ? "KIs kennen Sie noch kaum" : "KIs äußern sich neutral über Sie";
+  const top = negs[0] || (unknown.length ? null : all.filter((x) => kiSent(x) === "pos")[0]);
+  const tone = negs.length ? "bad" : pos / Math.max(1, all.length) >= 0.6 ? "good" : "mid";
+  const sc = (v) => (v == null ? "#9a9a9a" : v >= 8 ? "#15803d" : v >= 5 ? "#b45309" : "#b91c1c");
+  const verdict = (ai) => { const x = ai.answers.filter((y) => y.sent !== "none"); if (!x.length) return "keine Antwort"; if (x.some((y) => kiSent(y) === "neg")) return "erwähnt Kritik"; if (x.every((y) => !y.known)) return "kennt Sie kaum"; if (x.filter((y) => kiSent(y) === "pos").length >= 3) return "empfiehlt Sie"; return "neutral"; };
+  const missing = (a.facts || []).find((f) => f.label === "Nicht geantwortet");
+  const order = [...ais].sort((p, q2) => (score(p) ?? 99) - (score(q2) ?? 99));
+  return (
+    <>
+      <section className={"rp-ki-hero t-" + tone}>
+        <div className="rp-ki-hero-top">
+          <div><span className="rp-k">KI-Antworten</span><b>{head}</b></div>
+          <span className="rp-ki-score" style={{ color: sc(a.score10) }}>{a.score10}<small>/10</small></span>
+        </div>
+        {top ? <p className="rp-ki-top"><em>{top.ai} auf „{(KI_LBL[top.key] || [top.q, top.q])[1]}“</em>„{top.quote}“</p> : null}
+        <span className="rp-ki-meta">{all.length} Antworten von {ais.map((x) => x.name).join(", ")}{missing ? ` · ${missing.value} hat nicht geantwortet` : ""}</span>
+      </section>
+      <section className="rp-ki-list">
+        {order.map((ai) => { const v = score(ai); const isOpen = open === ai.name; return (
+          <div key={ai.name} className={"rp-ki-row" + (isOpen ? " open" : "")}>
+            <button type="button" className="rp-ki-rh" onClick={() => { setOpen(isOpen ? null : ai.name); setQ(null); }}>
+              <i style={{ background: AI_COL[ai.name] || "#111" }}>{AI_INI[ai.name] || ai.name[0]}</i>
+              <span className="rp-ki-rt"><b>{ai.name}</b><span>{verdict(ai)}</span></span>
+              <span className="rp-ki-dots">{ai.answers.map((x) => <i key={x.key} className={"s-" + kiSent(x)} />)}</span>
+              <em style={{ color: sc(v) }}>{v == null ? "–" : v + "/10"}</em>
+              <ChevronDown className="rp-ki-chev" />
+            </button>
+            {isOpen ? (
+              <div className="rp-ki-qs">
+                {worstFirst(ai.answers, kiSent).map((x) => { const L = KI_LBL[x.key] || [x.q, x.q]; const qo = q === x.key; return (
+                  <button key={x.key} type="button" className="rp-ki-q2" onClick={() => setQ(qo ? null : x.key)}>
+                    <span className="h"><i className={"s-" + kiSent(x)} /><b>{L[1]}</b><em className={"s-" + kiSent(x)}>{kiSent(x) === "pos" ? "positiv" : kiSent(x) === "neg" ? "kritisch" : kiSent(x) === "none" ? "keine Antwort" : !x.known ? "kennt Sie kaum" : "neutral"}</em></span>
+                    {qo ? <p>{x.text || x.quote}</p> : x.quote ? <span className="qt">„{x.quote}“</span> : null}
+                  </button>
+                ); })}
+              </div>
+            ) : null}
+          </div>
+        ); })}
+      </section>
+      <p className="rp-note">Jede KI bekam dieselben 5 Fragen, die Kunden typischerweise stellen. KI antippen für die einzelnen Antworten.</p>
+    </>
+  );
+}
 const AREA_ICON = { press: Newspaper, search: Search, ki: Sparkles, reviews: Star, social: Users, web: Globe };
 function RepArea({ a, r, onBack, onAsk }) {
   if (!a) return null;
@@ -412,16 +468,18 @@ function RepArea({ a, r, onBack, onAsk }) {
         <button type="button" className="rp-back" onClick={onBack} aria-label="Zurück"><ArrowLeft /></button>
         <div><h1>{a.name}</h1></div>
       </div>
+      {a.key === "ki" ? null : (
       <section className="rp-status" style={{ background: bg }}>
         <span className="rp-pill" style={{ background: COLORS[st] }}>{st} · {a.score10}/10</span>
         <p style={{ color: fg }}>{a.text}</p>
       </section>
-      {a.facts && a.facts.length ? (
+      )}
+      {a.facts && a.facts.length && a.key !== "ki" ? (
         <section className="rp-facts">
           {a.facts.map((f) => <div key={f.label}><span>{f.label}</span><b className={f.tone ? "t-" + f.tone : ""}>{f.value}</b></div>)}
         </section>
       ) : null}
-      {a.key === "ki" ? <KiTable r={r} /> : a.key === "social" ? (
+      {a.key === "ki" ? <KiSimple r={r} a={a} /> : a.key === "social" ? (
         <section className="rp-list">
           <div className="rp-box-h"><b>Ihre Profile</b><span>{a.items.length} gefunden</span></div>
           {a.items.length ? [...a.items].sort((p, q) => (p.inGoogle === false ? 0 : p.inGoogle == null ? 1 : 2) - (q.inGoogle === false ? 0 : q.inGoogle == null ? 1 : 2)).map((x, i) => (

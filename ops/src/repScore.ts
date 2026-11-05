@@ -117,6 +117,7 @@ async function askClaude(system: string, user: string, opts: { search?: boolean;
     const content = Array.isArray(j.content) ? j.content : [];
     // Websuche kann pausieren (stop_reason „pause_turn“) → Antwort mit dem bisherigen Verlauf fortsetzen
     if (j.stop_reason === "pause_turn") { messages = [{ role: "user", content: user }, { role: "assistant", content }]; continue; }
+    if (withSearch && !content.some((c: J) => c.type === "text" && c.text)) console.warn("Rep-Scan Claude-Websuche leer:", j.stop_reason, content.map((c: J) => c.type + (c.type === "web_search_tool_result" && c.content?.error_code ? ":" + c.content.error_code : "")).join(","));
     return content.filter((c: J) => c.type === "text").map((c: J) => c.text || "").join("").trim();
    }
    return "";
@@ -565,11 +566,20 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       { key: "besser", q: `Gibt es${city ? " in der Region " + city : " in der Region"} bessere ${branche} als „${name}“?` },
     ];
     const SYS = "Du bist ein hilfreicher KI-Assistent. Antworte auf Deutsch in 2–4 Sätzen, so wie du einer Person antworten würdest, die das fragt. Nutze die Websuche, wenn du sie hast.";
+    // Grundlage, falls Claudes eigene Websuche nicht liefert: echte Such-Treffer (Google, News, Erwähnungen) – keine eigene Website
+    const snips = items.filter((x) => x.src !== "bing" && !(own0 && host(x.link).endsWith(own0))).slice(0, 30)
+      .map((x) => `- ${x.title} (${host(x.link)})${x.snippet ? ": " + x.snippet : ""}`).join("\n");
+    const askClaudeWeb = async (qq: string): Promise<string> => {
+      const t = await askClaude(SYS, qq, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; });
+      if (t && !/nicht live|kann .{0,30}nicht .{0,20}(nachsehen|suchen|recherchieren)|keinen (internet|web)zugriff|no (internet|web) access/i.test(t)) return t;
+      return askClaude(SYS + " Dir liegen aktuelle Suchergebnisse aus dem Web vor – nutze sie wie eine Websuche, erfinde nichts dazu.", `${qq}\n\nAktuelle Suchergebnisse:\n${snips || "(keine)"}`, { maxTokens: 700 })
+        .catch((e) => { console.warn("Rep-Scan KI (Suchergebnisse)", e.message); return t; });
+    };
     let kiDone = 0;
     const kiTotal = QUESTIONS.length * 3;
     const told = <T,>(ai: string, x: { q: string }, pr: Promise<T>) => pr.then((v) => { kiDone++; void say(78 + Math.round((kiDone / kiTotal) * 8), `${ai} gefragt: „${short(x.q.replace(/„|“/g, ""))}“ (${kiDone} von ${kiTotal})`); return v; });
     const [claudeAns, gptAns, pplxAns] = await Promise.all([
-      Promise.all(QUESTIONS.map((x) => told("Claude", x, askClaude(SYS, x.q, { search: true, maxTokens: 700 }).catch((e) => { console.warn("Rep-Scan KI", e.message); return ""; })))),
+      Promise.all(QUESTIONS.map((x) => told("Claude", x, askClaudeWeb(x.q)))),
       Promise.all(QUESTIONS.map((x) => told("ChatGPT", x, askChatGPT(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
       Promise.all(QUESTIONS.map((x) => told("Perplexity", x, askPerplexity(x.q + " Antworte auf Deutsch in 2–4 Sätzen.")))),
     ]);
@@ -583,7 +593,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       "Du ordnest Suchtreffer für einen Reputations-Check ein. Antworte NUR mit JSON, ohne Erklärung.",
       `Unternehmen: ${name}\nOrt: ${city || "unbekannt"}\nEigene Website: ${ownHost || "keine"}\n\nSuchtreffer (JSON):\n${JSON.stringify(list)}\n\nAntworten von Claude (Fragen F1–F5):\n${kiText || "(keine)"}\n\nAntworten von ChatGPT auf dieselben Fragen:\n${gptText || "(keine)"}\n\nAntworten von Perplexity auf dieselben Fragen:\n${pplxText || "(keine)"}\n\nGoogle KI-Übersicht:\n${aiOverview || "(keine)"}\n\n` +
       `Gib zurück: {"items":[{"i":Zahl,"about":"self|other|unclear","sent":"pos|neu|neg","type":"own|press|forum|review|social|directory|other","note":"nur bei neg: kurzer Grund, max 12 Wörter"}],"ki":{"known":true|false,"sent":"pos|neu|neg","answers":[{"sent":"pos|neu|neg","known":true|false,"quote":"1 kurzer Satz aus der Antwort, wörtlich"} – genau 5, in Reihenfolge F1–F5]},"gpt":{gleiches Format für ChatGPT},"pplx":{gleiches Format für Perplexity},"aiOverview":"pos|neu|neg|none","summary":"1 Satz Gesamteindruck für den Inhaber, sachlich"}\n` +
-      `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral.`,
+      `Regeln: Gib für JEDEN Treffer (alle i) eine Zeile zurück. "about":"self" = der Treffer betrifft dieses Unternehmen oder erwähnt es – auch fremde Seiten wie Verzeichnisse, Presse, Social-Media-Profile, Bewertungsportale. "about":"other" NUR wenn der Treffer eindeutig ein anderes Unternehmen/eine andere Person mit ähnlichem Namen meint. Im Zweifel "self" oder "unclear". "own" = eigene Website/eigene Profile. "press" = jeder redaktionelle Beitrag über das Unternehmen: Zeitungen, Online-Magazine, Wirtschafts- und Fachmagazine (z. B. Forbes, Wirtschaftsjournal), Interviews, Berichte, Pressemitteilungen – auch wenn positiv. "neg" nur bei echter Kritik, Warnung, Beschwerde, schlechter Bewertung (<3 Sterne) oder negativer Berichterstattung über DIESES Unternehmen. Verzeichnisse/Branchenbücher = "directory", neutral. Für KI-Antworten: Aussagen, die sich nur auf die eigene Website oder Eigendarstellung des Unternehmens stützen (z. B. Kundenstimmen auf der eigenen Website), zählen NICHT als positiv → "neu". Positiv nur bei echten, unabhängigen Belegen (Bewertungen, Presse, klare Empfehlung). Sagt eine KI, sie habe keine verlässlichen Informationen oder könne nicht nachsehen → "known": false.`,
       { maxTokens: 16000 },
     ).catch((e) => { console.warn("Rep-Scan Einordnung", e.message); return ""; }));
     if (!cls) console.warn("Rep-Scan Einordnung: kein gültiges JSON – nutze einfache Regeln");
