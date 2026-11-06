@@ -1228,6 +1228,50 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-rop.none{box-shadow:none;background:#f4f4f4}
 .bpr-rop.none:hover{background:#ececec}
 .bpr-rop.none.sel{background:#fff;box-shadow:0 0 0 2px #111}
+/* Schutz-Schritt neu (06.11.2026): Abo-Karte mit Umschalter Jährlich | Monatlich, Jahresabo hervorgehoben */
+.bpr-ropts-abo{margin-top:36px;gap:12px}
+.bpr-abo{position:relative;border-radius:24px;background:#fff;padding:28px 26px 22px;box-shadow:0 0 0 1.5px #ffb366,0 14px 36px rgba(255,128,0,.10);transition:box-shadow 150ms var(--ease)}
+.bpr-abo.on{box-shadow:0 0 0 2.5px #ff8000,0 18px 44px rgba(255,128,0,.2)}
+.bpr-abo .bdg{position:absolute;top:-13px;left:24px;height:26px;padding:0 12px;border-radius:13px;background:#ff8000;color:#111;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.bpr-abo .bdg svg{width:13px;height:13px;fill:#111;stroke:#111}
+.bpr-abo .hd{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bpr-abo .pick{display:flex;align-items:center;gap:14px;flex:1 1 240px;min-height:48px;background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.bpr-abo .pick:focus-visible,.bpr-abo .seg button:focus-visible,.bpr-abo .sw:focus-visible{outline:2px solid #111;outline-offset:3px}
+.bpr-abo .rd{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px #cfcfcf;display:grid;place-items:center;flex:none;transition:all 120ms var(--ease)}
+.bpr-abo .rd::after{content:"";width:10px;height:10px;border-radius:50%;background:#fff;transform:scale(0);transition:transform 120ms var(--ease)}
+.bpr-abo .rd.on{background:#111;box-shadow:none}
+.bpr-abo .rd.on::after{transform:none}
+.bpr-abo .tx b{display:block;font-size:20px;font-weight:600;letter-spacing:-.5px;line-height:1.2}
+.bpr-abo .tx span{display:block;font-size:13px;color:#6b6b6b;margin-top:2px;text-wrap:pretty}
+.bpr-abo .seg{display:flex;gap:2px;padding:4px;border-radius:999px;background:#f1f1f1}
+.bpr-abo .seg button{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:#555;height:40px;padding:0 16px;border-radius:999px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background 150ms var(--ease),color 150ms var(--ease)}
+.bpr-abo .seg button.on{background:#fff;color:#111;box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.bpr-abo .chip{font-size:11px;font-weight:700;color:#a34f00;background:#fff4e8;padding:3px 8px;border-radius:999px}
+.bpr-abo .chip .s{display:none}
+.bpr-abo .seg button.on .chip{background:#ff8000;color:#111}
+.bpr-abo .pz{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:20px;border-top:1px solid #f0f0f0}
+.bpr-abo .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bpr-abo .big strong{font-size:50px;font-weight:600;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums}
+.bpr-abo .big em{font-style:normal;font-size:15px;color:#6b6b6b}
+.bpr-abo .big s{font-size:15px;color:#737373}
+.bpr-abo .sub{margin-top:8px;font-size:14px;color:#3d3d3d}
+.bpr-abo .sub b{font-weight:600;color:#111}
+.bpr-abo .sv{display:flex;flex-direction:column;align-items:flex-end;background:#fff4e8;border-radius:18px;padding:14px 18px;min-width:150px;color:#a34f00;text-align:right}
+.bpr-abo .sv span{font-size:12px;font-weight:600}
+.bpr-abo .sv b{font-size:26px;font-weight:700;letter-spacing:-.8px;line-height:1.1;font-variant-numeric:tabular-nums}
+.bpr-abo .sv small{font-size:12px}
+.bpr-abo .sw{display:grid;grid-template-columns:auto auto;align-items:center;column-gap:12px;border:0;cursor:pointer;font:inherit;text-align:left}
+.bpr-abo .sw span{grid-column:1}
+.bpr-abo .sw b{grid-column:1;font-size:17px;letter-spacing:-.3px}
+.bpr-abo .sw svg{grid-column:2;grid-row:1/span 2;width:18px;height:18px}
+.bpr-abo .ft{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 20px}
+.bpr-abo .ft li{display:flex;align-items:center;gap:10px;font-size:14px}
+.bpr-abo .ft .ck{width:22px;height:22px;border-radius:50%;background:#fff4e8;display:grid;place-items:center;flex:none}
+.bpr-abo .ft .ck svg{width:13px;height:13px;color:#a34f00;stroke-width:3}
+.bpr-abo .fn{margin:18px 0 0;font-size:12px;color:#6b6b6b}
+.bpr-sum .rows .svr{padding:10px 12px;border-radius:12px;background:rgba(255,128,0,.14);font-size:13px}
+.bpr-sum .rows .svr span,.bpr-sum .rows .svr b{color:#ffb366}
+.bpr-mbar2 .ln3{display:none}
 @keyframes bprFin{from{opacity:0;transform:translateY(10px)}}
 .bpr-warn{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;margin-top:10px;padding:16px 18px;border-radius:20px;background:#fff4e0;color:#7a3b00;font-size:13px;line-height:1.5;text-wrap:pretty;animation:bprFin 240ms var(--ease)}
 .bpr-warn svg{width:18px;height:18px;color:#f59e0b;margin-top:1px}
@@ -1280,6 +1324,29 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
   .bpr-mbar2 .ln2 b{font-size:15px;font-weight:600;color:#111;white-space:nowrap}
   .bpr-mbar2 .bt{display:flex;gap:8px}
   .bpr-mbar2 .bpr-go{white-space:normal;line-height:1.15;padding:0 18px}
+}
+
+@media (max-width:600px){
+  .bpr-ropts-abo{margin-top:26px}
+  .bpr-abo{padding:24px 18px 18px;border-radius:22px}
+  .bpr-abo .bdg{left:18px}
+  .bpr-abo .tx b{font-size:18px;letter-spacing:-.4px}
+  .bpr-abo .seg{width:100%;margin-top:-2px}
+  .bpr-abo .seg button{flex:1 1 0;height:44px;padding:0 10px;gap:6px}
+  .bpr-abo .chip{font-size:10.5px;padding:3px 7px}
+  .bpr-abo .chip .l{display:none}
+  .bpr-abo .chip .s{display:inline}
+  .bpr-abo .pz{display:block;margin-top:18px;padding-top:18px}
+  .bpr-abo .big{gap:8px}
+  .bpr-abo .big strong{font-size:42px;letter-spacing:-1.6px}
+  .bpr-abo .big em,.bpr-abo .big s{font-size:14px}
+  .bpr-abo .sv{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:12px 14px;border-radius:14px;min-width:0;width:100%;box-sizing:border-box;text-align:left}
+  .bpr-abo .sv b{font-size:18px;letter-spacing:-.4px}
+  .bpr-abo .sv small{display:none}
+  .bpr-abo .sw{display:flex}
+  .bpr-abo .sw b{font-size:15px}
+  .bpr-abo .ft{grid-template-columns:1fr;gap:9px;margin-top:18px;padding-top:16px;border-top:1px solid #f0f0f0}
+  .bpr-mbar2 .ln3{display:block;margin-top:-6px;font-size:12px;font-weight:600;color:#a34f00}
 }
 
 /* ---------- Schritt 5A · Bewertungen auswählen (Redesign 10/2026) ---------- */

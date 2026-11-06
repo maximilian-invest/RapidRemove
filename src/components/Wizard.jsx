@@ -60,6 +60,21 @@ const YEARLY_COPY = {
   no: { name: "Årlig beskyttelse", tier: "Årlig", desc: "Som månedlig, inkl. ukentlig kontroll – 2 måneder gratis.", sm: "kan sies opp årlig", per: " / år", monthly: "Ukentlig kontroll inkludert – gratis ny fjerning." },
 };
 const yc = (code) => YEARLY_COPY[code] || YEARLY_COPY.en;
+/* Schutz-Schritt neu (06.11.2026): eine Abo-Karte mit Umschalter Jährlich | Monatlich, Jahresabo hervorgehoben. */
+const ABO_COPY = {
+  de: { badge: "Meist gewählt", title: "Schutz-Abo", desc: "Erneute Löschung kostenlos – inklusive Überwachung", aria: "Abrechnungszeitraum", y: "Jährlich", m: "Monatlich", free: "2 Monate gratis", freeS: "2 Mon. gratis", perY: "/ Jahr", perM: "/ Monat", onlyPm: (v) => ["Nur ", v, " pro Monat – einmal jährlich abgerechnet"], save: "Sie sparen", saveSub: "pro Jahr ggü. monatlich", mSub: (v) => `Monatlich kündbar · ${v} pro Jahr`, swY: "Jährlich zahlen", swYB: (v) => `${v} sparen`, feats: ["Erneute Löschung kostenlos – so oft nötig", "Automatische Überwachung Ihres Profils", "Wöchentlicher Prüfbericht per E-Mail", "Status jederzeit im Kundenportal"], footY: "Abrechnung erst ab erfolgreicher Löschung · kündbar zum Ende der Laufzeit", footM: "Abrechnung erst ab erfolgreicher Löschung · monatlich kündbar", sumSave: "Ersparnis ggü. monatlich", sumSaveV: (v) => `−${v} / Jahr`, barSave: (v) => `Sie sparen ${v} pro Jahr`, nameY: "Jahresschutz", nameM: "Monatsschutz" },
+  en: { badge: "Most chosen", title: "Protection plan", desc: "Free re-removal – monitoring included", aria: "Billing period", y: "Yearly", m: "Monthly", free: "2 months free", freeS: "2 mo. free", perY: "/ year", perM: "/ month", onlyPm: (v) => ["Just ", v, " per month – billed once a year"], save: "You save", saveSub: "per year vs. monthly", mSub: (v) => `Cancel monthly · ${v} per year`, swY: "Pay yearly", swYB: (v) => `Save ${v}`, feats: ["Free re-removal – as often as needed", "Automatic monitoring of your profile", "Weekly check report by email", "Status anytime in your customer portal"], footY: "Billed only after a successful removal · cancel by the end of the term", footM: "Billed only after a successful removal · cancel monthly", sumSave: "Savings vs. monthly", sumSaveV: (v) => `−${v} / year`, barSave: (v) => `You save ${v} per year`, nameY: "Yearly protection", nameM: "Monthly protection" },
+  es: { badge: "El más elegido", title: "Plan de protección", desc: "Nueva eliminación gratis – supervisión incluida", aria: "Periodo de facturación", y: "Anual", m: "Mensual", free: "2 meses gratis", freeS: "2 meses gratis", perY: "/ año", perM: "/ mes", onlyPm: (v) => ["Solo ", v, " al mes – facturado una vez al año"], save: "Ahorras", saveSub: "al año frente al mensual", mSub: (v) => `Cancelable cada mes · ${v} al año`, swY: "Pagar anualmente", swYB: (v) => `Ahorra ${v}`, feats: ["Nueva eliminación gratis – las veces necesarias", "Supervisión automática de tu perfil", "Informe semanal por correo", "Estado siempre visible en tu portal"], footY: "Facturación solo tras la eliminación · cancelable al final del periodo", footM: "Facturación solo tras la eliminación · cancelable cada mes", sumSave: "Ahorro frente al mensual", sumSaveV: (v) => `−${v} / año`, barSave: (v) => `Ahorras ${v} al año`, nameY: "Protección anual", nameM: "Protección mensual" },
+  fr: { badge: "Le plus choisi", title: "Abonnement protection", desc: "Nouvelle suppression gratuite – surveillance incluse", aria: "Période de facturation", y: "Annuel", m: "Mensuel", free: "2 mois offerts", freeS: "2 mois offerts", perY: "/ an", perM: "/ mois", onlyPm: (v) => ["Seulement ", v, " par mois – facturé une fois par an"], save: "Vous économisez", saveSub: "par an vs. mensuel", mSub: (v) => `Résiliable chaque mois · ${v} par an`, swY: "Payer à l’année", swYB: (v) => `Économisez ${v}`, feats: ["Nouvelle suppression gratuite – aussi souvent que nécessaire", "Surveillance automatique de votre fiche", "Rapport de contrôle hebdomadaire par e-mail", "Statut à tout moment dans votre espace client"], footY: "Facturation après suppression réussie · résiliable en fin de période", footM: "Facturation après suppression réussie · résiliable chaque mois", sumSave: "Économie vs. mensuel", sumSaveV: (v) => `−${v} / an`, barSave: (v) => `Vous économisez ${v} par an`, nameY: "Protection annuelle", nameM: "Protection mensuelle" },
+  it: { badge: "Il più scelto", title: "Abbonamento protezione", desc: "Nuova rimozione gratuita – monitoraggio incluso", aria: "Periodo di fatturazione", y: "Annuale", m: "Mensile", free: "2 mesi gratis", freeS: "2 mesi gratis", perY: "/ anno", perM: "/ mese", onlyPm: (v) => ["Solo ", v, " al mese – fatturato una volta all’anno"], save: "Risparmi", saveSub: "all’anno rispetto al mensile", mSub: (v) => `Disdetta mensile · ${v} all’anno`, swY: "Paga annualmente", swYB: (v) => `Risparmia ${v}`, feats: ["Nuova rimozione gratuita – tutte le volte necessarie", "Monitoraggio automatico del tuo profilo", "Report di controllo settimanale via e-mail", "Stato sempre visibile nell’area clienti"], footY: "Fatturazione solo dopo la rimozione · disdetta a fine periodo", footM: "Fatturazione solo dopo la rimozione · disdetta mensile", sumSave: "Risparmio rispetto al mensile", sumSaveV: (v) => `−${v} / anno`, barSave: (v) => `Risparmi ${v} all’anno`, nameY: "Protezione annuale", nameM: "Protezione mensile" },
+  nl: { badge: "Meest gekozen", title: "Beschermingsabonnement", desc: "Gratis opnieuw verwijderen – monitoring inbegrepen", aria: "Factureringsperiode", y: "Jaarlijks", m: "Maandelijks", free: "2 maanden gratis", freeS: "2 mnd. gratis", perY: "/ jaar", perM: "/ maand", onlyPm: (v) => ["Slechts ", v, " per maand – één keer per jaar gefactureerd"], save: "U bespaart", saveSub: "per jaar t.o.v. maandelijks", mSub: (v) => `Maandelijks opzegbaar · ${v} per jaar`, swY: "Jaarlijks betalen", swYB: (v) => `${v} besparen`, feats: ["Gratis opnieuw verwijderen – zo vaak als nodig", "Automatische monitoring van uw profiel", "Wekelijks controlerapport per e-mail", "Status altijd in uw klantenportaal"], footY: "Facturering pas na geslaagde verwijdering · opzegbaar tegen einde looptijd", footM: "Facturering pas na geslaagde verwijdering · maandelijks opzegbaar", sumSave: "Besparing t.o.v. maandelijks", sumSaveV: (v) => `−${v} / jaar`, barSave: (v) => `U bespaart ${v} per jaar`, nameY: "Jaarbescherming", nameM: "Maandbescherming" },
+  pt: { badge: "O mais escolhido", title: "Plano de proteção", desc: "Nova remoção gratuita – monitorização incluída", aria: "Período de faturação", y: "Anual", m: "Mensal", free: "2 meses grátis", freeS: "2 meses grátis", perY: "/ ano", perM: "/ mês", onlyPm: (v) => ["Apenas ", v, " por mês – faturado uma vez por ano"], save: "Poupa", saveSub: "por ano face ao mensal", mSub: (v) => `Cancelável mensalmente · ${v} por ano`, swY: "Pagar anualmente", swYB: (v) => `Poupe ${v}`, feats: ["Nova remoção gratuita – sempre que necessário", "Monitorização automática do seu perfil", "Relatório semanal por e-mail", "Estado sempre visível no portal do cliente"], footY: "Faturação só após remoção bem-sucedida · cancelável no fim do período", footM: "Faturação só após remoção bem-sucedida · cancelável mensalmente", sumSave: "Poupança face ao mensal", sumSaveV: (v) => `−${v} / ano`, barSave: (v) => `Poupa ${v} por ano`, nameY: "Proteção anual", nameM: "Proteção mensal" },
+  ja: { badge: "一番人気", title: "保護プラン", desc: "再削除無料 – 監視付き", aria: "請求期間", y: "年間", m: "月額", free: "2か月分無料", freeS: "2か月無料", perY: "/ 年", perM: "/ 月", onlyPm: (v) => ["月あたりわずか ", v, " – 年1回請求"], save: "お得額", saveSub: "月額プランと比べて年間", mSub: (v) => `毎月解約可 · 年間 ${v}`, swY: "年払いにする", swYB: (v) => `${v} お得`, feats: ["再削除は無料 – 何度でも", "プロフィールを自動監視", "毎週のチェックレポートをメールで", "ステータスはいつでも顧客ポータルで"], footY: "削除成功後に請求 · 期間満了時に解約可", footM: "削除成功後に請求 · 毎月解約可", sumSave: "月額との差額", sumSaveV: (v) => `−${v} / 年`, barSave: (v) => `年間 ${v} お得`, nameY: "年間保護", nameM: "月額保護" },
+  sv: { badge: "Mest valt", title: "Skyddsabonnemang", desc: "Ny borttagning gratis – bevakning ingår", aria: "Faktureringsperiod", y: "Årligen", m: "Månadsvis", free: "2 månader gratis", freeS: "2 mån. gratis", perY: "/ år", perM: "/ månad", onlyPm: (v) => ["Bara ", v, " per månad – faktureras en gång per år"], save: "Du sparar", saveSub: "per år jämfört med månadsvis", mSub: (v) => `Uppsägning månadsvis · ${v} per år`, swY: "Betala årsvis", swYB: (v) => `Spara ${v}`, feats: ["Ny borttagning gratis – så ofta som behövs", "Automatisk bevakning av din profil", "Veckovis kontrollrapport via e-post", "Status alltid i kundportalen"], footY: "Fakturering först efter lyckad borttagning · uppsägning vid periodens slut", footM: "Fakturering först efter lyckad borttagning · uppsägning månadsvis", sumSave: "Besparing mot månadsvis", sumSaveV: (v) => `−${v} / år`, barSave: (v) => `Du sparar ${v} per år`, nameY: "Årligt skydd", nameM: "Månadsskydd" },
+  da: { badge: "Mest valgt", title: "Beskyttelsesabonnement", desc: "Gratis fornyet fjernelse – overvågning inkluderet", aria: "Faktureringsperiode", y: "Årligt", m: "Månedligt", free: "2 måneder gratis", freeS: "2 mdr. gratis", perY: "/ år", perM: "/ måned", onlyPm: (v) => ["Kun ", v, " om måneden – faktureres én gang om året"], save: "Du sparer", saveSub: "om året ift. månedligt", mSub: (v) => `Kan opsiges månedligt · ${v} om året`, swY: "Betal årligt", swYB: (v) => `Spar ${v}`, feats: ["Gratis fornyet fjernelse – så ofte som nødvendigt", "Automatisk overvågning af din profil", "Ugentlig kontrolrapport på e-mail", "Status altid i kundeportalen"], footY: "Faktureres først efter vellykket fjernelse · kan opsiges ved periodens udløb", footM: "Faktureres først efter vellykket fjernelse · kan opsiges månedligt", sumSave: "Besparelse ift. månedligt", sumSaveV: (v) => `−${v} / år`, barSave: (v) => `Du sparer ${v} om året`, nameY: "Årlig beskyttelse", nameM: "Månedlig beskyttelse" },
+  no: { badge: "Mest valgt", title: "Beskyttelsesabonnement", desc: "Gratis ny fjerning – overvåking inkludert", aria: "Faktureringsperiode", y: "Årlig", m: "Månedlig", free: "2 måneder gratis", freeS: "2 mnd. gratis", perY: "/ år", perM: "/ måned", onlyPm: (v) => ["Bare ", v, " per måned – faktureres én gang i året"], save: "Du sparer", saveSub: "per år mot månedlig", mSub: (v) => `Kan sies opp månedlig · ${v} per år`, swY: "Betal årlig", swYB: (v) => `Spar ${v}`, feats: ["Gratis ny fjerning – så ofte det trengs", "Automatisk overvåking av profilen din", "Ukentlig kontrollrapport på e-post", "Status alltid i kundeportalen"], footY: "Faktureres først etter vellykket fjerning · kan sies opp ved periodens slutt", footM: "Faktureres først etter vellykket fjerning · kan sies opp månedlig", sumSave: "Besparelse mot månedlig", sumSaveV: (v) => `−${v} / år`, barSave: (v) => `Du sparer ${v} per år`, nameY: "Årlig beskyttelse", nameM: "Månedlig beskyttelse" },
+};
+const abc = (code) => ABO_COPY[code] || ABO_COPY.en;
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -1874,7 +1889,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const xAvail = useExpressOn() !== false;
   const dur = useDurations(); // Löschdauer Standard je Preisstufe (Admin → Express & Löschdauer)
   React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : "monthly"); // null | monthly | yearly | lifetime — Schutz default ON (monitor nur Bestand)
+  const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : "yearly"); // null | monthly | yearly | lifetime — Default: Jahresabo vorausgewählt (Entscheidung 06.11.2026; monitor nur Bestand)
+  const [aboBill, setAboBill] = React.useState(protection === "monthly" ? "monthly" : "yearly"); // Umschalter der Abo-Karte (Schutz-Schritt neu)
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
   React.useEffect(() => {
@@ -4071,32 +4087,69 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   /* Schritt 5 · Schutz im neuen Design: 3 Schutz-Optionen + „Ohne Schutz" (Warnung + Rückkehr-Animation), rechts Ihre Auswahl. */
   function StepProtectNew() {
     const bp = bpCopy(t.code);
-    const opts = [
-      ["monthly", conv.protMonthlyName, yc(t.code).monthly, bp.cancel, bp.badgeTop],
-      ["yearly", yc(t.code).name, yc(t.code).desc, yc(t.code).sm],
-      ["lifetime", conv.protLifetimeName, bp.protD.lifetime, bp.once],
-    ];
-    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? money(lang, p.protYearly) + yc(t.code).per : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
-    const protName = protection ? (opts.find((o) => o[0] === protection) || [])[1] : bp.protNone;
+    const ab = abc(t.code);
+    const isAbo = protection === "monthly" || protection === "yearly";
+    const bill = isAbo ? protection : aboBill;
+    const yr = bill === "yearly";
+    const mN = num(p.protMonthly), yN = num(p.protYearly);
+    const saveV = fmtMoney(lang, Math.round((mN * 12 - yN) * 100) / 100);
+    const pmV = fmtMoney(lang, Math.round((yN / 12) * 100) / 100);
+    const yearOfM = fmtMoney(lang, Math.round(mN * 12 * 100) / 100);
+    const pickBill = (k) => { setAboBill(k); setProtection(k); };
+    const protNames = { monthly: ab.nameM, yearly: ab.nameY, lifetime: conv.protLifetimeName };
+    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? fmtMoney(lang, yN) + yc(t.code).per : fmtMoney(lang, mN) + bp.perMonth;
+    const protName = protection ? protNames[protection] || bp.protNone : bp.protNone;
     const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
     const back = () => go(3);
     const goCo = () => go(5);
+    const Ck = () => <span className="ck"><LCheck /></span>;
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="prot">
         <main className="bpr-main">
           <section className="bpr-res">
             <h1 className="bpr-h1 bpr-fade">{bp.protH}</h1>
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.protSub}</p>
-            <div className="bpr-ropts">
-              {opts.map(([k, nm, d, sm, badge], i) => (
-                <button type="button" key={k} className={"bpr-rop bpr-fade" + (protection === k ? " sel" : "")} style={{ animationDelay: (0.1 + i * 0.03) + "s" }} onClick={() => setProtection(k)} aria-pressed={protection === k}>
-                  {badge ? <span className="bpr-bdg">{badge}</span> : null}
-                  <span className="rd" />
-                  <span className="tx"><b>{nm}</b><span>{d}</span></span>
-                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? <React.Fragment>{money(lang, p.protYearly)}<em>{yc(t.code).per}</em></React.Fragment> : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{vatNote(lang)} · {sm}</small></span>
-                </button>
-              ))}
-              <button type="button" className={"bpr-rop none bpr-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".19s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>
+            <div className="bpr-ropts bpr-ropts-abo">
+              <div className={"bpr-abo bpr-fade" + (isAbo ? " on" : "")} style={{ animationDelay: ".1s" }}>
+                <span className="bdg"><LStar />{ab.badge}</span>
+                <div className="hd">
+                  <button type="button" className="pick" onClick={() => setProtection(bill)} aria-pressed={isAbo}>
+                    <span className={"rd" + (isAbo ? " on" : "")} />
+                    <span className="tx"><b>{ab.title}</b><span>{ab.desc}</span></span>
+                  </button>
+                  <div className="seg" role="group" aria-label={ab.aria}>
+                    <button type="button" className={yr ? "on" : ""} aria-pressed={yr} onClick={() => pickBill("yearly")}>{ab.y} <span className="chip"><span className="l">{ab.free}</span><span className="s">{ab.freeS}</span></span></button>
+                    <button type="button" className={yr ? "" : "on"} aria-pressed={!yr} onClick={() => pickBill("monthly")}>{ab.m}</button>
+                  </div>
+                </div>
+                <div className="pz">
+                  {yr ? (
+                    <React.Fragment>
+                      <div className="pl">
+                        <div className="big"><strong>{fmtMoney(lang, yN)}</strong><em>{ab.perY}</em><s>{yearOfM}</s></div>
+                        <div className="sub">{ab.onlyPm(pmV).map((x, i) => i === 1 ? <b key={i}>{x}</b> : <React.Fragment key={i}>{x}</React.Fragment>)}</div>
+                      </div>
+                      <div className="sv"><span>{ab.save}</span><b>{saveV}</b><small>{ab.saveSub}</small></div>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <div className="pl">
+                        <div className="big"><strong>{fmtMoney(lang, mN)}</strong><em>{ab.perM}</em></div>
+                        <div className="sub">{ab.mSub(yearOfM)}</div>
+                      </div>
+                      <button type="button" className="sv sw" onClick={() => pickBill("yearly")}><span>{ab.swY}</span><b>{ab.swYB(saveV)}</b><LArrowRight /></button>
+                    </React.Fragment>
+                  )}
+                </div>
+                <ul className="ft">{ab.feats.map((f) => <li key={f}><Ck />{f}</li>)}</ul>
+                <p className="fn">{vatNote(lang)} · {yr ? ab.footY : ab.footM}</p>
+              </div>
+              <button type="button" className={"bpr-rop bpr-fade" + (protection === "lifetime" ? " sel" : "")} style={{ animationDelay: ".14s" }} onClick={() => setProtection("lifetime")} aria-pressed={protection === "lifetime"}>
+                <span className="rd" />
+                <span className="tx"><b>{conv.protLifetimeName}</b><span>{bp.protD.lifetime}</span></span>
+                <span className="pr"><strong>{money(lang, p.protLifetime)}</strong><small>{vatNote(lang)} · {bp.once}</small></span>
+              </button>
+              <button type="button" className={"bpr-rop none bpr-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".18s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>
                 <span className="rd" /><span className="tx"><b>{bp.protNone}</b><span>{bp.protNoneD}</span></span>
               </button>
             </div>
@@ -4115,6 +4168,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="rows">
                 <div><span>{svcLabel}<small>{vatNote(lang)} · {wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
                 <div><span>{protName}<small>{vatNote(lang)} · {bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
+                {protection === "yearly" ? <div className="svr"><span>{ab.sumSave}</span><b>{ab.sumSaveV(saveV)}</b></div> : null}
               </div>
               <div className="now"><span>{bp.today}</span><b>{money(lang, w.s5.dueNow)}</b></div>
               <div className="note">{bp.billNote}</div>
@@ -4128,6 +4182,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         </main>
         <div className="bpr-mbar bpr-mbar2">
           <div className="ln2"><span>{svcLabel}{protection ? " + " + protName : ""}</span><b>{bp.todayShort(money(lang, w.s5.dueNow))}</b></div>
+          {protection === "yearly" ? <div className="ln3">{ab.barSave(saveV)}</div> : null}
           <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button></div>
         </div>
       </div>
