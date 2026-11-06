@@ -1071,17 +1071,17 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
         {rows}
         {!rows.length && !(loc.inWork || []).length ? <div className="rp-empty">Ihre Reputation ist in Ordnung – keine Maßnahme nötig.</div> : null}
       </section>
-      {(m.free || []).length ? (
-        <>
-          <button type="button" className="rp-m-free" onClick={() => setFree(!free)} aria-expanded={free}><Check /><span>{m.free.length} {m.free.length === 1 ? "Sache" : "Dinge"}, die Sie kostenlos selbst tun können</span>{free ? <ChevronUp /> : <ChevronDown />}</button>
-          {free ? <div className="rp-m-freel">{m.free.map((t) => <div key={t.key} className="rp-m-li"><span className="rp-m-q">{t.title}</span>{t.sub ? <span className="rp-m-h">{t.sub}</span> : null}</div>)}</div> : null}
-        </>
-      ) : null}
       {rows.length ? (
         <div className="rp-m-bar">
           <div className="rp-m-bar-t"><b>{any ? (total ? eur(total) : monthly ? eur(monthly) + " / Monat" : "kostenlos") : "Nichts ausgewählt"}</b><span>{any ? (paid ? "Löschung zahlen Sie erst bei Erfolg" : total || monthly ? "zzgl. USt." : "Prüfung ohne Verpflichtung") : "Maßnahme einschalten"}</span></div>
           <button type="button" className="rp-m-go" disabled={!any} onClick={() => setConfirm(true)}>Jetzt beauftragen<ArrowRight /></button>
         </div>
+      ) : null}
+      {(m.free || []).length ? (
+        <>
+          <button type="button" className="rp-m-free" onClick={() => setFree(!free)} aria-expanded={free}><Check /><span>{m.free.length} {m.free.length === 1 ? "Sache" : "Dinge"}, die Sie kostenlos selbst tun können</span>{free ? <ChevronUp /> : <ChevronDown />}</button>
+          {free ? <div className="rp-m-freel">{m.free.map((t) => <div key={t.key} className="rp-m-li"><span className="rp-m-q">{t.title}</span>{t.sub ? <span className="rp-m-h">{t.sub}</span> : null}</div>)}</div> : null}
+        </>
       ) : null}
       {confirm ? (
         <div className="rp-sheet-bg" onClick={(e) => { if (e.target === e.currentTarget) setConfirm(false); }}>
