@@ -862,7 +862,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const p = placeView(raw);
       if (p.name) {
         loc.gbp = {
-          url: p.mapsUrl || loc.maps_url || "", website: !!p.website, phone: !!(raw.nationalPhoneNumber || raw.internationalPhoneNumber),
+          url: p.mapsUrl || loc.maps_url || "", website: !!p.website, phone: !!(raw.nationalPhoneNumber || raw.internationalPhoneNumber), phoneNo: String(raw.internationalPhoneNumber || raw.nationalPhoneNumber || ""),
           hours: !!(raw.regularOpeningHours && (raw.regularOpeningHours.periods || raw.regularOpeningHours.weekdayDescriptions)),
           photos: Array.isArray(raw.photos) ? raw.photos.length : 0, status: String(raw.businessStatus || "OPERATIONAL"), type: p.type,
           lat: Number(raw.location?.latitude) || null, lng: Number(raw.location?.longitude) || null,
@@ -1000,9 +1000,24 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const STOP = new Set(["gmbh", "und", "der", "die", "das", "kg", "og", "co", "the", "salzburg", "wien", "graz", "linz", "innsbruck", String(city).toLowerCase()]);
       const toks = name.toLowerCase().split(/[^a-zäöüß0-9]+/).filter((t) => t.length >= 4 && !STOP.has(t)).map((t) => t.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss"));
       const kgSite = String(kg?.website || "");
-      const cand = kgSite && !PLATF.test(host(kgSite)) ? kgSite : (items.filter((x) => x.src === "google" && x.pos <= 20 && !PLATF.test(host(x.link)) && toks.some((t) => host(x.link).replace(/-/g, "").includes(t) || host(x.link).includes(t.replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u")))).sort((p2, q2) => p2.pos - q2.pos)[0]?.link || "");
-      if (cand) {
-        try { site = new URL(cand).origin + "/"; siteVia = kgSite && cand === kgSite ? "kg" : "google"; hp0 = await homepage(site); await say(69, `Im Google-Profil fehlt die Website – gefunden: ${host(site)}`); } catch { /* */ }
+      // Kandidaten: Firmenkasten + Treffer, deren Domain ein Wort aus dem Namen enthält – aber nur übernehmen, wenn die Seite nachweislich zu DIESER Firma gehört
+      const cands = [...new Set([kgSite, ...items.filter((x) => x.src === "google" && x.pos <= 20 && !PLATF.test(host(x.link)) && toks.some((t) => host(x.link).replace(/-/g, "").includes(t) || host(x.link).includes(t.replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u")))).sort((p2, q2) => p2.pos - q2.pos).map((x) => x.link)].filter((u) => u && !PLATF.test(host(u))).map((u) => { try { return new URL(u).origin + "/"; } catch { return ""; } }).filter(Boolean))].slice(0, 4);
+      const digits = (t: string) => t.replace(/\D/g, "");
+      const phone = digits(String((loc.gbp as J | undefined)?.phoneNo || "")).slice(-8);
+      const street = String(loc.address || "").split(",")[0].toLowerCase().replace(/\s+\d.*$/, "").trim();
+      const nameFull = name.toLowerCase();
+      for (const u of cands) {
+        try {
+          const r0 = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(10_000), headers: { "user-agent": "Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/138 Safari/537.36" } });
+          if (!r0.ok) continue;
+          const html = (await r0.text()).slice(0, 800_000);
+          const low = htmlText(html).toLowerCase();
+          const ok = (phone.length >= 6 && digits(low).includes(phone)) || (street.length >= 5 && low.includes(street)) || low.includes(nameFull);
+          if (!ok) { console.log("Rep-Scan Website-Kandidat verworfen (gehört nicht zur Firma):", u); continue; }
+          site = u; siteVia = u === (kgSite && new URL(kgSite).origin + "/") ? "kg" : "google"; hp0 = await homepage(site);
+          await say(69, `Im Google-Profil fehlt die Website – gefunden und geprüft: ${host(site)}`);
+          break;
+        } catch { /* nächster Kandidat */ }
       }
     }
     await say(70, site ? ((process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY) ? `Messe die Ladezeit von ${host(site)} mit Google PageSpeed (Handy)` : `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit`) : "Kein Website-Link im Google-Profil – überspringe Website-Check");
