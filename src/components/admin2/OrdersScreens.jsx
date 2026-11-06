@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
+/* Direktlink zum Google-Profil des Auftrags (Maps-Link, sonst Place-ID, sonst Suche nach Name + Adresse). */
+const profileHref = (o) => o.mapsUri
+  || (o.placeId ? `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(o.placeId)}` : "")
+  || (o.addr && (o.profile || o.company) ? `https://www.google.com/maps/search/${encodeURIComponent((o.profile || o.company) + " " + o.addr)}` : "");
 import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
@@ -283,6 +287,8 @@ export function OrderDetail({ ctx, id }) {
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
           <span className="t"><span>Betreuer</span><b>{s ? s.name : "Nicht zugewiesen"}</b></span><ChevronRight /></button>
+        {profileHref(o) ? <a className="ir" href={profileHref(o)} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span>
+          <span className="t"><span>Zum Profil</span><b>{o.profile || o.company || "Google-Profil öffnen"}</b></span><ChevronRight /></a> : null}
         <button type="button" className="ir" onClick={() => ctx.pushSub("info", o.id)}>
           <span className="ico"><ClipboardList /></span>
           <span className="t"><span>Bestellinfo</span><b>{[o.email, isRev ? `${items.length} Bewertungen` : (o.profile || o.company), o.source && o.source.label].filter(Boolean).join(" · ") || "—"}</b></span>
