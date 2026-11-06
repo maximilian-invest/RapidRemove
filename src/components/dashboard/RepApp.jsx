@@ -959,19 +959,20 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
   const showSchutz = schutz && !work.profile && sel.profile === "remove";
   const lines = [];
   let total = 0, monthly = 0;
-  if (pv && !work.profile) { const v = pv.price + (sel.profile === "remove" && opt.express ? prof.express : 0); total += v; lines.push([pv.label + (sel.profile === "remove" && opt.express ? " · Express" : ""), eur(v, prof.cur)]); }
+  if (pv && !work.profile) { const v = pv.price + (sel.profile === "remove" && opt.express ? prof.express : 0); total += v; lines.push([(sel.profile === "reset" ? "Google-Profil löschen + neu anlegen" : "Google-Profil löschen") + (sel.profile === "remove" && opt.express ? " · Express" : ""), eur(v, prof.cur)]); }
   if (showSchutz && opt.schutz) { const o = schutz.options.find((x) => x.id === opt.schutz); if (o) { if (o.id === "monthly") monthly += o.price; else total += o.price; lines.push(["Schutz", eur(o.price) + (o.id === "lifetime" ? " einmalig" : " / " + o.per)]); } }
   if (sel.reviews && revM && !work.reviews) { total += revM.total; lines.push([revM.title, eur(revM.total, revM.cur)]); }
   if (sel.press && pressM && !work.press) lines.push(["Löschprüfung", "kostenlos"]);
   if (sel.web && webM && !work.web) { total += webM.price; if (opt.bot) monthly += webM.bot; lines.push(["Eigene Website" + (opt.bot ? " + Chatbot" : ""), eur(webM.price) + (opt.bot ? " + " + eur(webM.bot) + " / Monat" : "")]); }
-  const paid = (pv && !work.profile) || (sel.reviews && revM && !work.reviews);
+  const revSel = !!(sel.reviews && revM && !work.reviews);
+  const paid = (pv && !work.profile) || revSel;
   const any = lines.length > 0;
   const send = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     setBusy(true);
     try {
       const body = { profile: work.profile ? "" : sel.profile || "", express: !!opt.express, schutz: showSchutz ? opt.schutz : "", reviews: !work.reviews && !!sel.reviews, press: !work.press && !!sel.press, web: !work.web && !!sel.web, bot: !!opt.bot };
-      const res = await rep.order(loc.id, body, { agb, risk });
+      const res = await rep.order(loc.id, body, { agb: agb && fagg, risk: revSel ? risk : false });
       setConfirm(false);
       showToast((res.done || []).some((d) => d.orderId) ? "Beauftragt! Den Auftrag finden Sie unter „Aufträge“." : "Danke! Wir melden uns innerhalb von 24 Stunden.");
       setSel({});
@@ -1091,10 +1092,10 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
               <>
                 <label className="rp-m-ck"><input type="checkbox" checked={agb} onChange={(e) => setAgb(e.target.checked)} /><span>{ag.pre}<a href={pagePath("agb", "de")} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", "de")} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                 <label className="rp-m-ck"><input type="checkbox" checked={fagg} onChange={(e) => setFagg(e.target.checked)} /><span>{FAGG_CONSENT.de.txt}</span></label>
-                <label className="rp-m-ck"><input type="checkbox" checked={risk} onChange={(e) => setRisk(e.target.checked)} /><span>{rk.pre}<a href={pagePath("agb", "de") + "#7-5"} target="_blank" rel="noopener noreferrer">{rk.link}</a>{rk.post}</span></label>
+                {revSel ? <label className="rp-m-ck"><input type="checkbox" checked={risk} onChange={(e) => setRisk(e.target.checked)} /><span>{rk.pre}<a href={pagePath("agb", "de") + "#7-5"} target="_blank" rel="noopener noreferrer">{rk.link}</a>{rk.post}</span></label> : null}
               </>
             ) : null}
-            <button type="button" className="rp-m-send" disabled={busy || (paid && (!agb || !risk || !fagg))} onClick={send}>{busy ? <Loader className="spin" /> : null}{paid ? "Zahlungspflichtig beauftragen" : "Anfrage senden"}</button>
+            <button type="button" className="rp-m-send" disabled={busy || (paid && (!agb || !fagg || (revSel && !risk)))} onClick={send}>{busy ? <Loader className="spin" /> : null}{paid ? "Zahlungspflichtig beauftragen" : "Anfrage senden"}</button>
             {paid ? <p className="rp-m-fine">Abgebucht wird erst bei Erfolg · zzgl. USt.</p> : null}
           </div>
         </div>
