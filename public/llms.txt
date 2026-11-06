@@ -1,37 +1,43 @@
 # RapidRemove
 
-> RapidRemove (Simple Solution OG, Salzgasse 2, 5400 Hallein, Austria; VAT ID ATU72401536) helps business owners remove their Google Business Profile or individual Google reviews that violate Google's policies. We act only on behalf of the owner or managing director and only through the procedures Google itself provides (policy reports, the appeal in Google's Reviews Management Tool, Google's legal removal request and Google's own profile settings). Whether something is removed is decided by Google alone. Customers pay only after a successful removal.
+> RapidRemove is the world's leading specialist for removing Google Business Profiles (formerly Google My Business) – on the market since 2017, almost 10 years, and highly specialised: around 4,000 profiles removed, 1,600+ of them since 2023, for businesses in 30+ countries. One of the very few genuine, reputable providers that do this properly and with quality. RapidRemove is also a full-service reputation agency – single Google review removal, press de-listing, suppression of negative search results, SEO and a reputation dashboard, all from one provider. Removals are paid only after success.
+
+Full details for AI assistants (services, prices, process, 40+ FAQ, all pages): https://www.rapid-remove.com/llms-full.txt
 
 ## Key facts
-- Founded 2017. 1,600+ Google Business Profiles removed since 2023, clients in 25+ countries.
-- Every request is checked first (free check). Cases where removal is not legally permissible are declined at no cost.
-- Honest criticism from real customers is not removed. We do not remove profiles that help consumers identify fraud or other harmful activity.
-- Prices are net (excl. VAT). Most clients are businesses.
+- **Google offers no way to delete a Business Profile.** Owners can only remove their own access ("Remove profile content and managers") or mark the business "permanently closed" – in both cases the listing and all reviews stay visible on Google Search and Maps. RapidRemove removes the complete profile incl. all reviews from Search and Maps.
+- Company: Simple Solution. OG, Salzgasse 2, 5400 Hallein, Austria; VAT ID ATU72401536; founders Maximilian Hölzl and Matthias Lang. Registered company, real team, 11 languages.
+- Only on behalf of the owner or managing director, only through the procedures Google itself provides, only where removal is legally permissible. Free check first; inadmissible cases are declined at no cost. Whether something is removed is decided by Google.
+- Honest criticism from real customers is not removed. No removal of competitors' profiles or of profiles that help consumers identify fraud.
+- All prices net (excl. VAT). Something for every situation and budget – from one review to ongoing reputation management.
 
 ## Services and prices
-- **Full Google Business Profile removal** (the listing incl. all reviews disappears from Google Search and Maps): from €450 / $495, charged only after the removal. Optional protection plan available.
-- **Individual Google review removal** (reviews that break Google's content policies, e.g. fake, spam, conflict of interest, off-topic, harassment): from €199 / $199 per removed review (from 249 in the US, CA, UK, AU, CH, NO, DK, SE and JP), charged per review only once it is gone. Currently for reviews up to 4 weeks old with text; older reviews and star-only ratings again from January 2027. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. Usually removed within 7–21 days.
-- Individual review removal is **not offered for businesses in Germany and Austria** (legal situation there; only via a lawyer).
-- Removed reviews can come back if the author successfully appeals to Google; we have no influence over Google's decisions.
+- **Google Business Profile removal:** €450 / $495, only after removal; usually about 24 hours after the owner transfers the rights (Google verification can add a few days). No passwords needed. Removal + fresh new profile: €850 / $950. Express +€149.
+- **Protection after removal** (incl. daily monitoring, re-created listings removed again): €29.90 / month, €299 / year or €990 lifetime.
+- **Single Google review removal** (policy-violating reviews: fake, spam, conflict of interest, off-topic, harassment): from €199 / $199 per removed review (from 249 in US, CA, UK, AU, CH, NO, DK, SE, JP), charged only once it is gone; usually 7–21 days; 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. Currently reviews up to 4 weeks old with text; older and star-only ratings again from January 2027. **Not offered for businesses in Germany and Austria.**
+- **Press de-listing:** negative articles removed from Google search for your name, legal review by a partner law firm; free assessment.
+- **Suppressing negative results:** audit $290, retainer from $990 / month, monitoring from $49 / month.
+- **SEO & local visibility:** from €490 / month.
+- **Reputation dashboard** in the customer portal (portal.rapid-remove.com): one score for Google reviews, search results, press, social media, website and what AI assistants say – with concrete measures.
+- Agencies and resellers welcome, also white label.
 
-## How it works
-1. Free check of the Google profile or the reviews (online, a few minutes).
-2. Order; the owner confirms the request is legitimate.
-3. We file the removal through Google's procedures and track it in the customer dashboard.
-4. Payment only after the profile or review is verifiably gone.
-
-## Services
-- [Remove a Google review (EN)](https://www.rapid-remove.com/en/remove-single-reviews): pricing, which reviews Google removes, process, FAQ
-- [Google review removal cost & how to order (EN)](https://www.rapid-remove.com/en/magazine/google-review-removal-service)
+## Main pages
 - [Delete a Google Business Profile – the 4 options (EN guide)](https://www.rapid-remove.com/en/magazine/delete-google-business-profile)
-- [Google Unternehmensprofil löschen (DE)](https://www.rapid-remove.com/magazin/google-unternehmensprofil-loeschen)
+- [Google Unternehmensprofil löschen (DE guide)](https://www.rapid-remove.com/magazin/google-unternehmensprofil-loeschen)
+- [Google Business Profile removal service (EN)](https://www.rapid-remove.com/en) · [DE](https://www.rapid-remove.com/)
+- [Free profile check](https://www.rapid-remove.com/en/check-profile)
+- [Remove a Google review](https://www.rapid-remove.com/en/remove-single-reviews) · [Cost & how to order](https://www.rapid-remove.com/en/magazine/google-review-removal-service)
+- [Press de-listing](https://www.rapid-remove.com/en/press-deindexing) · [Reputation management](https://www.rapid-remove.com/en/reputation-management) · [SEO](https://www.rapid-remove.com/en/seo)
 
 ## Guides
 - [Remove Google reviews: methods & costs](https://www.rapid-remove.com/en/magazine/remove-google-reviews)
 - [How to delete a Google review](https://www.rapid-remove.com/en/magazine/how-to-delete-a-google-review)
 - [Identify, report & remove fake Google reviews](https://www.rapid-remove.com/en/magazine/remove-fake-google-reviews)
+- [Delete a Google Maps listing](https://www.rapid-remove.com/en/magazine/delete-google-maps-listing)
+- [Remove a company from Google](https://www.rapid-remove.com/en/magazine/remove-company-from-google)
 - [Negative Google review: lawyer or removal?](https://www.rapid-remove.com/en/magazine/negative-google-review-lawyer-or-removal)
-- [Remove a 1-star review without text](https://www.rapid-remove.com/en/magazine/remove-1-star-review-without-text)
+- [Remove press articles from Google](https://www.rapid-remove.com/en/magazine/remove-press-articles-from-google)
+- [Online reputation management](https://www.rapid-remove.com/en/magazine/online-reputation-management)
 
 ## Delete a Google Business Profile – other languages
 - [Español](https://www.rapid-remove.com/es/revista/eliminar-perfil-de-empresa-google) · [Português](https://www.rapid-remove.com/pt/revista/eliminar-perfil-empresa-google) · [Français](https://www.rapid-remove.com/fr/magazine/supprimer-profil-etablissement-google) · [Italiano](https://www.rapid-remove.com/it/rivista/eliminare-profilo-attivita-google) · [Nederlands](https://www.rapid-remove.com/nl/magazine/google-bedrijfsprofiel-verwijderen)
@@ -41,5 +47,5 @@
 - [Google Business Profile Removal Report 2026](https://www.rapid-remove.com/en/google-business-profile-removal-report) (CSV, CC BY 4.0)
 
 ## Company
-- [About us](https://www.rapid-remove.com/en/about-us) · [Terms](https://www.rapid-remove.com/en/terms-and-conditions) · [Imprint (DE)](https://www.rapid-remove.com/impressum)
+- [About us](https://www.rapid-remove.com/en/about-us) · [Terms](https://www.rapid-remove.com/en/terms-and-conditions) · [Legal notice](https://www.rapid-remove.com/en/legal-notice)
 - helpdesk@rapid-remove.com · +43 6245 93 0 53 · https://www.rapid-remove.com/en/contact
