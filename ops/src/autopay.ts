@@ -850,17 +850,17 @@ export async function coverageCheck(email: string, k: { key: string; mode: Mode 
 
 /** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */
 const NO_CHARGE: Record<string, string> = {
-  de: "Jetzt: {z} – abgebucht wird erst bei Löschung. Sie hinterlegen nur Ihre Zahlungsart; bezahlt wird nur für Bewertungen, die tatsächlich gelöscht sind.",
-  en: "Now: {z} – charged only on removal. You're only saving your payment method; you pay only for reviews that are actually removed.",
-  es: "Ahora: {z} – solo se cobra al eliminar. Solo guardas tu método de pago; pagas únicamente por las reseñas que se eliminan de verdad.",
-  fr: "Maintenant : {z} – débité seulement à la suppression. Tu enregistres seulement ton moyen de paiement ; tu ne paies que les avis réellement supprimés.",
-  it: "Ora: {z} – addebito solo alla rimozione. Salvi solo il metodo di pagamento; paghi solo per le recensioni davvero rimosse.",
-  nl: "Nu: {z} – pas afgeschreven bij verwijdering. U slaat alleen uw betaalmethode op; u betaalt alleen voor reviews die echt zijn verwijderd.",
-  pt: "Agora: {z} – cobrado só na remoção. Só guardas o método de pagamento; pagas apenas pelas avaliações realmente removidas.",
-  ja: "現在のお支払い：{z}（削除時のみ請求）。お支払い方法を登録するだけで、実際に削除された口コミの分だけお支払いいただきます。",
-  sv: "Nu: {z} – dras först vid borttagning. Du sparar bara din betalningsmetod; du betalar bara för omdömen som faktiskt tas bort.",
-  da: "Nu: {z} – trækkes først ved fjernelse. Du gemmer kun din betalingsmetode; du betaler kun for anmeldelser, der faktisk fjernes.",
-  no: "Nå: {z} – belastes først ved fjerning. Du lagrer bare betalingsmetoden; du betaler bare for anmeldelser som faktisk fjernes.",
+  de: "**Jetzt: {z} – abgebucht wird erst bei erfolgreicher Löschung.** Zur Prüfung Ihrer Karte reservieren wir kurz den Auftragswert und geben ihn sofort wieder frei. Ihre Bank zeigt das eventuell kurz als „vorgemerkt“ an – abgebucht wird nichts.",
+  en: "**Now: {z} – charged only after a successful removal.** To verify your card, we briefly reserve the order amount and release it right away. Your bank may show it as “pending” for a short time – nothing is charged.",
+  es: "**Ahora: {z} – solo se cobra tras una eliminación exitosa.** Para verificar tu tarjeta, reservamos brevemente el importe del pedido y lo liberamos enseguida. Tu banco puede mostrarlo un tiempo como “pendiente”: no se cobra nada.",
+  fr: "**Maintenant : {z} – débité seulement après une suppression réussie.** Pour vérifier ta carte, nous réservons brièvement le montant de la commande et le libérons aussitôt. Ta banque peut l’afficher un moment comme « en attente » – rien n’est débité.",
+  it: "**Ora: {z} – addebito solo dopo una rimozione riuscita.** Per verificare la tua carta, riserviamo brevemente l’importo dell’ordine e lo sblocchiamo subito. La tua banca potrebbe mostrarlo per poco come “in sospeso”: non viene addebitato nulla.",
+  nl: "**Nu: {z} – pas afgeschreven na een geslaagde verwijdering.** Om uw kaart te controleren, reserveren we kort het orderbedrag en geven het meteen weer vrij. Uw bank kan dit even als ‘in behandeling’ tonen – er wordt niets afgeschreven.",
+  pt: "**Agora: {z} – cobrado só após uma remoção bem-sucedida.** Para verificar o teu cartão, reservamos brevemente o valor da encomenda e libertamo-lo de imediato. O teu banco pode mostrá-lo por pouco tempo como “pendente” – nada é cobrado.",
+  ja: "**現在のお支払い：{z} – 削除が完了した場合のみ請求します。** カード確認のため、ご注文金額を一時的に確保し、すぐに解除します。銀行明細に短期間「保留」と表示される場合がありますが、請求は行われません。",
+  sv: "**Nu: {z} – dras först efter en lyckad borttagning.** För att kontrollera ditt kort reserverar vi kort orderbeloppet och släpper det direkt. Din bank kan visa det en kort stund som ”reserverat” – inget dras.",
+  da: "**Nu: {z} – trækkes først efter en vellykket fjernelse.** For at bekræfte dit kort reserverer vi kort ordrebeløbet og frigiver det med det samme. Din bank kan vise det kortvarigt som ”reserveret” – der trækkes intet.",
+  no: "**Nå: {z} – belastes først etter en vellykket fjerning.** For å bekrefte kortet ditt reserverer vi kort ordrebeløpet og frigir det med en gang. Banken din kan vise det en kort stund som «reservert» – ingenting trekkes.",
 };
 
 /* ---- Routen ---- */

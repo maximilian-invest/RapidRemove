@@ -599,6 +599,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
         <h2>{T("pgLaterH")}</h2>
         <p>{T(prof ? "pgLaterPprof" : "pgLaterP")}</p>
         <div className="secure"><ShieldCheck />{T("pgSafe")}</div>
+        <p className="pg-hold">{T("pgHold")}</p>
       </>
     );
     foot = (
@@ -621,6 +622,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
           <div><span className="ico"><FileText /></span><b>{T("pgF3")}</b></div>
         </div>
         <div className="secure"><Lock />{T("pgSafe")}</div>
+        <p className="pg-hold">{T("pgHold")}</p>
       </>
     );
     foot = (
@@ -1872,7 +1874,7 @@ export default function CustomerDashboard() {
     return (
       <div className="paycard apc">
         <span className="ico"><CreditCard /></span>
-        <span><b>{T("apT")}{data.autopayTest ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apS")}</span></span>
+        <span><b>{T("apT")}{data.autopayTest ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apS")}</span><span className="pg-hold">{T("pgHold")}</span></span>
         <button className="mini" disabled={!!busy} onClick={apStart}>{busy === "ap" ? <Loader className="spin" /> : <Lock />}{T("apBtn")}</button>
       </div>
     );
