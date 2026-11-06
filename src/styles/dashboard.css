@@ -1662,7 +1662,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
   .rra .rp-m-tx>b{font-size:16px}
   .rra .rp-m-tx>span{font-size:13.5px}
   .rra .rp-m-var,.rra .rp-m-opts,.rra .rp-m-sub,.rra .rp-m-warn{margin-left:58px}
-  .rra .rp-m-bar{bottom:20px;padding:12px 12px 12px 22px;border-radius:30px}
+  .rra .rp-m-bar{bottom:20px;margin-right:76px;padding:12px 12px 12px 22px;border-radius:30px}
   .rra .rp-m-bar-t b{font-size:20px}
   .rra .rp-m-go{height:52px;padding:0 26px;font-size:16px}
 }
