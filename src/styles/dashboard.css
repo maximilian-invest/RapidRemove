@@ -1674,9 +1674,10 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-tabs button{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:19px;background:#f4f4f4;color:#3d3d3d;font-size:14px;font-weight:700}
 .rra .rp-tabs button.on{background:#111;color:#fff}
 .rra .rp-tabs i{font-style:normal;font-size:12px;opacity:.7}
-.rra .rp-loc-wrap{display:flex;align-items:stretch;gap:8px;margin-bottom:10px}
-.rra .rp-loc-wrap .rp-loc{flex:1;min-width:0;margin-bottom:0}
-.rra .rp-loc-x{flex:none;width:52px;border-radius:24px;background:#f4f4f4;color:#6b6b6b;display:grid;place-items:center}
+.rra .rp-loc-wrap{display:flex;align-items:center;gap:2px;margin-bottom:10px;padding-right:12px;border-radius:24px;background:linear-gradient(120deg,#fff4ea,#fff 75%);box-shadow:inset 0 0 0 1px #ffe2c7}
+.rra .rp-loc-wrap .rp-loc,.rra .rp-loc-wrap .rp-loc:hover{flex:1;min-width:0;margin:0;background:none;box-shadow:none;padding-right:6px}
+.rra .rp-loc-x{flex:none;width:38px;height:38px;border-radius:50%;background:transparent;color:#a8a8a8;display:grid;place-items:center;transition:background .15s,color .15s}
+.rra .rp-loc-x:hover{background:#fdecec;color:#b91c1c}
 .rra .rp-loc-x svg{width:18px;height:18px}
 .rra .rp-arch{background:#fafafa;box-shadow:inset 0 0 0 1px #eee}
 .rra .rp-arch .rp-plus b{font-size:18px;font-weight:800}
@@ -1686,4 +1687,4 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-mini.red{background:#e23b3b;color:#fff}
 .rra .rp-icon-btn{width:38px;height:38px;border-radius:50%;background:#f4f4f4;color:#6b6b6b;display:grid;place-items:center}
 .rra .rp-icon-btn svg{width:17px;height:17px}
-@media (min-width:821px){.rra .rp-loc-wrap{max-width:780px}.rra .rp-loc-wrap .rp-loc{max-width:none}}
+@media (min-width:821px){.rra .rp-loc-wrap{max-width:720px}.rra .rp-loc-wrap .rp-loc{max-width:none}.rra .rp-loc-wrap:hover{background:linear-gradient(120deg,#ffecd9,#fff 75%)}}
