@@ -9,7 +9,7 @@ import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
-import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY } from "./autopay";
+import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY, retryProfileCharge } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf, loadCustomerOrders } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
@@ -340,9 +340,15 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
     const o = await loadOrder(clip(b.orderId, 40));
-    if (!o || o.service !== "reviews") return reply.code(404).send({ ok: false, error: "order" });
+    if (!o) return reply.code(404).send({ ok: false, error: "order" });
     if (!(autopayAvailable(o.email) && (await hasSavedMethod(o.email).catch(() => false)))) return reply.code(400).send({ ok: false, error: "Keine Zahlungsart hinterlegt" });
     await insertEvent({ orderId: o.id, email: o.email, type: "note", title: "Admin: Abbuchung erneut angestoßen", auto: false }).catch(() => {});
+    if (o.service !== "reviews") { // Profil-Löschung
+      const r = await retryProfileCharge(o.id).catch((e) => ({ ok: false, error: String((e as Error)?.message || e).slice(0, 160) }) as { ok: boolean; paid?: boolean; error?: string });
+      bumpChange();
+      if (!r.ok) return reply.code(400).send({ ok: false, error: r.error || "fehlgeschlagen" });
+      return { ok: true, profile: true, paid: !!r.paid };
+    }
     const charged = await chargeDue(o.email, ADMIN_RETRY).catch(() => null);
     bumpChange();
     const due = (await loadCustomerOrders(String(o.email).toLowerCase())).orders.reduce((s, v) => s + (Number(v.toPay) || 0), 0);

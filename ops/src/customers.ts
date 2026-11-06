@@ -216,6 +216,8 @@ export const autopayHooks: {
   saved?: (email: string) => Promise<boolean>; // gültige Zahlungsart hinterlegt
   openInvoice?: (email: string, cur: string) => Promise<{ url: string; amount: number; n: number } | null>; // offene Fehlschlag-Rechnung (Autopay)
   settle?: (email: string) => Promise<void>; // Webhook: offene Fehlschlag-Rechnung wurde bezahlt → verbuchen
+  profilePaid?: (orderId: string) => void; // Profil-Auftrag nachträglich automatisch bezahlt → Meta-Purchase + Schutz-Hinweis
+  profileFallback?: (orderId: string, why: string) => Promise<void>; // Profil: endgültig fehlgeschlagen → Zahlungslink + Auto-Mahnungen
   info?: (email: string) => Promise<{ billing?: Record<string, unknown>; available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
 } = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");

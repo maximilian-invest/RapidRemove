@@ -43,7 +43,7 @@ import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./part
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { PORTAL_URL } from "./dashUrl";
-import { createAutologin, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { createAutologin, autopayHooks, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -2159,6 +2159,11 @@ app.post("/admin/paylink", async (req, reply) => {
     if (express && PROFILE_LIST_PRICES.includes(sa) && Math.abs(total - (sa + pa)) < 0.01) total = Math.round((total + PROFILE_EXPRESS_FEE) * 100) / 100; }
   try {
     const tplKey = clip(b.template, 40) || "zahlungslink";
+    // Schutz gegen Doppelklick/Parallel-Lauf (06.11.2026, RR-701686: Stufe 1 + 2 im Abstand von 4 s): pro Auftrag max. 1 Mahnung je 2 Min.
+    if (tplKey === "mahnung" && orderId && pool) {
+      const dup = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Mahnung gesendet%' AND created_at > now() - interval '2 minutes' LIMIT 1`, [orderId]).catch(() => ({ rowCount: 0 }));
+      if (dup.rowCount) return reply.code(409).send({ ok: false, error: "Mahnung wurde gerade erst gesendet" });
+    }
     const t = TEMPLATES[tplKey] || TEMPLATES["zahlungslink"];
     const money = currency === "usd"
       ? `$ ${total.toLocaleString("en-US")}`
@@ -2643,6 +2648,9 @@ async function fixPayPrefAmounts(): Promise<void> {
 
 /** Automatische Abbuchung (Profil) abgelehnt/blockiert (z. B. Stripe Radar) → Kunde bekommt sofort den normalen Zahlungslink
  *  (zahlt dann selbst online – wird deutlich seltener blockiert); danach läuft die Auto-Mahnung wie gewohnt (15.10.2026). */
+// Autopay (Profil): nach endgültigem Fehlschlag → Zahlungslink + Mahnungen; nachträglich bezahlt → Meta + Schutz-Hinweis.
+autopayHooks.profileFallback = (orderId, why) => sendPaylinkAfterAutoFail(orderId, why);
+autopayHooks.profilePaid = (orderId) => { void sendPurchaseForOrder(orderId, app.log); void scheduleProtectionUpsell(orderId, app.log).catch(() => {}); };
 async function sendPaylinkAfterAutoFail(orderId: string, why: string): Promise<void> {
   if (!pool) return;
   const o = (await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, pay, status, raw FROM orders WHERE id=$1`, [orderId])).rows[0] as Record<string, any> | undefined;
@@ -2717,7 +2725,8 @@ app.post("/admin/order-status", async (req, reply) => {
   // setzen. Sonst: neuer Abbuchungsversuch → abgelehnt → „Order Completed“-Mail direkt nach der Mahnung (16.10.2026).
   if (status === "done" && prev !== "done" && pay !== "paid" && pay !== "mahnung") void chargeProfileOrder(id).then(async (r) => {
     if (r?.ok) { void sendPurchaseForOrder(id, app.log); void scheduleProtectionUpsell(id, app.log).catch(() => {}); }
-    else if (r && !r.ok) await sendPaylinkAfterAutoFail(id, r.error || "").catch((e) => app.log.error({ err: e, orderId: id }, "Zahlungslink nach fehlgeschlagener Abbuchung nicht gesendet"));
+    else if (r && !r.ok && !r.retry) await sendPaylinkAfterAutoFail(id, r.error || "").catch((e) => app.log.error({ err: e, orderId: id }, "Zahlungslink nach fehlgeschlagener Abbuchung nicht gesendet"));
+    // r.retry: Rechnung bleibt offen, Kunde hat die Mail „Zahlung fehlgeschlagen", 7 Versuche laufen – Zahlungslink erst, wenn alle scheitern.
   }).catch((e) => app.log.error({ err: e }, "Profil-Abbuchung fehlgeschlagen"));
   // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (je Auftrag nur 1×).
   // Mehrere Aufträge desselben Kunden, die kurz hintereinander auf bezahlt gehen (eine Sammelüberweisung) → EINE Mail.

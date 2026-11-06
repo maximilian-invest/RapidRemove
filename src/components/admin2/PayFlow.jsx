@@ -7,7 +7,7 @@
    läuft es ohne Zahlung ab, geht automatisch die Zahlungsziel-Mail raus. Weitere Mahnungen sendet ihr selbst. */
 import React from "react";
 import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard, PauseCircle, PlayCircle } from "lucide-react";
-import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi, dunPauseApi } from "@/lib/admin-api";
+import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi, dunPauseApi, reviewsChargeRetryApi } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
 
@@ -137,6 +137,17 @@ export function PayActions({ o, ctx, r, pm, group = [], altHref }) {
   const [armed, setArmed] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   React.useEffect(() => { if (!armed) return undefined; const t = setTimeout(() => setArmed(""), 3500); return () => clearTimeout(t); }, [armed]);
+  // Profil mit hinterlegter Zahlungsart: Abbuchung erneut versuchen (offene Rechnung übernehmen, sonst neu). Fehlschlag → Kunde bekommt Mail + 7 Versuche.
+  const retryCharge = async () => {
+    if (busy) return;
+    setBusy(true); setArmed("retry");
+    try {
+      const r = await reviewsChargeRetryApi(o.id);
+      ctx.toast(r.paid ? "Abgebucht – Rechnung per Mail an den Kunden" : "Abbuchung fehlgeschlagen – Kunde hat die Mail „Zahlung fehlgeschlagen“, neue Versuche laufen automatisch (7 in 7 Tagen)");
+      if (ctx.refresh) ctx.refresh(true);
+    } catch (e) { ctx.toast("Fehler: " + e.message); }
+    setBusy(false); setArmed("");
+  };
   const paid = async (list) => {
     const k = list.length > 1 ? "all" : "one";
     if (armed !== k) { setArmed(k); return; }
@@ -177,6 +188,11 @@ export function PayActions({ o, ctx, r, pm, group = [], altHref }) {
       {group.length ? (
         <button type="button" className={"paylk" + (armed === "all" ? " cf" : "")} disabled={busy} onClick={() => paid([o, ...group])}>
           {armed === "all" ? <CheckCircle2 /> : <CircleCheck />}{armed === "all" ? `Tippen zum Bestätigen: alle ${group.length + 1} bezahlt` : `Sammelzahlung erhalten? (alle ${group.length + 1})`}
+        </button>
+      ) : null}
+      {!isRev ? (
+        <button type="button" className="paylk" disabled={busy} onClick={retryCharge}>
+          {busy && armed === "retry" ? <Loader className="spin" /> : <CreditCard />}Abbuchung erneut versuchen (hinterlegte Zahlungsart)
         </button>
       ) : null}
       <button type="button" className={"paylk" + (armed === "one" ? " cf" : "")} disabled={busy} onClick={() => paid([o])}>
