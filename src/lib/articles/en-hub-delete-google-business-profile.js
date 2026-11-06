@@ -127,7 +127,7 @@ const article = {
     ] },
     { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one or a few reviews gone while keeping the profile, RapidRemove offers that too: [removal of individual reviews](/en/remove-single-reviews/) – $199 per removed review with text up to 4 weeks old (approx. 90 % success chance) – all others, e.g. older or star-only reviews, are available again from January 2027 – and you only pay for reviews that are actually removed." },
 
-    { t: "cta", title: "See whether your profile can be removed – free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/en/check-profile", trust: ["Free analysis", "Pay only after removal", "No risk"] },
+    { t: "cta", title: "See whether your profile can be removed – free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/en/check-profile", trust: ["Free analysis", "Pay only after removal", "No passwords needed"] },
 
     { t: "h2", id: "single-vs-profile", text: "Single reviews vs. the whole profile", toc: "Reviews vs. profile" },
     { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear one or a few unfair reviews while keeping the profile, you don't have to go it alone: with our [single-review removal](/en/remove-single-reviews/) you tick the reviews that should go and pay only for those actually removed (details: [Google review removal service](/en/magazine/google-review-removal-service/)). All options compared: [have a Google review removed](/en/magazine/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },
@@ -173,7 +173,7 @@ const article = {
     { t: "p", text: "That's how a profile can appear shortly after you register your business — without you ever having gone to Google yourself." },
     { t: "p", text: "**Why this matters:** However the profile came about, the consequence is the same: once it exists, it collects reviews and shows up in Search and Maps. You don't have to have created it or manage it to be affected by it — which is exactly why simply ignoring it won't do. You still have to remove it actively." },
 
-    { t: "cta", title: "Ready to remove your profile for good?", text: "Run the free removability check – in seconds, no obligation.", btn: "Start free check", href: "https://www.rapid-remove.com/en/check-profile", trust: ["Free analysis", "Pay only after removal", "No risk"] },
+    { t: "cta", title: "Ready to remove your profile for good?", text: "Run the free removability check – in seconds, no obligation.", btn: "Start free check", href: "https://www.rapid-remove.com/en/check-profile", trust: ["Free analysis", "Pay only after removal", "No passwords needed"] },
   ],
   faq: [
     { q: "Can I delete my Google Business Profile myself?", a: "You can mark it “permanently closed” or remove it from your account, but neither deletes the public listing – it stays visible in Search and Maps with all its reviews. A complete removal goes through Google's official processes." },
