@@ -94,9 +94,13 @@ async function ensureTables(): Promise<void> {
   ready = true;
 }
 
-/** Bestellungen mit Schutz/Überwachung, deren Profil gelöscht ist → in die Überwachung. */
-async function syncFromOrders(): Promise<void> {
-  await pool!.query(`
+/** Bestellungen mit Schutz/Überwachung, deren Profil gelöscht ist → in die Überwachung. Liefert die neu aufgenommenen IDs.
+ *  Lebenslang + alle Abos: pauschal, unabhängig von Zahlung/Abo-Status (06.11.2026). */
+async function syncFromOrders(): Promise<number[]> {
+  // Schutz nachträglich auf Lebenslang geändert (z. B. Upgrade über „Zahlungslink ändern") → Typ nachziehen.
+  await pool!.query(`UPDATE monitor_profiles m SET type = 'lifetime' FROM orders o
+     WHERE m.order_id = o.id AND m.source = 'order' AND o.protection = 'lifetime' AND m.type <> 'lifetime'`);
+  const ins = await pool!.query(`
     INSERT INTO monitor_profiles (order_id, business_name, address, place_id, maps_url, cust_name, cust_email, lang, type, since, source)
     SELECT o.id,
            COALESCE(NULLIF(o.profile, ''), NULLIF(o.company, ''), o.id),
@@ -112,7 +116,27 @@ async function syncFromOrders(): Promise<void> {
        AND COALESCE(o.protection, '') NOT IN ('', 'none')
        AND COALESCE(o.service, '') NOT IN ('reviews', 'deindex')
     ON CONFLICT (order_id) DO NOTHING
+    RETURNING id
   `);
+  return (ins.rows as { id: number }[]).map((x) => x.id);
+}
+
+/** Jede Minute: frisch gelöschte Profile mit Schutz (Lebenslang/Abo) sofort aufnehmen und gleich einmal prüfen –
+ *  nicht erst beim 05:00-Scan. Prüfungen nacheinander, damit ein Schwung neuer Aufträge die Suche nicht flutet. */
+let enrolling = false;
+async function enrollTick(): Promise<void> {
+  if (enrolling || !dbReady() || !pool) return;
+  enrolling = true;
+  try {
+    await ensureTables();
+    const ids = await syncFromOrders();
+    if (ids.length) log({ ids }, "Monitor: neu in Überwachung");
+    for (const id of ids) {
+      if (single.has(id)) continue;
+      single.add(id);
+      try { await checkProfile(id, "Neu in Überwachung"); } catch { /* nächster Scan */ } finally { single.delete(id); }
+    }
+  } finally { enrolling = false; }
 }
 
 type Profile = {
@@ -758,7 +782,10 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
 /** Zeitplan starten: jede Minute prüfen, ob der 05:00-Scan (Wien) heute schon lief. */
 export function startMonitorScheduler(app: FastifyInstance): void {
   log = (o, m) => app.log.info(o, m);
-  const tick = () => { autoTick().catch((e) => app.log.error({ err: String(e) }, "Monitor-Zeitplan fehlgeschlagen")); };
+  const tick = () => {
+    autoTick().catch((e) => app.log.error({ err: String(e) }, "Monitor-Zeitplan fehlgeschlagen"));
+    enrollTick().catch((e) => app.log.error({ err: String(e) }, "Monitor: Aufnahme neuer Profile fehlgeschlagen"));
+  };
   setTimeout(tick, 30_000);
   setInterval(tick, 60_000);
 }
