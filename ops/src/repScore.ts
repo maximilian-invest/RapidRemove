@@ -60,7 +60,7 @@ const aiErr = new Map<string, { why: string; at: number }>();
 const aiErrTold = new Map<string, number>();
 function noteAi(ai: string, status: number, msg: string) {
   const m = String(msg || "");
-  const why = /credit|billing|quota|exceeded|insufficient/i.test(m) || status === 402 ? "kein Guthaben" : status === 401 || status === 403 || /invalid api key|api key not valid|unauthor/i.test(m) ? "Key ungültig" : status === 429 ? "Limit erreicht" : "Fehler " + status;
+  const why = /credit|billing|quota|exceeded|insufficient/i.test(m) || status === 402 ? "kein Guthaben" : status === 401 || /invalid api key|api key not valid|unauthor/i.test(m) ? "Key ungültig" : status === 429 ? "Limit erreicht" : "Fehler " + status;
   aiErr.set(ai, { why, at: Date.now() });
   if (why !== "Limit erreicht" && Date.now() - (aiErrTold.get(ai) || 0) > 6 * 3600_000) { aiErrTold.set(ai, Date.now()); void notifyTeam(`${ai}: ${why}`, `Reputations-Scans: ${ai} antwortet nicht (${why}). ${m.slice(0, 140)}`).catch(() => {}); }
 }
@@ -228,18 +228,24 @@ async function askGemini(prompt: string, sink?: Src[]): Promise<string> {
 async function askPerplexity(prompt: string, sink?: Src[]): Promise<string> {
   const key = (process.env.PERPLEXITY_API_KEY || "").trim();
   if (!key) return "";
-  try {
-    const res = await fetch("https://api.perplexity.ai/chat/completions", {
-      method: "POST", signal: AbortSignal.timeout(90_000),
-      headers: { "content-type": "application/json", authorization: "Bearer " + key },
-      body: JSON.stringify({ model: process.env.PERPLEXITY_MODEL || "sonar", messages: [{ role: "user", content: prompt }], max_tokens: 500 }),
-    });
-    const j = (await res.json().catch(() => ({}))) as J;
-    if (!res.ok) { console.warn("Rep-Scan Perplexity", res.status, String(j.error?.message || j.detail || "").slice(0, 160)); noteAi("Perplexity", res.status, String(j.error?.message || j.detail || "")); return ""; }
-    if (Array.isArray(j.search_results)) for (const r of j.search_results) pushSrc(sink, r.url, r.title);
-    else if (Array.isArray(j.citations)) for (const u of j.citations) pushSrc(sink, u, "");
-    return String(j.choices?.[0]?.message?.content || "").replace(/\[\d+\]/g, "").trim();
-  } catch (e) { console.warn("Rep-Scan Perplexity", (e as Error).message); return ""; }
+  // Perplexity hat Sonar durch die Agent-API ersetzt (/v1/responses bzw. /v1/agent)
+  for (const path of ["v1/responses", "v1/agent"]) {
+    try {
+      const res = await fetch(`https://api.perplexity.ai/${path}`, {
+        method: "POST", signal: AbortSignal.timeout(90_000),
+        headers: { "content-type": "application/json", authorization: "Bearer " + key },
+        body: JSON.stringify({ input: prompt, effort: process.env.PERPLEXITY_EFFORT || "fast", ...(process.env.PERPLEXITY_MODEL ? { model: process.env.PERPLEXITY_MODEL } : {}) }),
+      });
+      const j = (await res.json().catch(() => ({}))) as J;
+      if (res.status === 404) continue;
+      if (!res.ok) { const m = String(j.error?.message || j.detail || j.message || ""); console.warn("Rep-Scan Perplexity", path, res.status, m.slice(0, 160)); noteAi("Perplexity", res.status, m); return ""; }
+      const out: J[] = Array.isArray(j.output) ? j.output : [];
+      for (const o of out) if (o.type === "search_results") for (const r of Array.isArray(o.results) ? o.results : []) pushSrc(sink, r.url, r.title);
+      const txt = typeof j.output_text === "string" && j.output_text.trim() ? j.output_text : out.filter((o) => o.type === "message").flatMap((o) => (Array.isArray(o.content) ? o.content : [])).map((c: J) => c.text || "").join("");
+      return String(txt).replace(/\[\d+\]/g, "").trim();
+    } catch (e) { console.warn("Rep-Scan Perplexity", (e as Error).message); return ""; }
+  }
+  return "";
 }
 /* KI-Antworten nach Thema statt nach KI: je Thema ein Score aus allen KIs + eine gemeinsame Zusammenfassung */
 const DIMS: { key: string; name: string; hint: string }[] = [
@@ -651,7 +657,16 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   const val = (known: boolean, sent: string) => (!known ? 4 : sent === "pos" ? 9 : sent === "neg" ? 3 : 6.5);
   const one = (k: Ctx["ki"][number]) => { const a = (k.answers || []).filter((x) => x.sent !== "none"); return a.length ? a.reduce((s2, x) => s2 + (x.key.startsWith("rec") ? kiAnsVal("rec", x as J) : val(x.known, x.sent)), 0) / a.length : val(k.known, k.sent); };
   let ki = fix.ki ? 9 : !c.ki.length ? 5 : c.ki.reduce((s, k) => s + one(k), 0) / c.ki.length;
-  if (c.aiOverview) ki += c.aiOverviewSent === "neg" ? -3 : c.aiOverviewSent === "pos" ? 1 : 0;
+  // Aus den Themen rechnen: Kritik und Kundenerfahrungen zählen am meisten, das schwächste Thema deckelt den Wert
+  const dims = fix.ki ? [] : buildDims(c.ki as unknown as J[], undefined);
+  if (dims.length) {
+    const DW: Record<string, number> = { kritik: 2.5, erfahrungen: 2.5, serioes: 2, rec: 1.5, kennen: 1, angebot: 0.5 };
+    const wsum = dims.reduce((a2, d) => a2 + (DW[d.key] || 1), 0);
+    ki = dims.reduce((a2, d) => a2 + Number(d.score) * (DW[d.key] || 1), 0) / wsum;
+    const worst = Math.min(...dims.filter((d) => d.key !== "angebot").map((d) => Number(d.score)));
+    if (worst <= 2) ki = Math.min(ki, 5); else if (worst <= 3) ki = Math.min(ki, 6); else if (worst <= 4) ki = Math.min(ki, 7);
+  }
+  if (c.aiOverview && c.aiOverviewSent === "neg") ki -= 2;
   // Social
   const nets = new Set(c.social.map((s) => s.net));
   const ns = fix.social ? Math.max(3, nets.size) : nets.size;
