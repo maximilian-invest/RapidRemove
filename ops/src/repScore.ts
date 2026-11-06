@@ -64,7 +64,11 @@ const aiErr = new Map<string, { why: string; at: number }>();
 const aiErrTold = new Map<string, number>();
 function noteAi(ai: string, status: number, msg: string) {
   const m = String(msg || "");
-  const why = /credit|billing|quota|exceeded|insufficient/i.test(m) || status === 402 ? "kein Guthaben" : status === 401 || /invalid api key|api key not valid|unauthor/i.test(m) ? "Key ungültig" : status === 429 ? "Limit erreicht" : "Fehler " + status;
+  // 429 = zu viele Anfragen bzw. Kontingent (Gemini meldet auch das Minuten-/Tageskontingent als „exceeded your current quota“) – das ist KEIN fehlendes Guthaben
+  const why = status === 402 || /insufficient (funds|balance|credit)|credit balance|no credits|out of credits|payment required/i.test(m) ? "kein Guthaben"
+    : status === 401 || /invalid api key|api key not valid|unauthor/i.test(m) ? "Key ungültig"
+    : status === 429 && /quota/i.test(m) ? "Kontingent erschöpft"
+    : status === 429 ? "Limit erreicht" : "Fehler " + status;
   aiErr.set(ai, { why, at: Date.now() });
   if (why !== "Limit erreicht" && Date.now() - (aiErrTold.get(ai) || 0) > 6 * 3600_000) { aiErrTold.set(ai, Date.now()); void notifyTeam(`${ai}: ${why}`, `Reputations-Scans: ${ai} antwortet nicht (${why}). ${m.slice(0, 140)}`).catch(() => {}); }
 }
@@ -208,13 +212,32 @@ async function askChatGPT(prompt: string, sink?: Src[]): Promise<string> {
   return "";
 }
 /** Gemini mit Google-Suche (Grounding). Modell: GEMINI_MODEL, Standard gemini-flash-latest. */
-async function askGemini(prompt: string, sink?: Src[]): Promise<string> {
+/* Gemini/Perplexity: nicht alle Fragen gleichzeitig schicken (sonst 429), bei 429 kurz warten und erneut versuchen */
+const lanes = new Map<string, { n: number; q: (() => void)[] }>();
+async function lane<T>(name: string, max: number, fn: () => Promise<T>): Promise<T> {
+  const l = lanes.get(name) || { n: 0, q: [] }; lanes.set(name, l);
+  if (l.n >= max) await new Promise<void>((r) => l.q.push(r));
+  l.n++;
+  try { return await fn(); } finally { l.n--; const nx = l.q.shift(); if (nx) nx(); }
+}
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+async function fetch429(url: string, init: RequestInit, tries = 3): Promise<Response> {
+  let res = await fetch(url, init);
+  for (let i = 1; i < tries && res.status === 429; i++) {
+    const ra = Number(res.headers.get("retry-after")) || 0;
+    await wait(Math.min(20_000, ra ? ra * 1000 : 4000 * i));
+    res = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) });
+  }
+  return res;
+}
+async function askGemini(prompt: string, sink?: Src[]): Promise<string> { return lane("gemini", Number(process.env.GEMINI_PARALLEL) || 2, () => askGemini0(prompt, sink)); }
+async function askGemini0(prompt: string, sink?: Src[]): Promise<string> {
   const key = (process.env.GEMINI_API_KEY || "").trim();
   if (!key) return "";
   const models = [process.env.GEMINI_MODEL || "gemini-flash-latest", "gemini-2.5-flash"];
   for (const model of [...new Set(models)]) {
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      const res = await fetch429(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
         method: "POST", signal: AbortSignal.timeout(90_000),
         headers: { "content-type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], tools: [{ google_search: {} }] }),
@@ -229,13 +252,14 @@ async function askGemini(prompt: string, sink?: Src[]): Promise<string> {
   return "";
 }
 /** Perplexity (Sonar, sucht immer im Web). Modell: PERPLEXITY_MODEL, Standard sonar. */
-async function askPerplexity(prompt: string, sink?: Src[]): Promise<string> {
+async function askPerplexity(prompt: string, sink?: Src[]): Promise<string> { return lane("pplx", Number(process.env.PERPLEXITY_PARALLEL) || 2, () => askPerplexity0(prompt, sink)); }
+async function askPerplexity0(prompt: string, sink?: Src[]): Promise<string> {
   const key = (process.env.PERPLEXITY_API_KEY || "").trim();
   if (!key) return "";
   // Perplexity hat Sonar durch die Agent-API ersetzt (/v1/responses bzw. /v1/agent)
   for (const path of ["v1/responses", "v1/agent"]) {
     try {
-      const res = await fetch(`https://api.perplexity.ai/${path}`, {
+      const res = await fetch429(`https://api.perplexity.ai/${path}`, {
         method: "POST", signal: AbortSignal.timeout(90_000),
         headers: { "content-type": "application/json", authorization: "Bearer " + key },
         body: JSON.stringify({ input: prompt, effort: process.env.PERPLEXITY_EFFORT || "fast", ...(process.env.PERPLEXITY_MODEL ? { model: process.env.PERPLEXITY_MODEL } : {}) }),

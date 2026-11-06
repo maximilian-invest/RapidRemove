@@ -412,7 +412,6 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
         </section>
       ) : null}
       <PotentialCue loc={loc} onOpen={() => setView("measures")} />
-      {r.profile ? <ProfileBox p={r.profile} /> : null}
       <div className="rp-grid">
         <div className="rp-main">
           <section className="rp-box">
