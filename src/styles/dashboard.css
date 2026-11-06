@@ -1540,7 +1540,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 /* ---- Reputation: Potenzial-Karte, Ziel im Verlauf, Maßnahmen-Seite (06.11.2026) ---- */
 .rra .rp-cue{position:relative;overflow:hidden;display:grid;grid-template-columns:112px minmax(0,1fr);column-gap:16px;row-gap:4px;align-items:center;padding:16px;margin:0 0 22px;border-radius:24px;background:#0d0d0d;color:#fff}
 .rra .rp-cue>*{position:relative}
-.rra .rp-cue .rp-cue-glow{position:absolute;width:320px;height:320px;left:-120px;top:-150px;border-radius:50%;background:radial-gradient(circle,rgba(255,106,0,.4),rgba(255,106,0,0) 62%);animation:rpCueGlow 6s ease-in-out infinite;pointer-events:none}
+.rra .rp-cue .rp-cue-glow{position:absolute;width:320px;height:320px;left:-120px;top:-150px;border-radius:50%;background:radial-gradient(circle,rgba(255,106,0,.4),rgba(255,106,0,0) 62%);pointer-events:none}
 @keyframes rpCueGlow{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,30px) scale(1.12)}}
 .rra .rp-goal{position:relative;width:112px;height:112px;grid-row:1/3;flex:none}
 .rra .rp-goal svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
@@ -1554,27 +1554,27 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-cue-t{display:flex;flex-direction:column;gap:6px;min-width:0}
 .rra .rp-cue-k{font-size:11px;font-weight:800;letter-spacing:1.2px;color:#ff8a3d}
 .rra .rp-cue-h{font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin:0}
-.rra .rp-shim{background:linear-gradient(90deg,#4ade80 0%,#bbf7d0 45%,#4ade80 60%,#22c55e 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rpShim2 3s linear infinite}
+.rra .rp-shim{background:linear-gradient(90deg,#4ade80 0%,#bbf7d0 45%,#4ade80 60%,#22c55e 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
 @keyframes rpShim2{from{background-position:120% 0}to{background-position:-100% 0}}
 .rra .rp-cue-btn{grid-column:1/-1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;height:50px;margin-top:14px;border-radius:25px;background:#fff;color:#111;font-size:16px;font-weight:800;box-shadow:0 10px 30px rgba(255,106,0,.35)}
-.rra .rp-cue-btn::before{content:"";position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(90deg,rgba(255,138,61,0),rgba(255,138,61,.45),rgba(255,138,61,0));transform:skewX(-20deg);animation:rpSweep 3.2s ease-in-out infinite}
-@keyframes rpSweep{0%,55%{left:-80px}100%{left:110%}}
-.rra .rp-cue-btn svg{width:18px;height:18px;animation:rpNudge 1.6s ease-in-out infinite}
+.rra .rp-cue-btn::before{content:"";position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(90deg,rgba(255,138,61,0),rgba(255,138,61,.45),rgba(255,138,61,0));transform:skewX(-20deg);animation:rpSweep 1.4s ease-in-out 1.8s 1 both}
+@keyframes rpSweep{0%{left:-80px}100%{left:110%}}
+.rra .rp-cue-btn svg{width:18px;height:18px}
 @keyframes rpNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 .rra .rp-ch-leg{display:flex;align-items:center;gap:6px;font-size:12px;color:#6b6b6b}
 .rra .rp-ch-leg i{display:inline-block;width:14px;height:3px;border-radius:2px;background:#ff8000;margin-left:6px}
 .rra .rp-ch-leg i.d{background:repeating-linear-gradient(90deg,#16a34a 0 4px,transparent 4px 7px)}
-.rra .rp-goal-line{animation:rpDash 1s linear infinite}
+.rra .rp-goal-line{}
 @keyframes rpDash{to{stroke-dashoffset:-14}}
-.rra .rp-dot.goal{width:16px;height:16px;margin:-8px 0 0 -8px;background:#16a34a;box-shadow:0 0 0 3px #fff,0 0 0 9px rgba(74,222,128,.3);animation:rpHalo 1.8s ease-out infinite}
+.rra .rp-dot.goal{width:16px;height:16px;margin:-8px 0 0 -8px;background:#16a34a;box-shadow:0 0 0 3px #fff,0 0 0 8px rgba(74,222,128,.3)}
 @keyframes rpHalo{0%{box-shadow:0 0 0 3px #fff,0 0 0 4px rgba(74,222,128,.45)}100%{box-shadow:0 0 0 3px #fff,0 0 0 16px rgba(74,222,128,0)}}
 .rra .rp-val.goal{background:#16a34a;transform:translate(-50%,-170%);white-space:nowrap}
 .rra .rp-chart-x span.goal{color:#15803d;font-weight:800}
 /* Maßnahmen-Seite */
 .rra .rp-m-hero{grid-template-columns:1fr;justify-items:center;text-align:center;padding:22px 18px}
-.rra .rp-m-hero .rp-goal{grid-row:auto;width:170px;height:170px}
-.rra .rp-m-hero .rp-goal-c b{font-size:72px;letter-spacing:-4px}
-.rra .rp-m-hero .rp-goal-p{font-size:13px}
+.rra .rp-m-hero .rp-goal{grid-row:auto;width:140px;height:140px}
+.rra .rp-m-hero .rp-goal-c b{font-size:58px;letter-spacing:-3px}
+.rra .rp-m-hero .rp-goal-p{font-size:11.5px}
 .rra .rp-m-hero .rp-cue-t{align-items:center;margin-top:8px}
 .rra .rp-m-leg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;color:#cfcfcf}
 .rra .rp-m-leg span{display:flex;align-items:center;gap:6px}
@@ -1582,7 +1582,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-m-leg b{color:#fff;font-variant-numeric:tabular-nums}
 .rra .rp-m-alert{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#fca5a5}
 .rra .rp-pdot{position:relative;width:8px;height:8px;border-radius:50%;background:#ef4444;flex:none}
-.rra .rp-pdot::after{content:"";position:absolute;inset:0;border-radius:50%;background:#ef4444;animation:rpPing 1.6s cubic-bezier(0,0,.2,1) infinite}
+.rra .rp-pdot::after{content:none}
 @keyframes rpPing{0%{transform:scale(1);opacity:.8}100%{transform:scale(3);opacity:0}}
 .rra .rp-m-list{border-radius:22px;box-shadow:inset 0 0 0 1.5px #ececec;padding:2px 16px}
 .rra .rp-m-lab{font-size:11.5px;font-weight:800;letter-spacing:1px;color:#8a8a8a;padding:14px 0 2px}
@@ -1641,19 +1641,19 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-m-send:disabled{opacity:.4}
 .rra .rp-m-fine{font-size:12px;color:#8a8a8a;text-align:center;margin-top:8px}
 @media (min-width:821px){
-  .rra .rp-cue{display:flex;align-items:center;gap:32px;padding:26px 30px;border-radius:32px}
-  .rra .rp-cue .rp-cue-glow{width:520px;height:520px;top:-200px}
-  .rra .rp-goal{width:250px;height:250px}
-  .rra .rp-goal-c b{font-size:112px;letter-spacing:-5.5px}
-  .rra .rp-goal-p{font-size:14px;margin-top:6px}
+  .rra .rp-cue{display:flex;align-items:center;gap:24px;padding:18px 24px;border-radius:24px}
+  .rra .rp-cue .rp-cue-glow{width:380px;height:380px;top:-170px}
+  .rra .rp-goal{width:128px;height:128px}
+  .rra .rp-goal-c b{font-size:52px;letter-spacing:-2.5px}
+  .rra .rp-goal-p{font-size:11px;margin-top:2px}
   .rra .rp-cue-t{flex:1}
   .rra .rp-cue-k{font-size:12px}
-  .rra .rp-cue-h{font-size:34px;letter-spacing:-1px}
-  .rra .rp-cue-btn{flex:none;margin:0;height:62px;padding:0 30px;border-radius:31px;font-size:17px;box-shadow:0 0 0 6px rgba(255,255,255,.08),0 10px 30px rgba(255,106,0,.35)}
+  .rra .rp-cue-h{font-size:24px;letter-spacing:-.6px}
+  .rra .rp-cue-btn{flex:none;margin:0;height:50px;padding:0 24px;border-radius:25px;font-size:15px}
   .rra .rp-meas{max-width:none}
-  .rra .rp-m-hero{display:flex;text-align:left;padding:26px 30px}
-  .rra .rp-m-hero .rp-goal{width:260px;height:260px}
-  .rra .rp-m-hero .rp-goal-c b{font-size:118px;letter-spacing:-6px}
+  .rra .rp-m-hero{display:flex;text-align:left;padding:20px 26px}
+  .rra .rp-m-hero .rp-goal{width:160px;height:160px}
+  .rra .rp-m-hero .rp-goal-c b{font-size:66px;letter-spacing:-3px}
   .rra .rp-m-hero .rp-cue-t{align-items:flex-start;margin:0;gap:12px}
   .rra .rp-m-leg{justify-content:flex-start;font-size:14px}
   .rra .rp-m-list{padding:4px 24px;border-radius:24px}
