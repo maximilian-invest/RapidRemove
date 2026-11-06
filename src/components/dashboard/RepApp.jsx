@@ -1137,7 +1137,7 @@ export function RepTab({ rep, showToast, imp, openSearch }) {
             <span className="rp-loc-r"><Ring score={l.latest.score} potential={0} size={64} stroke={6} uid={"lr" + l.id} /><b>{l.latest.score}</b></span>
             <span className="rp-t"><b>{l.name}</b><span>{l.address || l.city}</span><span className="rp-loc-s"><em>{l.latest.tier}</em><Delta now={l.latest.score} prev={l.prevScore} prevAt={l.prevAt} /></span></span>
             <ChevronRight />
-          </button><button type="button" className="rp-loc-x" aria-label={`${l.name} archivieren`} title="Archivieren" onClick={() => act(() => rep.archive(l.id), `${l.name} archiviert`)}><Archive /></button></div>
+          </button><button type="button" className="rp-loc-x" aria-label={`${l.name} archivieren`} title="Archivieren" onClick={() => act(() => rep.archive(l.id), `${l.name} archiviert`)}><Trash2 /></button></div>
         ) : l.scan && l.scan.status === "running" ? <RepRunning key={l.id} loc={l} /> : (
           <div key={l.id} className="rp-loc"><span className="rp-t"><b>{l.name}</b><span>{l.scan && l.scan.status === "error" ? "Scan fehlgeschlagen – bitte erneut versuchen" : "Noch nicht gescannt"}</span></span><button type="button" className="rp-mini" onClick={() => rep.scan({ locationId: l.id }).catch(() => showToast("Scan konnte nicht gestartet werden", true))}>Scannen</button><RemoveLoc loc={l} rep={rep} showToast={showToast} imp={imp} /></div>
         )
