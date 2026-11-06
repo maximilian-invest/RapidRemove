@@ -55,6 +55,10 @@ export const PRICE_V2_FRESH_TIERS: readonly number[] = [...new Set([PRICE_V2_FRE
 export type ProfileService = "remove" | "reset";
 export const PROFILE_BASE: Record<ProfileService, { eur: number; usd: number }> = { remove: { eur: 450, usd: 495 }, reset: { eur: 850, usd: 950 } };
 export const PROFILE_EXPRESS_FEE = 149;
+/** Schutz-Preise (06.11.2026): monatlich 29,90 bzw. jährlich 299 (beide inkl. Monitoring), lebenslang 990; „monitor" 69,90 nur Bestand.
+ *  Netto, gleicher Zahlenwert in € und $. Laufende Abos behalten ihren alten Preis (Stripe-Preis je Abo). */
+export const PROTECTION_PRICES: Record<string, number> = { monthly: 29.9, yearly: 299, lifetime: 990, monitor: 69.9 };
+export const protectionInterval = (prot: string): "month" | "year" | "once" => (prot === "yearly" ? "year" : prot === "lifetime" ? "once" : "month");
 export function profilePriceFor(service: string, cur: string, premium: boolean): number {
   const b = PROFILE_BASE[(service === "reset" ? "reset" : "remove") as ProfileService][cur === "usd" ? "usd" : "eur"];
   return premium ? round9((b * (100 + PREMIUM_PCT)) / 100) : b;

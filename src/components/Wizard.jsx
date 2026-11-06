@@ -45,6 +45,21 @@ const DUP_TXT = {
 };
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@/lib/consents";
 import { dashHref } from "@/lib/portal";
+/* Schutz (06.11.2026): „Automatische Überwachung" (69,90) entfällt, dafür Jahresabo (299) – Monitoring ist bei jedem Schutz inklusive. */
+const YEARLY_COPY = {
+  de: { name: "Jährlicher Schutz", tier: "Jährlich", desc: "Wie monatlich, inkl. wöchentlicher Prüfung – 2 Monate gratis.", sm: "jährlich kündbar", per: " / Jahr", monthly: "Wöchentliche Prüfung inklusive – erneute Löschung kostenlos." },
+  en: { name: "Yearly protection", tier: "Yearly", desc: "Same as monthly incl. weekly checks – 2 months free.", sm: "cancel yearly", per: " / year", monthly: "Weekly checks included – free re-removal." },
+  es: { name: "Protección anual", tier: "Anual", desc: "Como la mensual, con revisión semanal: 2 meses gratis.", sm: "cancelable cada año", per: " / año", monthly: "Revisión semanal incluida: nueva eliminación gratuita." },
+  fr: { name: "Protection annuelle", tier: "Annuel", desc: "Comme la mensuelle, contrôle hebdomadaire inclus – 2 mois offerts.", sm: "résiliable chaque année", per: " / an", monthly: "Contrôle hebdomadaire inclus – nouvelle suppression gratuite." },
+  it: { name: "Protezione annuale", tier: "Annuale", desc: "Come la mensile, con controllo settimanale – 2 mesi gratis.", sm: "disdetta annuale", per: " / anno", monthly: "Controllo settimanale incluso – nuova rimozione gratuita." },
+  nl: { name: "Jaarlijkse bescherming", tier: "Jaarlijks", desc: "Zoals maandelijks, incl. wekelijkse controle – 2 maanden gratis.", sm: "jaarlijks opzegbaar", per: " / jaar", monthly: "Wekelijkse controle inbegrepen – gratis opnieuw verwijderen." },
+  pt: { name: "Proteção anual", tier: "Anual", desc: "Como a mensal, com verificação semanal – 2 meses grátis.", sm: "cancelável anualmente", per: " / ano", monthly: "Verificação semanal incluída – nova remoção gratuita." },
+  ja: { name: "年間保護", tier: "年間", desc: "月額と同じ内容（毎週チェック付き）– 2か月分お得。", sm: "年単位で解約可", per: " / 年", monthly: "毎週のチェック込み – 再削除は無料。" },
+  sv: { name: "Årligt skydd", tier: "Årligen", desc: "Som månadsvis, inkl. veckokontroll – 2 månader gratis.", sm: "uppsägning årsvis", per: " / år", monthly: "Veckokontroll ingår – ny borttagning gratis." },
+  da: { name: "Årlig beskyttelse", tier: "Årligt", desc: "Som månedlig, inkl. ugentlig kontrol – 2 måneder gratis.", sm: "kan opsiges årligt", per: " / år", monthly: "Ugentlig kontrol inkluderet – gratis fornyet fjernelse." },
+  no: { name: "Årlig beskyttelse", tier: "Årlig", desc: "Som månedlig, inkl. ukentlig kontroll – 2 måneder gratis.", sm: "kan sies opp årlig", per: " / år", monthly: "Ukentlig kontroll inkludert – gratis ny fjerning." },
+};
+const yc = (code) => YEARLY_COPY[code] || YEARLY_COPY.en;
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -1859,7 +1874,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const xAvail = useExpressOn() !== false;
   const dur = useDurations(); // Löschdauer Standard je Preisstufe (Admin → Express & Löschdauer)
   React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [protection, setProtection] = React.useState(R ? (R.protection ?? null) : "monthly"); // null | monthly | monitor | lifetime — Schutz default ON
+  const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : "monthly"); // null | monthly | yearly | lifetime — Schutz default ON (monitor nur Bestand)
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
   React.useEffect(() => {
@@ -2228,9 +2243,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     ? rq.total
     : num(service === "remove" ? p.deletion : p.reset);
   const serviceName = revFlow ? rv.service : (service === "remove" ? w.s4.opt1.t : w.s4.opt2.t);
-  const protLabel = protection === "monthly" ? conv.tierMonthlyLabel : protection === "monitor" ? conv.tierMonitorLabel : protection === "lifetime" ? conv.tierLifetimeLabel : null;
-  const protPriceVal = protection === "monthly" ? p.protMonthly : protection === "monitor" ? p.protMonitor : protection === "lifetime" ? p.protLifetime : null;
-  const recurringNum = (protection === "monthly" || protection === "monitor") ? num(protPriceVal) : 0;
+  const protLabel = protection === "monthly" ? conv.tierMonthlyLabel : protection === "yearly" ? yc(t.code).tier : protection === "monitor" ? conv.tierMonitorLabel : protection === "lifetime" ? conv.tierLifetimeLabel : null;
+  const protPriceVal = protection === "monthly" ? p.protMonthly : protection === "yearly" ? p.protYearly : protection === "monitor" ? p.protMonitor : protection === "lifetime" ? p.protLifetime : null;
+  const recurringNum = (protection === "monthly" || protection === "monitor" || protection === "yearly") ? num(protPriceVal) : 0;
   const oneTimeTotal = revFlow ? servicePriceNum
     : servicePriceNum + (express ? num(p.express) : 0) + (protection === "lifetime" ? num(p.protLifetime) : 0);
   const leistungTotal = revFlow ? servicePriceNum : servicePriceNum + (express ? num(p.express) : 0);
@@ -2817,19 +2832,19 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
             <div className="opt-main">
               <div className="ot">{conv.protMonthlyName}</div>
-              <div className="od">{wm.ptMonthlyNote}</div>
+              <div className="od">{yc(t.code).monthly}</div>
             </div>
             <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonthly)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{vatNote(lang)} · {conv.cancelAnytime}</small></div>
           </div>
 
-          <div className={"opt" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
+          <div className={"opt" + (protection === "yearly" ? " sel" : "")} onClick={() => setProtection("yearly")}>
             <div className="opt-radio"></div>
             <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
             <div className="opt-main">
-              <div className="ot">{conv.protMonitorName}</div>
-              <div className="od">{wm.ptMonitorNote}</div>
+              <div className="ot">{yc(t.code).name}</div>
+              <div className="od">{yc(t.code).desc}</div>
             </div>
-            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonitor)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{vatNote(lang)} · {conv.cancelAnytime}</small></div>
+            <div className="opt-price">{money(lang, p.protYearly)}<span className="opt-per">{yc(t.code).per}</span><small>{vatNote(lang)} · {yc(t.code).sm}</small></div>
           </div>
 
           <div className={"opt" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
@@ -2901,7 +2916,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
         <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(lang, w.s5.dueNow)}</span></div>
         <div className="sum-total"><span className="sl">{w.s5.sumTotal} <span className="vat-n">{vatNote(lang)}</span></span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
-        {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {conv.perMonthShort}</b></div>}
+        {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {protection === "yearly" ? yc(t.code).per.trim() : conv.perMonthShort}</b></div>}
         <div className="sum-note"><Icon.shieldCheck /> {w.s5.sumNote}</div>
           </React.Fragment>
         )}
@@ -3736,8 +3751,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const xp = xpCopy(t.code);
     const nm = (selected && selected.name) || name || contact.company;
     const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
-    const protNm = { monthly: conv.protMonthlyName, monitor: conv.protMonitorName, lifetime: conv.protLifetimeName };
-    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
+    const protNm = { monthly: conv.protMonthlyName, yearly: yc(t.code).name, monitor: conv.protMonitorName, lifetime: conv.protLifetimeName };
+    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? money(lang, p.protYearly) + yc(t.code).per : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
     const help = (
       <div className="bpr-help">
         <div className="hh"><span className="bpr-avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={44} height={44} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={44} height={44} /></span><div><b>{ch.title}</b><span><i className="bpr-dot" />{ch.sub}</span></div></div>
@@ -4057,11 +4072,11 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   function StepProtectNew() {
     const bp = bpCopy(t.code);
     const opts = [
-      ["monthly", conv.protMonthlyName, bp.protD.monthly, bp.cancel, bp.badgeTop],
-      ["monitor", conv.protMonitorName, bp.protD.monitor, bp.cancel],
+      ["monthly", conv.protMonthlyName, yc(t.code).monthly, bp.cancel, bp.badgeTop],
+      ["yearly", yc(t.code).name, yc(t.code).desc, yc(t.code).sm],
       ["lifetime", conv.protLifetimeName, bp.protD.lifetime, bp.once],
     ];
-    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
+    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? money(lang, p.protYearly) + yc(t.code).per : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
     const protName = protection ? (opts.find((o) => o[0] === protection) || [])[1] : bp.protNone;
     const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
     const back = () => go(3);
@@ -4078,7 +4093,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                   {badge ? <span className="bpr-bdg">{badge}</span> : null}
                   <span className="rd" />
                   <span className="tx"><b>{nm}</b><span>{d}</span></span>
-                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{vatNote(lang)} · {sm}</small></span>
+                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : k === "yearly" ? <React.Fragment>{money(lang, p.protYearly)}<em>{yc(t.code).per}</em></React.Fragment> : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{vatNote(lang)} · {sm}</small></span>
                 </button>
               ))}
               <button type="button" className={"bpr-rop none bpr-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".19s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>

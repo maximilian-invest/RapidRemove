@@ -216,7 +216,7 @@ export default function AdminNext() {
     const oneTime = (Number(o.amount) || 0) + (o.express ? Number(o.expressAmount) || 0 : 0) + (o.protection === "lifetime" ? Number(o.protAmount) || 0 : 0);
     if (!payPrefOf(o)) return oneTime; // Karte: Abo läuft separat über Stripe
     // PayPal/Wise wie im Angebot (computeOffer): Einmalbetrag −10 % + Schutz-Abo als Jahr zum Preis von 10 Monaten.
-    const sub = (o.protection === "monthly" || o.protection === "monitor") ? (Number(o.protAmount) || 0) * 10 : 0;
+    const sub = (o.protection === "monthly" || o.protection === "monitor") ? (Number(o.protAmount) || 0) * 10 : o.protection === "yearly" ? (Number(o.protAmount) || 0) : 0; // Jahresabo = Jahrespreis
     return Math.round((oneTime * 0.9 + sub) * 100) / 100;
   };
   const markPaid = async (list, label) => {
@@ -288,7 +288,7 @@ export default function AdminNext() {
     try {
       // „Keine Rechte": Aufpreis 290 in Auftragswährung ($ bei US, sonst €); netto-Hinweis nur bei €.
       const kr = key === "keine-rechte" ? { extra: cur(o) === "$" ? "$290" : "290 €", net: cur(o) !== "$" } : {};
-      await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o), ...kr });
+      await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, hasSub: o.protection === "monthly" || o.protection === "monitor" || o.protection === "yearly", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o), ...kr });
       bumpTplUsage(key);
       let note = "";
       if (STORNO_KEYS.includes(key)) { await doStatus(o, "storniert", { label: "Storniert" }); note = " · storniert"; closeDrawer(); }
@@ -625,7 +625,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
 
   } else if (sheet && sheet.kind === "autodone" && o) {
     const pp = orderParts(o);
-    const sub = (o.protection === "monthly" || o.protection === "monitor") && Number(o.protAmount) > 0;
+    const sub = (o.protection === "monthly" || o.protection === "monitor" || o.protection === "yearly") && Number(o.protAmount) > 0;
     const run = async () => {
       setBusy(true);
       try {
@@ -638,7 +638,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     };
     body = (
       <><h3>Löschung abgeschlossen?</h3>
-        <p className="shp">Profil von <b>{o.name || o.email}</b> gelöscht. Wir buchen <b>{money(pp.total, pp.c)}</b> (netto, zzgl. Steuer laut Rechnung) automatisch von der hinterlegten Zahlungsart ab{sub ? <> und starten das Abo <b>{money(o.protAmount, pp.c)}/Monat</b> ({o.protection === "monitor" ? "Schutz + Monitoring" : "Schutz"})</> : null}. Der Kunde bekommt die Rechnung automatisch per Mail.</p>
+        <p className="shp">Profil von <b>{o.name || o.email}</b> gelöscht. Wir buchen <b>{money(pp.total, pp.c)}</b> (netto, zzgl. Steuer laut Rechnung) automatisch von der hinterlegten Zahlungsart ab{sub ? <> und starten das Abo <b>{money(o.protAmount, pp.c)}/{o.protection === "yearly" ? "Jahr" : "Monat"}</b> ({o.protection === "monitor" ? "Schutz + Monitoring" : "Schutz"})</> : null}. Der Kunde bekommt die Rechnung automatisch per Mail.</p>
         <p className="shp" style={{ fontSize: 13, color: "var(--g3)" }}>Klappt die Abbuchung nicht, bekommst du eine Push – dann wie gewohnt den Zahlungslink senden.</p>
         <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Jetzt abbuchen"}</button></div></>
     );

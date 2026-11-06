@@ -23,7 +23,7 @@ const linkLabel = (l) => (l.items || []).map(itemLabel).join(" + ") || "(leerer 
 const linkCur = (l) => (l.items && l.items[0] && l.items[0].currency) || "eur";
 const linkTotal = (l) => (l.items || []).reduce((s, it) => s + (it.amount || 0), 0) / 100;
 
-const PROT_L = { lifetime: "Lebenslanger Schutz", monitor: "Schutz + Tägliche Überwachung", monthly: "Monatlicher Schutz" };
+const PROT_L = { lifetime: "Lebenslanger Schutz", monitor: "Schutz + Tägliche Überwachung", monthly: "Monatlicher Schutz", yearly: "Jährlicher Schutz" };
 /** Gleiche Angaben wie sendOrderedPayLink im bisherigen Admin (Backend sucht den passenden Link). */
 function autoPayload(o) {
   const c = cur(o);
@@ -32,7 +32,7 @@ function autoPayload(o) {
     service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0,
     protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "",
     total: (o.amount || 0) + (o.protection && o.protAmount ? o.protAmount : 0),
-    protectionLabel: o.protection ? (PROT_L[o.protection] || "Schutz") + (o.protAmount ? " – " + money(o.protAmount, c) + (o.protection !== "lifetime" ? "/Mon." : "") : "") : "",
+    protectionLabel: o.protection ? (PROT_L[o.protection] || "Schutz") + (o.protAmount ? " – " + money(o.protAmount, c) + (o.protection === "yearly" ? "/Jahr" : o.protection !== "lifetime" ? "/Mon." : "") : "") : "",
     express: !!o.express, expressLabel: o.express ? "Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, c) : "") : undefined,
     lang: o.lang || "de",
   };

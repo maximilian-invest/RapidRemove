@@ -73,7 +73,7 @@ const article = {
       "Du betalar först efter lyckad borttagning: **från 450 €**, eller **från 850 €** för borttagning plus uppsättning av en ny profil. Om borttagningen inte lyckas betalar du ingenting.",
     ] },
     { t: "p", text: "Därefter kan du starta en ny profil utan de gamla recensionerna om du vill. Google verifierar nya profiler själv, så det är upp till Google att godkänna den." },
-    { t: "warn", title: "De ärliga nackdelarna", text: "Dina **goda recensioner och foton försvinner också**. Tredje part kan senare föreslå en ny post för din adress; ett valfritt skydd från 24,90 € i månaden täcker det. Om en profil inte kan tas bort måste du själv återta ägarskapet från Google. Om du bara vill bli av med några få recensioner och behålla din profil passar väg 1 till 3 bättre. Mer: [så fungerar det att radera en Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/)." },
+    { t: "warn", title: "De ärliga nackdelarna", text: "Dina **goda recensioner och foton försvinner också**. Tredje part kan senare föreslå en ny post för din adress; ett valfritt skydd från 29,90 € i månaden täcker det. Om en profil inte kan tas bort måste du själv återta ägarskapet från Google. Om du bara vill bli av med några få recensioner och behålla din profil passar väg 1 till 3 bättre. Mer: [så fungerar det att radera en Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/)." },
 
     { t: "h2", id: "vergleich", text: "Alla vägar i jämförelse", toc: "Jämförelse" },
     { t: "table", head: ["Kriterium", "Anmäla själv", "Advokat", "Borttagningstjänst (RapidRemove)", "Borttagning av profil (RapidRemove)"], rows: [

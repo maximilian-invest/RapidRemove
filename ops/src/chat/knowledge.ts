@@ -25,10 +25,9 @@ Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für D
 | Einzelne Bewertung, max. 4 Wochen alt, mit Text | **ab 199 € / 199 USD** pro **gelöschter** Bewertung (seit 06.11.2026 je nach Land und Branche: 199 / 249 / 309) | **Nur außerhalb von DE/AT.** Preisregel siehe unten. Erfolgsquote ca. 90 %. Dauer meist {DF:de} (kein fixes Datum zusagen). Zahlung nur bei Erfolg: automatisch bei Löschung von der hinterlegten Zahlungsart abgebucht. **Kein Express** für diese Bewertungen. |
 | Alle anderen einzelnen Bewertungen: älter als 4 Wochen, ohne Text (nur Sterne), ältere US-Bewertungen | **Derzeit nicht bestellbar – wieder verfügbar ab Januar 2027** | Seit 05.11.2026 für den Rest des Jahres pausiert. Keine Bestellung, keine Ausnahme, keine Warteliste. Bereits beauftragte (250 €/USD) laufen normal weiter. |
 | Express für Einzelbewertungen | derzeit nicht verfügbar | Gab es nur für ältere/textlose Bewertungen (pausiert bis Januar 2027). Bereits gebuchtes Express läuft normal weiter. |
-| Schutz bei Wiederauftauchen | 24,90 €/USD pro Monat | Taucht ein neues Profil auf (von Dritten erstellt), wird es kostenlos wieder gelöscht. Keine Mindestlaufzeit, kündbar zum Ende des Abrechnungszeitraums. Nur gültig, wenn **vor** dem Wiederauftauchen gebucht. |
-| Schutz + Monitoring | 69,90 €/USD pro Monat | Wie oben, zusätzlich tägliche Überwachung durch RapidRemove. |
+| Schutz bei Wiederauftauchen (monatlich) | **29,90 €/USD pro Monat** (seit 06.11.2026, inkl. Monitoring) | Wöchentliche Überwachung inklusive (Status im Kunden-Dashboard + wöchentliche Mail). Taucht ein neues Profil auf (von Dritten erstellt), wird es kostenlos wieder gelöscht. Keine Mindestlaufzeit, kündbar zum Ende des Abrechnungszeitraums. Nur gültig, wenn **vor** dem Wiederauftauchen gebucht. |
+| Schutz jährlich | **299 €/USD pro Jahr** (= 2 Monate gratis, inkl. Monitoring) | Wie monatlich, Abrechnung jährlich im Voraus, kündbar zum Ende des Jahres. Die frühere Stufe „Schutz + Monitoring“ (69,90) gibt es für Neukunden nicht mehr – Monitoring ist jetzt in jedem Schutz enthalten; bestehende Abos laufen zum alten Preis weiter. |
 | Lifetime-Schutz | 990 €/USD einmalig | Zusätzlich zur Löschung. „Solange es uns gibt", gilt für das Unternehmen an dieser Adresse, egal welche E-Mail. Inkl. Monitoring. |
-| Jahres-Schutz | nur auf Anfrage | Grundsätzlich möglich, Bot nennt keinen Preis, sondern übergibt an das Team. |
 | Express-Option | +149 € / +149 USD | Im Bestellprozess wählbar. |
 | Presse/Artikel/Links aus Google entfernen | nur nach genauer Prüfung | Vermittlung über Partner. Team prüft und erstellt ein Angebot. Bot nennt **nie** einen Preis oder eine Spanne. |
 
@@ -161,7 +160,7 @@ Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für D
 
 ## 7. Regeln für den Bot
 
-1. **Keine Preise erfinden, nicht verhandeln.** Nur die Preise und Rabatte aus Abschnitt 3. Alles darüber hinaus (individuelle Rabatte, Raten, Jahres-Schutz, Presse) macht das Team. Die 0800-Nummer nennt der Bot nicht.
+1. **Keine Preise erfinden, nicht verhandeln.** Nur die Preise und Rabatte aus Abschnitt 3. Alles darüber hinaus (individuelle Rabatte, Raten, Presse) macht das Team. Die 0800-Nummer nennt der Bot nicht.
 2. **Nie „100 %" versprechen.** Stattdessen: „über 90 % Erfolgsquote", „Zahlung nur bei Erfolg". Das gilt ohne Ausnahme, auch für Bewertungen ohne Text und andere Software-Löschungen: keine Vorauszahlung (also auch keine Erstattung nötig), abgebucht wird erst bei Löschung.
 3. **24 h nur als Regelfall nennen.** Immer dazusagen, dass eine nötige Google-Verifizierung länger dauern kann.
 4. **Keine Passwörter annehmen, keine IBAN/Bankdaten im Chat posten.**

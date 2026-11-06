@@ -215,12 +215,14 @@ export function computeOffer(o) {
   const c = cur(o);
   const oneTimeReg = (Number(o.amount) || 0) + (o.express && o.expressAmount ? Number(o.expressAmount) : 0) + (o.protection === "lifetime" && o.protAmount ? Number(o.protAmount) : 0);
   const oneTimePP = Math.round(oneTimeReg * 90) / 100;
-  const isSub = o.protection === "monthly" || o.protection === "monitor";
-  const monthly = isSub && o.protAmount ? Number(o.protAmount) : 0;
-  const subReg = Math.round(monthly * 12 * 100) / 100, subPP = Math.round(monthly * 10 * 100) / 100;
+  const isSub = o.protection === "monthly" || o.protection === "monitor" || o.protection === "yearly";
+  const yearly = o.protection === "yearly";
+  const monthly = isSub && o.protAmount ? (yearly ? Math.round((Number(o.protAmount) / 12) * 100) / 100 : Number(o.protAmount)) : 0; // Jahresabo: Monatsanteil (Anzeige)
+  // Monatsabo per PayPal/Wise: ein Jahr zum Preis von 10 Monaten. Jahresabo (299) ist schon der Jahrespreis → kein weiterer Abschlag.
+  const subReg = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 12 * 100) / 100, subPP = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 10 * 100) / 100;
   const regTotal = Math.round((oneTimeReg + subReg) * 100) / 100, ppTotal = Math.round((oneTimePP + subPP) * 100) / 100;
   const m = (n) => money(n, c);
-  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null };
+  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub && !yearly ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null }; // Jahresabo: keine „12 zum Preis von 10"-Zeile
 }
 
 /** Vorlagen-Nutzung (gleicher Speicher wie das alte Admin → „Am häufigsten“ bleibt konsistent). */
@@ -237,7 +239,7 @@ export function aboOf(o) {
   if (!p || p === "none") return null;
   const c = cur(o), amt = Number(o.protAmount) || 0;
   if (p === "lifetime") return { kind: p, short: "Lifetime", label: "Lebenslanger Schutz", price: amt ? money(amt, c) + " einmalig" : "", recurring: false };
-  return { kind: p, short: "Abo", label: p === "monitor" ? "Schutz-Abo + tägliche Überwachung" : "Schutz-Abo", price: amt ? money(amt, c) + " / Monat" : "", recurring: true };
+  return { kind: p, short: p === "yearly" ? "Jahresabo" : "Abo", label: p === "monitor" ? "Schutz-Abo + tägliche Überwachung" : p === "yearly" ? "Schutz-Jahresabo (inkl. Monitoring)" : "Schutz-Abo", price: amt ? money(amt, c) + (p === "yearly" ? " / Jahr" : " / Monat") : "", recurring: true };
 }
 
 /** Kunde will mit Wise/PayPal zahlen (Rabatt-Abfrage bzw. Fragebogen) → 10 % Rabatt. Wie payPrefName im alten Admin. */

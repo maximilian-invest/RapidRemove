@@ -23,7 +23,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
 import { registerExpressSwitch, expressOn } from "./expressSwitch";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, PROTECTION_PRICES, protectionInterval, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -62,6 +62,7 @@ import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
 import { registerPriceTier, resolveTier, industryInfo, type Tier } from "./priceTier";
+import { registerProtectionWatch, startProtectionReportWorker } from "./protectionWatch";
 import { registerRepScore } from "./repScore";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
@@ -223,6 +224,7 @@ registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, custome
 }); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPriceTier(app, ADMIN_TOKEN); // Preis nach Land × Branche (/price-quote) + Branchen-Auswertung (/admin/industry-*)
+registerProtectionWatch(app, ADMIN_TOKEN); // Schutz: Überwachung im Kunden-Dashboard (/cust/protection) + wöchentlicher Schutz-Bericht
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
 registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
@@ -601,7 +603,10 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     const amt = cPct ? Math.round(list * (100 - cPct)) / 100 : list;
     const wantX = service === "remove" && (b.express === true || b.express === "true");
     const xAmt = wantX ? PROFILE_EXPRESS_FEE : 0;
-    const prot = String(b.protection || "");
+    // Schutz: Preis legt der Server fest (29,90 / 299 / 990; „monitor" nur noch von alten Browser-Ständen → 69,90 wie gewählt).
+    const prot = ["monthly", "yearly", "lifetime", "monitor"].includes(String(b.protection || "")) && service === "remove" ? String(b.protection) : "";
+    (b as Record<string, unknown>).protection = prot;
+    (b as Record<string, unknown>).protAmount = prot ? PROTECTION_PRICES[prot] : 0;
     Object.assign(b as Record<string, unknown>, {
       amount: amt, express: wantX, expressAmount: xAmt,
       saleTotal: Math.round((amt + xAmt + (prot === "lifetime" ? Number(b.protAmount) || 0 : 0)) * 100) / 100,
@@ -809,7 +814,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       // Website-Chat: Rabatt NUR über den internen Aufruf aus /chat/site/order (nie vom Browser direkt).
       b.chatPct = req.headers["x-rr-chat"] === CHAT_INTERNAL ? (Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) || undefined) : undefined;
       await insertOrder({
-        id, name, email, phone, company, lang, profile, service, protection,
+        id, name, email, phone, company, lang, profile, service, protection: clip(b.protection, 40), // ggf. vom Server korrigiert (Profil: Schutz-Art/-Preis)
         country: clip(b.country, 6) || "DE",
         category: clip(b.category, 120),
         rating: clip(b.rating, 12),
@@ -2107,20 +2112,23 @@ async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: strin
   }
   // Feste Express-Links gelten nur für den Standardpreis (450 € / $495 + 149).
   const stdExpress = PROFILE_BASE.remove[currency === "usd" ? "usd" : "eur"] + PROFILE_EXPRESS_FEE;
-  if (!url && (!express || !serviceAmount || oneTime === stdExpress)) url = payLinkFor(service, protection, currency, express);
+  // Feste Express-Links tragen die ALTEN Schutz-Preise (24,90 / 69,90) – nur verwenden, wenn der Auftrag genau diesen Schutz hat.
+  const protAmt0 = Number(b.protAmount) || 0;
+  const staticProtOk = protection === "none" || protection === "lifetime" || (protection === "monthly" && protAmt0 === 24.9) || (protection === "monitor" && protAmt0 === 69.9);
+  if (!url && (!express || ((!serviceAmount || oneTime === stdExpress) && staticProtOk))) url = payLinkFor(service, protection, currency, express);
   if (!url) {
     if (!hasSecretKey()) return { code: 400, error: "STRIPE_SECRET_KEY nicht gesetzt" };
     const protAmount = Number(b.protAmount) || 0;
     const protType = clip(b.protType, 20);
     const items: { amount: number; interval: string }[] = [];
     if (oneTime > 0) items.push({ amount: Math.round(oneTime * 100), interval: "once" });
-    if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "monthly" || protType === "monitor" ? "month" : "once" });
+    if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "yearly" ? "year" : protType === "monthly" || protType === "monitor" ? "month" : "once" });
     try { const m = await matchPaymentLink(items); url = m.url; available = m.available; }
     catch (e) { app.log.error({ err: e }, "Payment-Link-Suche fehlgeschlagen"); }
     // Kein passender Link, aber ein Listenpreis der Profil-Löschung → Link mit den Einstellungen der bestehenden Links anlegen.
     if (!url && isProfileSvc && oneTime > 0) {
       try {
-        const r = await ensureProfileLink({ service: svcKey, currency, protection: protection || "none", oneTime, express });
+        const r = await ensureProfileLink({ service: svcKey, currency, protection: protection || "none", oneTime, express, protAmount: Number(b.protAmount) || 0 });
         if (r.url) { url = r.url; clearPaymentLinkCache(); app.log.info({ service, currency, protection, oneTime }, "Profil-Zahlungslink bereitgestellt"); }
         else if (r.error) app.log.warn({ service, currency, protection, oneTime, err: r.error }, "Profil-Zahlungslink nicht angelegt");
       } catch (e) { app.log.error({ err: e }, "Profil-Zahlungslink anlegen fehlgeschlagen"); }
@@ -2916,6 +2924,7 @@ async function start() {
     // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.
     if (shotKey()) setTimeout(() => { void backfillReviewShots(14, (o, m) => app.log.info(o, m)); }, 20_000);
     startMonitorScheduler(app);   // Monitor: täglicher Scan 05:00 (Wien)
+    startProtectionReportWorker(app); // Schutz-Bericht: Montag ab 09:00 (Wien), je Kunde einmal pro Woche
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();

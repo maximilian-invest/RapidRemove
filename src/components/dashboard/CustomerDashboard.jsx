@@ -52,6 +52,24 @@ const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;6
 const PAYPAL_ME = (process.env.NEXT_PUBLIC_PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "").replace(/\/+$/, "");
 const IMG = { wallet: "/assets/app/wallet.webp", shield: "/assets/app/shield.webp", rocket: "/assets/app/rocket.webp" };
 
+/* Schutz-Überwachung auf der Startseite (06.11.2026): je geschütztem Profil Status + letzte Prüfung. */
+function ProtHome({ prot, T, onOpen }) {
+  const items = (prot && prot.items) || [];
+  if (!items.length) return null;
+  return (
+    <>
+      <div className="sec" style={{ marginTop: 4 }}><h2>{T("mwT")}</h2></div>
+      {items.map((w) => (
+        <button key={w.id} type="button" className={"paycard" + (w.status === "found" ? " due" : "")} style={{ width: "100%", textAlign: "left", marginBottom: 10 }} onClick={() => onOpen(w.orderId)}>
+          <span className="ico"><ShieldCheck /></span>
+          <span><b>{w.name} · {w.status === "found" ? T("mwFound") : w.status === "checking" ? T("mwChecking") : T("mwRemoved")}</b>
+            <span>{[w.lastCheck ? T("mwLast", { date: shortDate(w.lastCheck) }) : "", w.checks7 ? T("mwChecks", { n: w.checks7 }) : ""].filter(Boolean).join(" · ") || T("mwInfo")}</span></span>
+        </button>
+      ))}
+    </>
+  );
+}
+
 async function call(path, body) {
   const res = await fetch(OPS + "/cust/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
   const j = await res.json().catch(() => ({}));
@@ -1399,6 +1417,9 @@ export default function CustomerDashboard() {
   }, []);
 
   React.useEffect(() => { if (token) call("new-order/info", { token }).then((r) => { setNoOn(!!r.enabled); setNoModes({ hand: !!r.hand, bulk: !!r.bulk }); }).catch(() => setNoOn(false)); }, [token]);
+  // Schutz-Überwachung (06.11.2026): Status je geschütztem Profil (Monitoring ist in jedem Schutz enthalten).
+  const [prot, setProt] = React.useState(null);
+  React.useEffect(() => { if (token) call("protection", { token }).then((r) => setProt(r)).catch(() => setProt(null)); }, [token]);
   const load = React.useCallback(async (t) => {
     if (!t) return;
     try {
@@ -1904,6 +1925,7 @@ export default function CustomerDashboard() {
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
+          <ProtHome prot={prot} T={T} onOpen={(id) => { if (id && orders.some((x) => x.id === id)) setDetailId(id); }} />
           <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
           {homeOrders.length ? (
             <div className="carousel">
@@ -1979,6 +2001,7 @@ export default function CustomerDashboard() {
               <RepTeaser />
             </>
           )}
+          <ProtHome prot={prot} T={T} onOpen={(id) => { if (id && orders.some((x) => x.id === id)) setDetailId(id); }} />
           <div className="sec rep-sec"><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
           <div className="rep-ords">
             {homeOrders.length ? homeOrders.map((o) => {
@@ -2188,10 +2211,23 @@ export default function CustomerDashboard() {
               ))}
             </div>
           ) : null}
+          {(() => {
+            const w = prot && (prot.items || []).find((x) => x.orderId === o.id);
+            if (!w) return null;
+            const ttl = w.status === "found" ? T("mwFound") : w.status === "checking" ? T("mwChecking") : T("mwRemoved");
+            const sub = [w.lastCheck ? T("mwLast", { date: shortDate(w.lastCheck) }) : "", w.checks7 ? T("mwChecks", { n: w.checks7 }) : ""].filter(Boolean).join(" · ");
+            return (
+              <>
+                <div className="sec" style={{ marginTop: 18 }}><h2>{T("mwT")}</h2></div>
+                <div className={"paycard" + (w.status === "found" ? " due" : "")}><span className="ico"><ShieldCheck /></span><span><b>{ttl}</b><span>{sub || T("mwInfo")}</span></span></div>
+                <p className="bsub" style={{ marginTop: 8 }}>{T("mwInfo")}</p>
+              </>
+            );
+          })()}
           <div className="sec" style={{ marginTop: 18 }}><h2>{T("pAmount")}</h2></div>
           <div className="paycard"><span className="ico"><Receipt /></span><span><b>{svc}</b><span>{p.protection === "lifetime" ? T("pProt_lifetime") : T("pOneS")}</span></span><span className="amt">{money(p.amount, o.cur)}</span></div>
-          {(p.protection === "monthly" || p.protection === "monitor") && p.protAmount > 0 ? (
-            <div className="paycard" style={{ marginTop: 10 }}><span className="ico"><ShieldCheck /></span><span><b>{T("pSubT_" + p.protection)}</b><span>{T("pSubS")}</span></span><span className="amt">{T("pSubAmt", { amount: money(p.protAmount, o.cur) })}</span></div>
+          {(p.protection === "monthly" || p.protection === "monitor" || p.protection === "yearly") && p.protAmount > 0 ? (
+            <div className="paycard" style={{ marginTop: 10 }}><span className="ico"><ShieldCheck /></span><span><b>{T("pSubT_" + p.protection)}</b><span>{T("pSubS")}</span></span><span className="amt">{T(p.protection === "yearly" ? "pSubAmtY" : "pSubAmt", { amount: money(p.protAmount, o.cur) })}</span></div>
           ) : null}
         </>
       );

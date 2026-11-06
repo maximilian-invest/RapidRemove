@@ -74,7 +74,7 @@ const article = {
       "Du betaler først etter vellykket fjerning: **fra 450 €**, eller **fra 850 €** for fjerning pluss oppsett av en ny profil. Hvis fjerningen ikke lykkes, betaler du ingenting.",
     ] },
     { t: "p", text: "Etterpå kan du starte en ny profil uten de gamle anmeldelsene hvis du ønsker det. Google bekrefter nye profiler selv, så godkjenningen er opp til Google." },
-    { t: "warn", title: "De ærlige ulempene", text: "Dine **gode anmeldelser og bilder forsvinner også**. Tredjeparter kan senere foreslå en ny oppføring for adressen din; en valgfri beskyttelse fra 24,90 € i måneden dekker dette. Hvis en profil ikke kan fjernes, må du selv ta tilbake eierskapet fra Google. Hvis du bare vil bli kvitt noen få anmeldelser og beholde profilen din, passer vei 1 til 3 bedre. Mer: [slik fungerer sletting av en Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/)." },
+    { t: "warn", title: "De ærlige ulempene", text: "Dine **gode anmeldelser og bilder forsvinner også**. Tredjeparter kan senere foreslå en ny oppføring for adressen din; en valgfri beskyttelse fra 29,90 € i måneden dekker dette. Hvis en profil ikke kan fjernes, må du selv ta tilbake eierskapet fra Google. Hvis du bare vil bli kvitt noen få anmeldelser og beholde profilen din, passer vei 1 til 3 bedre. Mer: [slik fungerer sletting av en Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/)." },
 
     { t: "h2", id: "vergleich", text: "Alle veier sammenlignet", toc: "Sammenligning" },
     { t: "table", head: ["Kriterium", "Rapportere selv", "Advokat", "Fjerningstjeneste (RapidRemove)", "Fjerning av profil (RapidRemove)"], rows: [

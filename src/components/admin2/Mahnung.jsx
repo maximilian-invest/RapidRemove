@@ -41,7 +41,7 @@ function reviewsPayload(o) {
 }
 function profilePayload(o, stage) {
   const c = o.country === "US" ? "$" : "€";
-  const label = o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, c) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "";
+  const label = o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : o.protection === "yearly" ? "Jährlicher Schutz" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, c) + (o.protection === "yearly" ? "/Jahr" : o.protection !== "lifetime" ? "/Mon." : "") : "")) : "";
   return {
     email: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none",
     serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "",

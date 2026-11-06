@@ -71,25 +71,28 @@ async function allLinks(): Promise<LinkWithItems[]> {
 }
 export const clearProfileLinkCache = () => { cache = null; };
 
-const PROT_SIG: Record<string, { cents: number; interval: string } | null> = {
-  none: null, monthly: { cents: 2490, interval: "month" }, monitor: { cents: 6990, interval: "month" }, lifetime: { cents: 99000, interval: "once" },
-};
+/** Schutz-Position je Art. Monatlich/jährlich: Betrag aus dem Auftrag (Bestand 24,90, neu 29,90 bzw. 299). */
+const PROT_IV: Record<string, string> = { monthly: "month", monitor: "month", yearly: "year", lifetime: "once" };
+const PROT_DEFAULT: Record<string, number> = { monthly: 2490, monitor: 6990, yearly: 29900, lifetime: 99000 };
 const isProtItem = (p: Price) => p.metadata?.product_key === "protection" || p.metadata?.product_key === "monitoring";
 
 /** Liefert (oder legt an) den Zahlungslink für eine Profil-Bestellung. oneTime = Leistung inkl. Express (Hauptwährung, z. B. 708). */
-export async function ensureProfileLink(o: { service: string; currency: string; protection: string; oneTime: number; express: boolean }): Promise<{ url?: string; error?: string }> {
+export async function ensureProfileLink(o: { service: string; currency: string; protection: string; oneTime: number; express: boolean; protAmount?: number }): Promise<{ url?: string; error?: string }> {
   const cur = o.currency === "usd" ? "usd" : "eur";
   const svc = o.service === "reset" ? "reset" : o.service === "remove" ? "remove" : "";
-  const prot = PROT_SIG[o.protection || "none"] === undefined ? "none" : (o.protection || "none");
+  const prot = PROT_IV[o.protection || ""] ? o.protection : "none";
+  const protCents = prot === "none" ? 0 : (Number(o.protAmount) > 0 ? Math.round(Number(o.protAmount) * 100) : PROT_DEFAULT[prot]);
+  const ps = prot === "none" ? null : { cents: protCents, interval: PROT_IV[prot] };
   const base = Math.round((o.oneTime - (o.express ? PROFILE_EXPRESS_FEE : 0)) * 100) / 100;
   if (!svc || !PROFILE_LIST_PRICES.includes(base) || (o.express && svc !== "remove")) return { error: `kein Listenpreis (${svc || o.service} ${o.oneTime} ${cur})` };
   const cents = Math.round(o.oneTime * 100);
-  const combo = `${svc}${o.express ? "+x" : ""}|${cents}|${prot}|${cur}`;
+  // Marker wie die vorab angelegten Links: alte Schutz-Preise „monthly", neue „monthly2990" / „yearly29900".
+  const protTag = prot === "none" ? "none" : protCents === PROT_DEFAULT[prot] && prot !== "yearly" ? prot : `${prot}${protCents}`;
+  const combo = `${svc}${o.express ? "+x" : ""}|${cents}|${protTag}|${cur}`;
   const links = await allLinks();
   const have = links.find((l) => l.metadata?.[MARK] === combo);
   if (have) return { url: have.url };
   // Vorlage: Link mit derselben Schutz-Position + einer einmaligen Leistungs-Position derselben Leistung/Währung.
-  const ps = PROT_SIG[prot];
   const wantKey = svc === "reset" ? "reset" : "removal";
   const fits = (l: LinkWithItems) => {
     const protItems = l.items.filter(isProtItem), svcItems = l.items.filter((p) => !isProtItem(p));

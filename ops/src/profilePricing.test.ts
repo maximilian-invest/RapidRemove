@@ -83,4 +83,22 @@ await ok("Vorhandener Link mit Marker wird wiederverwendet (nichts angelegt)", a
   const r = await ensureProfileLink({ service: "remove", currency: "usd", protection: "none", oneTime: 619, express: false });
   assert.equal(r.url, "https://buy/M"); assert.equal(calls.filter((c) => c.method === "POST").length, 0);
 });
+await ok("Neuer Schutz 29,90 (Monat) und 299 (Jahr): Vorlage nach Betrag + Intervall, eigener Marker", async () => {
+  links.plY = { link: { id: "plY", url: "https://buy/Y", active: true, metadata: {}, allow_promotion_codes: true }, items: [P("p450", 45000, "eur", "removal"), P("pYear", 29900, "eur", "protection", "year")] };
+  links.plN = { link: { id: "plN", url: "https://buy/N", active: true, metadata: {}, allow_promotion_codes: true }, items: [P("p450", 45000, "eur", "removal"), P("pMon2990", 2990, "eur", "protection", "month")] };
+  calls.length = 0; clearProfileLinkCache();
+  await ensureProfileLink({ service: "remove", currency: "eur", protection: "yearly", oneTime: 559, express: false, protAmount: 299 });
+  assert.ok(body(1).includes("line_items[1][price]=pYear") && body(1).includes("remove|55900|yearly29900|eur") && !body(1).includes("invoice_creation"));
+  calls.length = 0; clearProfileLinkCache();
+  await ensureProfileLink({ service: "remove", currency: "eur", protection: "monthly", oneTime: 559, express: false, protAmount: 29.9 });
+  assert.ok(body(1).includes("line_items[1][price]=pMon2990") && body(1).includes("remove|55900|monthly2990|eur"));
+  calls.length = 0; clearProfileLinkCache();
+  await ensureProfileLink({ service: "remove", currency: "eur", protection: "monthly", oneTime: 559, express: false, protAmount: 24.9 });
+  assert.ok(body(1).includes("line_items[1][price]=pMon") && body(1).includes("remove|55900|monthly|eur")); // Bestand 24,90
+});
+await ok("Schutz-Preise + Intervall", async () => {
+  const { PROTECTION_PRICES, protectionInterval } = await import("./reviewsPricing");
+  assert.deepEqual(PROTECTION_PRICES, { monthly: 29.9, yearly: 299, lifetime: 990, monitor: 69.9 });
+  assert.equal(protectionInterval("yearly"), "year"); assert.equal(protectionInterval("monthly"), "month"); assert.equal(protectionInterval("lifetime"), "once");
+});
 console.log(`\n${n} Tests ok`);

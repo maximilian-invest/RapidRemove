@@ -10,14 +10,15 @@ export const PRICES = {
     // Einzelne Bewertungen löschen — Preis JE Bewertung (seit 05.11.2026: 199 frisch; ältere/ohne Text pausiert bis Januar 2027).
     // Produkt ist außerhalb DACH verfügbar (siehe REVIEW_COPY/Router-Kachel im Wizard).
     review: "199",
-    protMonthly: "24,90", protMonitor: "69,90", protLifetime: "990",
+    // Schutz (06.11.2026): monatlich 29,90 bzw. jährlich 299, beide inkl. Monitoring; „Monitoring" 69,90 nur noch Bestand.
+    protMonthly: "29,90", protYearly: "299", protMonitor: "69,90", protLifetime: "990",
   },
   en: {
     cur: "$", sym: "$", suffix: false, // "$495"
     deletion: "495", reset: "950", express: "149",
     // Wie bei „express" bewusst derselbe Zahlenwert in beiden Währungen.
     review: "199",
-    protMonthly: "24.90", protMonitor: "69.90", protLifetime: "990",
+    protMonthly: "29.90", protYearly: "299", protMonitor: "69.90", protLifetime: "990",
   },
 };
 
@@ -115,6 +116,8 @@ export function profilePriceFor(service, cur, premium) {
 }
 /** Preis-Strings wie PRICES (deletion/reset) für die Anzeige: "559" bzw. "1059" – Tausender-Punkt macht money() nicht, wie bisher "850". */
 export const profilePricesStr = (lang, premium) => { const cur = lang === "en" || lang === "ja" ? "usd" : "eur"; return { deletion: String(profilePriceFor("remove", cur, premium)), reset: String(profilePriceFor("reset", cur, premium)) }; };
+/** Schutz-Preise je Art (netto, gleicher Zahlenwert in € und $) – synchron mit ops/src/reviewsPricing.ts (PROTECTION_PRICES). */
+export const PROTECTION_PRICES = { monthly: 29.9, yearly: 299, lifetime: 990, monitor: 69.9 };
 /** „ab 199" je Sprache (Preis steht erst fest, wenn Profil-Land + Branche bekannt sind). */
 const FROM_WORD = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", sv: "från", da: "fra", no: "fra" };
 export const fromPrice = (lang, priceStr) => (lang === "ja" ? `${priceStr}〜` : `${FROM_WORD[lang] || FROM_WORD.en} ${priceStr}`);
