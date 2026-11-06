@@ -96,7 +96,7 @@ export function OrdersList({ ctx }) {
   const shown = flat ? allRows : [];
   const rowsByOrder = {}; for (const r of allRows) if (r.kind === "review") (rowsByOrder[r.o.id] = rowsByOrder[r.o.id] || []).push(r);
   const scanRows = allRows.filter((r) => scannable(r) && !(sc.res[r.k] && /^gone/.test(sc.res[r.k].result)));
-  const [closed, setClosed] = React.useState({}); // Kunden-Ansicht: zugeklappte Aufträge
+  const [opened, setOpened] = React.useState({}); // Kunden-Ansicht: aufgeklappte Aufträge (Standard: zugeklappt)
   return (
     <>
       <div className="hd"><div><span>{hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend"}</span><h1>Aufträge</h1></div>
@@ -156,7 +156,7 @@ export function OrdersList({ ctx }) {
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span>
               {o.addr ? <span className="l3">{profLoc(o)}</span> : null}</span>
           </button>
-          {isWork && rowsByOrder[o.id] ? <OrderReviews rows={rowsByOrder[o.id]} open={!closed[o.id]} toggle={() => setClosed((c) => ({ ...c, [o.id]: !c[o.id] }))} sc={sc} now={now} Avatar={Avatar} RStars={RStars} openOrder={openOrder} toast={ctx.toast} /> : null}
+          {isWork && rowsByOrder[o.id] ? <OrderReviews rows={rowsByOrder[o.id]} open={!!opened[o.id]} toggle={() => setOpened((c) => ({ ...c, [o.id]: !c[o.id] }))} sc={sc} now={now} Avatar={Avatar} RStars={RStars} openOrder={openOrder} toast={ctx.toast} /> : null}
           </React.Fragment>
           );
         })}

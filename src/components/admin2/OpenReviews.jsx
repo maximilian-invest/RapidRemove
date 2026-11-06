@@ -1,5 +1,5 @@
 "use client";
-/* „In Bearbeitung" (Aufträge → Kachel In Bearbeitung): jede offene Bewertung einzeln – in der Kunden-Ansicht aufklappbar
+/* „In Bearbeitung" (Aufträge → Kachel In Bearbeitung): jede offene Bewertung einzeln – in der Kunden-Ansicht aufklappbar (Standard zugeklappt)
  * unter dem Kunden, in der Listen-Ansicht untereinander (neueste Bestellung zuerst). Quelle sind die Bewertungen AM AUFTRAG
  * (reviewItems bzw. angenommene), nicht nur die Partner-Aufgaben – auch Bewertungen, die (noch) nicht beim Partner liegen.
  * Je Bewertung: Verfasser als Direktlink zur Bewertung, Sterne, Alter heute, Partner-Status.
@@ -198,7 +198,7 @@ export function FlatRow({ r, j, now, sc, openOrder, Avatar, RStars, compact, toa
   );
 }
 
-/** Kunden-Ansicht: Bewertungen eines Auftrags aufklappbar unter dem Kunden (Standard: offen). */
+/** Kunden-Ansicht: Bewertungen eines Auftrags aufklappbar unter dem Kunden (Standard: zugeklappt). */
 export function OrderReviews({ rows, open, toggle, sc, now, Avatar, RStars, openOrder, toast }) {
   if (!rows.length) return null;
   const sRows = rows.filter(scannable);
