@@ -214,6 +214,7 @@ export type AutoCharged = { amount: number; cur: string; label: string; invoiceU
 export const autopayHooks: {
   charge?: (email: string) => Promise<AutoCharged | null>;
   saved?: (email: string) => Promise<boolean>; // gültige Zahlungsart hinterlegt
+  openInvoice?: (email: string, cur: string) => Promise<{ url: string; amount: number; n: number } | null>; // offene Fehlschlag-Rechnung (Autopay)
   info?: (email: string) => Promise<{ billing?: Record<string, unknown>; available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
 } = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");
@@ -895,6 +896,12 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (!pool0.length) return reply.code(400).send({ ok: false, error: "nothing" });
     const cur = pool0[0].cur as "usd" | "eur";
     const use = pool0.filter((o) => o.cur === cur);
+    // Automatische Abbuchung fehlgeschlagen und Rechnung noch offen → genau diese Rechnung zahlen (sonst Doppelzahlung möglich).
+    const openInv = autopayHooks.openInvoice ? await autopayHooks.openInvoice(email, cur).catch(() => null) : null;
+    if (openInv) {
+      void logCustEvent(email, "payment_open", `Offene Rechnung (Abbuchung fehlgeschlagen) · ${openInv.amount} ${cur.toUpperCase()}`, { amount: openInv.amount, cur, kind: "invoice", n: openInv.n }, { orderId: use[0].id });
+      return { ok: true, url: openInv.url, amount: openInv.amount, cur, n: openInv.n };
+    }
     const picks: PayRef[] = use.flatMap((o) => o.items.filter((it) => it.status === "removed" && !it.paid).map((it) => ({ o: o.id, k: it.key })));
     const amount = use.reduce((s, o) => s + o.toPay, 0);
     const url = await payLink("invoice", picks, amount, cur, orders);

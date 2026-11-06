@@ -1467,7 +1467,7 @@ export default function CustomerDashboard() {
         // Großer Moment: Karte fliegt rein, Häkchen, Konfetti, Ton (Celebrate kind „card").
         setCele({ id: Date.now(), kind: "card", label: r.label || "", title: T("ceCardT"), sub: r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : r.started ? T("ceCardS") : T("ceCardS2") });
       })
-      .catch(() => showToast(T("genericErr"), true))
+      .catch((e) => showToast(T(e && e.code === "prepaid" ? "apPrepaid" : "genericErr"), true))
       .finally(() => { setBusy(""); prev.current = null; load(token); }); // kein zweiter „Bezahlt"-Toast aus dem Vergleich
   }, [token, load, showToast]);
   React.useEffect(() => { if (!data || !intro || gate) return undefined; const t = setTimeout(() => setIntro(false), 1600); return () => clearTimeout(t); }, [data, intro, gate]);

@@ -738,6 +738,7 @@ export const addReviewsToOrderApi = (p) => adminPost("/admin/orders/add-reviews"
 export const setOrderPricesApi = (p) => adminPost("/admin/orders/prices", p);
 export const reviewsBillInfoApi = (orderId) => adminPost("/admin/reviews/bill-info", { orderId });
 export const reviewsBillApi = (p) => adminPost("/admin/reviews/bill", p);
+export const reviewsChargeRetryApi = (orderId) => adminPost("/admin/reviews/charge-retry", { orderId });
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */

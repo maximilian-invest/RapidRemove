@@ -4,7 +4,7 @@
    Sonst → Löschbestätigung + Rechnung mit Zahlungslink (bzw. PayPal/Wise-Text, wenn der Kunde das wollte). */
 import React from "react";
 import { Receipt, Loader, Check, CreditCard, Mail } from "lucide-react";
-import { reviewsBillInfoApi, reviewsBillApi, sendReviewsInvoice, setOrderStatus } from "@/lib/admin-api";
+import { reviewsBillInfoApi, reviewsBillApi, reviewsChargeRetryApi, sendReviewsInvoice, setOrderStatus } from "@/lib/admin-api";
 import { reviewDiscountPct, REVIEW_NOTEXT_PRICE, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
 import { Nav, keyOf, RStars, rvStars } from "./OrdersScreens";
 import { money, payPrefOf, expressOk } from "./model";
@@ -39,6 +39,18 @@ export default function Bill({ ctx, id }) {
   const priceOf = (it) => (Number(it.cp) > 0 ? Number(it.cp) : Math.round(((lpOf(it) || (it.nt || it.sw ? REVIEW_NOTEXT_PRICE : it.old ? BASE + REVIEW_OLD_SURCHARGE : BASE)) * (100 - pct)) / 100)
     + (lpOf(it) === 250 && it.x && expressOk(ptBy[keyOf(it)]) ? 100 : 0));
   const chosen = rows.filter((r) => r.ok && sel[r.k]);
+  // Abgerechnet, aber unbezahlt (z. B. Abbuchung fehlgeschlagen) → erneut abbuchen.
+  const unpaidBilled = rows.filter((r) => billed.has(r.k) && !paid.has(r.k));
+  const retry = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const r = await reviewsChargeRetryApi(o.id);
+      toast(r.charged ? `Abgebucht · ${money(r.charged.amount, c)} · Rechnung per Mail an ${o.email}` : !(r.due > 0) ? "Nichts offen – alles bezahlt" : "Abbuchung fehlgeschlagen – Kunde hat die Mail „Zahlung fehlgeschlagen“, neue Versuche laufen automatisch (7 in 7 Tagen)");
+      if (refresh) refresh(true);
+    } catch (e) { toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
   const total = chosen.reduce((s, r) => s + priceOf(r.it), 0);
   const pref = payPrefOf(o);
   const auto = info && info.savedPm;
@@ -82,6 +94,12 @@ export default function Bill({ ctx, id }) {
         {!info ? "Prüfe Zahlungsart …" : auto ? <><CreditCard style={{ width: 14, height: 14, verticalAlign: -2 }} /> Kunde hat eine Zahlungsart hinterlegt → wird sofort abgebucht, Rechnung geht automatisch per Mail.</>
           : <><Mail style={{ width: 14, height: 14, verticalAlign: -2 }} /> Keine Zahlungsart hinterlegt → Löschbestätigung + Rechnung {pref ? `(${pref}, −10 %)` : "mit Zahlungslink"} per Mail.</>}
       </p>
+      {auto && unpaidBilled.length ? (
+        <p className="nasub" style={{ marginTop: 8 }}>
+          {unpaidBilled.length} abgerechnete Bewertung(en) noch unbezahlt.{" "}
+          <button type="button" className="lnk" disabled={busy} onClick={retry} style={{ background: "none", border: 0, padding: 0, color: "var(--orange, #f97316)", fontWeight: 600, cursor: "pointer" }}>Abbuchung erneut versuchen</button>
+        </p>
+      ) : null}
       <div className="nastick">
         <button type="button" className="cta or" disabled={busy || !chosen.length || !info} onClick={send}>{busy ? <Loader className="spin" /> : <Receipt />}{busy ? "Sendet …" : !chosen.length ? "Bewertung anhaken" : auto ? `Abbuchen · ${money(total, c)}` : `Rechnung senden · ${money(total, c)}`}</button>
       </div>

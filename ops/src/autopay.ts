@@ -16,6 +16,8 @@ import { render } from "@react-email/render";
 import { sendMail } from "./mailer";
 import { fmtReviewMoney, profileOneTime } from "./reviewsPricing";
 import RechnungAuto, { rechnungAutoSubject } from "./emails/RechnungAuto";
+import ZahlungFehlgeschlagenReviews, { zahlungFehlgeschlagenSubject } from "./emails/ZahlungFehlgeschlagenReviews";
+import { getDunPause } from "./dunPause";
 import { checkAddress, checkVat } from "./billingCheck";
 import { pool, insertEvent, setOrderRawField } from "./db";
 import { startOrderIfReady } from "./orderStart";
@@ -25,7 +27,7 @@ import { logCustEvent } from "./custTrack";
 import { notifyPartner } from "./partnerNotify";
 import { notifyCustomer } from "./custPush";
 import { isDashReturnUrl } from "./dashUrl";
-import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
+import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, dashLink, DASH_URL, type PayRef, type AutoCharged } from "./customers";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
@@ -94,7 +96,7 @@ function form(obj: Record<string, unknown>, prefix = "", out: string[] = []): st
   }
   return out;
 }
-class StripeErr extends Error { code?: string; decline?: string; constructor(m: string, code?: string, decline?: string) { super(m); this.code = code; this.decline = decline; } }
+class StripeErr extends Error { code?: string; decline?: string; advice?: string; constructor(m: string, code?: string, decline?: string, advice?: string) { super(m); this.code = code; this.decline = decline; this.advice = advice; } }
 const API = () => (process.env.STRIPE_API_BASE || "https://api.stripe.com").replace(/\/+$/, ""); // Tests: Mock-Server
 async function sx<T = any>(key: string, method: "GET" | "POST" | "DELETE", path: string, params: Record<string, unknown> = {}, idem?: string): Promise<T> {
   const body = form(params).join("&");
@@ -104,7 +106,7 @@ async function sx<T = any>(key: string, method: "GET" | "POST" | "DELETE", path:
   if (idem && method === "POST") headers["Idempotency-Key"] = idem;
   const res = await fetch(url, { method, headers, body: method === "POST" ? body : undefined });
   const j = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok) throw new StripeErr(j?.error?.message || `Stripe ${res.status}`, j?.error?.code, j?.error?.decline_code);
+  if (!res.ok) throw new StripeErr(j?.error?.message || `Stripe ${res.status}`, j?.error?.code, j?.error?.decline_code, j?.error?.advice_code || j?.error?.payment_intent?.last_payment_error?.advice_code);
   return j as T;
 }
 
@@ -119,6 +121,13 @@ async function init(): Promise<void> {
     email text PRIMARY KEY, company text, name text, line1 text, postal text, city text, country text, vat text,
     updated_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`ALTER TABLE cust_billing ADD COLUMN IF NOT EXISTS vat_status text, ADD COLUMN IF NOT EXISTS vat_name text, ADD COLUMN IF NOT EXISTS addr_checked boolean`);
+  // Fehlgeschlagene Abbuchung (Einzelbewertungen): Stripe-Rechnung bleibt offen und wird nach Plan erneut belastet (06.11.2026).
+  await pool.query(`CREATE TABLE IF NOT EXISTS cust_autopay_retry (
+    id bigserial PRIMARY KEY, email text NOT NULL, mode text NOT NULL, cur text NOT NULL, inv text NOT NULL, pay_id text NOT NULL,
+    amount numeric NOT NULL, n int NOT NULL, picks jsonb NOT NULL, orders jsonb NOT NULL, label text,
+    tries int NOT NULL DEFAULT 1, hard boolean NOT NULL DEFAULT false, next_at timestamptz, last_error text,
+    status text NOT NULL DEFAULT 'open', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS cust_autopay_retry_open ON cust_autopay_retry (email) WHERE status='open'`);
   ready = true;
 }
 type Row = { email: string; mode: Mode; customer: string; pm: string | null; label: string | null; pm_type: string | null; last_error: string | null; updated_at: string };
@@ -290,7 +299,7 @@ async function holdForCard(orderIds: string[], email: string, label: string, msg
     const prog = await orderProgress(o.id).catch(() => null);
     if (!prog || prog.inProgress <= 0) continue; // nichts mehr beim Partner → keine Pause nötig (normale Zahlungsaufforderung reicht)
     if (o.h && o.h.reason === "autopay") { await setOrderRawField(o.id, "payHold", { ...o.h, msg, last: new Date().toISOString() }); continue; } // schon pausiert: Versuche/Zeit behalten
-    await setOrderRawField(o.id, "payHold", { at: new Date().toISOString(), amount: prog.due, cur: prog.cur, reason: "autopay", label, msg, tries: 0 });
+    await setOrderRawField(o.id, "payHold", { at: new Date().toISOString(), amount: prog.due, cur: prog.cur, reason: "autopay", label, msg, tries: 2, v: 2 }); // v2: Wiederholungen über cust_autopay_retry
     const c = (await pool.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND status IN ('new','working') ORDER BY id`, [o.id]).catch(() => ({ rows: [] as { code: string }[] }))).rows.map((x) => x.code).filter(Boolean);
     await insertEvent({ orderId: o.id, email, type: "pay", title: `Auftrag pausiert – Abbuchung fehlgeschlagen (${money})`, detail: `${prog.inProgress} Bewertung(en) beim Partner pausiert, bis bezahlt ist · neuer Versuch in 24 Std.${c.length ? " · " + c.join(", ") : ""}`, auto: true }).catch(() => {});
     void notifyPartner(`${test ? "TEST · " : ""}Order on hold`, `${c.slice(0, 4).join(", ") || o.id} · customer payment pending – please pause until “Customer paid”.`, undefined, test);
@@ -301,11 +310,19 @@ async function holdForCard(orderIds: string[], email: string, label: string, msg
 }
 const PUSH_FAIL: Record<string, { t: string; b: string }> = { en: { t: "Payment failed", b: "Please update your payment method – we continue right after." }, de: { t: "Zahlung fehlgeschlagen", b: "Bitte aktualisieren Sie Ihre Zahlungsart – danach geht es sofort weiter." }, es: { t: "Pago fallido", b: "Actualiza tu método de pago y seguimos enseguida." }, fr: { t: "Paiement échoué", b: "Mets à jour ton moyen de paiement – on reprend aussitôt." }, it: { t: "Pagamento non riuscito", b: "Aggiorna il metodo di pagamento: riprendiamo subito dopo." }, nl: { t: "Betaling mislukt", b: "Werk uw betaalmethode bij – daarna gaan we meteen verder." }, pt: { t: "Pagamento falhou", b: "Atualiza o teu método de pagamento – continuamos logo a seguir." }, ja: { t: "お支払いに失敗しました", b: "お支払い方法を更新してください。更新後すぐに再開します。" }, sv: { t: "Betalningen misslyckades", b: "Uppdatera din betalningsmetod – sedan fortsätter vi direkt." }, da: { t: "Betalingen mislykkedes", b: "Opdater din betalingsmetode – så fortsætter vi straks." }, no: { t: "Betalingen mislyktes", b: "Oppdater betalingsmetoden din – så fortsetter vi med en gang." } };
 
-/** Alle 30 Min.: pausierte Aufträge (fehlgeschlagene Abbuchung) nach 24 h bzw. 48 h nochmal abbuchen. Danach normale Mahnungen. */
+/** Alle 30 Min.: offene Fehlschlag-Rechnungen prüfen (bezahlt? anders bezahlt? fällig?) und nach Plan neu belasten (RETRY_DAYS).
+ *  Altfälle (vor 06.11.2026, payHold ohne v2): wie bisher nach 24 h bzw. 48 h nochmal abbuchen. */
 export async function retryTick(log: (o: unknown, m: string) => void = () => {}): Promise<void> {
   if (!pool) return;
+  await init();
+  const open = (await pool.query(`SELECT DISTINCT email FROM cust_autopay_retry WHERE status='open'`)).rows as { email: string }[];
+  for (const x of open) {
+    const res = await chargeDue(x.email, "Wiederholung (Plan)").catch((e) => { log({ err: String(e), email: x.email }, "Abbuchung-Wiederholung Fehler"); return null; });
+    if (res) log({ email: x.email, amount: res.amount }, "Automatisch bezahlen: offene Rechnung beglichen");
+  }
+  const openSet = new Set(open.map((x) => x.email));
   const r = await pool.query(`SELECT id, lower(email) AS email, raw->'payHold' AS h FROM orders WHERE service='reviews' AND raw->'payHold'->>'reason'='autopay' AND COALESCE(status,'') <> 'storniert'`);
-  const done = new Set<string>();
+  const done = new Set<string>(openSet);
   for (const o of r.rows as { id: string; email: string; h: { at?: string; tries?: number } }[]) {
     const tries = Number(o.h?.tries) || 0;
     if (tries >= 2 || done.has(o.email)) continue;
@@ -452,6 +469,134 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
 
 /* ---- Abbuchen ---- */
 const busy = new Set<string>();
+
+/* ---- Fehlgeschlagene Abbuchung: Rechnung offen lassen + erneut versuchen (Maximilian 06.11.2026) ----
+ * Statt die Rechnung sofort zu stornieren, bleibt sie offen und wird nach diesem Plan erneut belastet (Tage nach dem 1. Fehlschlag):
+ * insgesamt 7 Versuche in 7 Tagen. Kunde bekommt EINMAL sofort die Mail „Zahlung fehlgeschlagen" (Dashboard + Rechnungslink).
+ * Hinterlegt er eine neue Zahlungsart, wird die offene Rechnung sofort damit belastet. Wird anders bezahlt (Admin „bezahlt",
+ * PayPal …) oder storniert, wird die offene Rechnung storniert. Harte Ablehnungen (Karte gesperrt/gestohlen, „do_not_try_again")
+ * → keine automatischen Versuche, Rechnung bleibt 7 Tage zum Selbstzahlen offen. Danach: Rechnung storniert, Mahnungen laufen normal. */
+export const RETRY_DAYS = [1, 2, 3, 4, 5, 7];
+export const ADMIN_RETRY = "Admin: erneut abbuchen"; // Admin-Knopf → offene Rechnung sofort belasten bzw. neue anlegen
+const MAX_TRIES = RETRY_DAYS.length + 1;
+const DAY = 24 * 3600e3;
+const HARD = new Set(["lost_card", "stolen_card", "pickup_card", "fraudulent", "restricted_card", "security_violation", "revocation_of_authorization", "revocation_of_all_authorizations", "stop_payment_order", "invalid_account", "new_account_information_available", "card_not_supported"]);
+const isHard = (e: StripeErr) => e.advice === "do_not_try_again" || HARD.has(String(e.decline || ""));
+type RetryRow = { id: string; email: string; mode: Mode; cur: string; inv: string; pay_id: string; amount: string | number; n: number; picks: PayRef[]; orders: string[]; label: string | null; tries: number; hard: boolean; next_at: string | null; created_at: string };
+async function openRetries(email: string): Promise<RetryRow[]> {
+  if (!pool) return [];
+  await init();
+  return (await pool.query(`SELECT * FROM cust_autopay_retry WHERE email=$1 AND status='open' ORDER BY id`, [email.toLowerCase()])).rows as RetryRow[];
+}
+async function closeRetry(id: string, status: string, err?: string | null): Promise<void> {
+  await pool?.query(`UPDATE cust_autopay_retry SET status=$2, last_error=COALESCE($3, last_error), updated_at=now() WHERE id=$1`, [id, status, err || null]).catch(() => {});
+}
+const fmtAt = (d: Date) => d.toLocaleString("de-AT", { timeZone: "Europe/Vienna", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+/** Bezahlte Abbuchungs-Rechnung verbuchen (Erfolg direkt oder später bei einem neuen Versuch / Zahlung über den Rechnungslink). */
+async function settleReviewsPaid(email: string, k: { mode: Mode }, label: string, inv: any, id: string, picks: PayRef[], orderIds: string[], amount: number, cur: string, why: string): Promise<AutoCharged> {
+  const primary = picks[0].o;
+  const url = String(inv.hosted_invoice_url || `https://dashboard.stripe.com/${k.mode === "test" ? "test/" : ""}invoices/${inv.id}`);
+  await addOrderPayment(primary, { id, kind: "invoice", amount, cur, url, n: picks.length, via: "autopay", keys: picks.filter((r) => r.o === primary).map((r) => r.k), refs: picks.filter((r) => r.o !== primary) });
+  await markReviewPaymentPaid(email, amount, `rr_${id}`);
+  await pool?.query(`UPDATE cust_autopay SET last_error=NULL, updated_at=now() WHERE email=$1`, [email]).catch(() => {});
+  for (const oid of new Set(picks.map((p) => p.o))) {
+    await insertEvent({ orderId: oid, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${label} · ${picks.length} Bewertung(en) · Stripe-Rechnung ${inv.number || inv.id} · Anlass: ${why}`, auto: true }).catch(() => {});
+  }
+  // Rechnung an den Kunden (PDF im Anhang) – nach JEDER Abbuchung, wie bei den Zahlungslinks.
+  await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, label, picks.length, orderIds).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
+  void logCustEvent(email, "payment_success", `Automatisch abgebucht · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", auto: true }, { orderId: primary });
+  void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt · ${amount} ${cur.toUpperCase()}`, `${email} · ${label} · ${picks.length} gelöschte Bewertung(en) · ${why}`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
+  return { amount, cur, label, invoiceUrl: url };
+}
+
+/** Mail „Zahlung fehlgeschlagen – bitte Zahlungsart aktualisieren" (einmal je fehlgeschlagener Rechnung). */
+async function sendFailMail(email: string, inv: any, amount: number, cur: string, label: string, n: number, orderIds: string[]): Promise<void> {
+  if (!pool) return;
+  if (await getDunPause(email).catch(() => null)) { // Admin hat Auto-Mahnungen für diesen Kunden pausiert
+    for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "note", title: "Mail „Zahlung fehlgeschlagen“ NICHT gesendet – Auto-Mahnungen pausiert", auto: true }).catch(() => {});
+    return;
+  }
+  const o = (await pool.query(`SELECT name, lang FROM orders WHERE id = ANY($1::text[]) ORDER BY created_at DESC LIMIT 1`, [orderIds])).rows[0] || {};
+  const lang = String(o.lang || "en").slice(0, 2);
+  const props = { lang, name: o.name || "", amount: fmtReviewMoney(grossOf(inv, amount), cur), pm: label, n, dashUrl: await dashLink(email, lang), invoiceUrl: inv?.hosted_invoice_url || "" };
+  const html = await render(React.createElement(ZahlungFehlgeschlagenReviews, props));
+  const subject = zahlungFehlgeschlagenSubject(props);
+  await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+  for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "mail", title: "Mail „Zahlung fehlgeschlagen – Zahlungsart aktualisieren“ gesendet (automatisch)", detail: `${props.amount} · ${label} · neue Versuche nach ${RETRY_DAYS.join("/")} Tagen`, html, subject, auto: true }).catch(() => {});
+}
+
+/** Offene Fehlschlag-Rechnung prüfen und ggf. erneut belasten. state "open" = steht noch offen → KEINE neue Rechnung anlegen. */
+async function settleOpen(email: string, k: { key: string; mode: Mode }, row: Row, r: RetryRow, force: boolean): Promise<{ state: "open" | "done"; paid?: AutoCharged }> {
+  const amount = Number(r.amount); const cur = r.cur; const label = row.label || r.label || "";
+  const picks = (Array.isArray(r.picks) ? r.picks : []) as PayRef[]; const orderIds = (Array.isArray(r.orders) ? r.orders : []) as string[];
+  if (r.mode !== k.mode || !picks.length) { await closeRetry(r.id, "void"); return { state: "done" }; }
+  let inv: any = await sx(k.key, "GET", `invoices/${r.inv}`).catch(() => null);
+  if (!inv) return { state: "open" }; // Stripe gerade nicht erreichbar → später
+  if (inv.status === "paid") { // z. B. Kunde hat über den Rechnungslink bezahlt
+    const paid = await settleReviewsPaid(email, k, label, inv, r.pay_id, picks, orderIds, amount, cur, "offene Rechnung bezahlt");
+    await closeRetry(r.id, "paid"); return { state: "done", paid };
+  }
+  if (inv.status !== "open") { await closeRetry(r.id, String(inv.status || "void")); return { state: "done" }; }
+  // Sind alle Bewertungen der Rechnung noch unbezahlt? Sonst (anders bezahlt / storniert) Rechnung stornieren.
+  const { orders } = await loadCustomerOrders(email);
+  const unpaid = new Set(orders.flatMap((o) => (o.cancelled ? [] : o.items.filter((it) => it.status === "removed" && !it.paid).map((it) => o.id + "\u0001" + it.key))));
+  if (!picks.every((p) => unpaid.has(p.o + "\u0001" + p.k))) {
+    await sx(k.key, "POST", `invoices/${r.inv}/void`, {}).catch(() => {});
+    await closeRetry(r.id, "void");
+    for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "pay", title: `Offene Abbuchungs-Rechnung storniert (${amount} ${cur.toUpperCase()})`, detail: `Stripe-Rechnung ${inv.number || inv.id} · Bewertungen inzwischen anders bezahlt oder storniert`, auto: true }).catch(() => {});
+    return { state: "done" };
+  }
+  const age = Date.now() - new Date(r.created_at).getTime();
+  if (r.hard && !force) {
+    if (age < 7 * DAY) return { state: "open" };
+    await sx(k.key, "POST", `invoices/${r.inv}/void`, {}).catch(() => {});
+    await closeRetry(r.id, "failed");
+    for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "pay", title: `Abbuchung endgültig fehlgeschlagen – Rechnung nach 7 Tagen storniert (${amount} ${cur.toUpperCase()})`, detail: "Harte Ablehnung, Kunde hat nichts geändert · Mahnungen laufen normal", auto: true }).catch(() => {});
+    void notifyTeam("Abbuchung endgültig fehlgeschlagen", `${email} · ${amount} ${cur.toUpperCase()} · Karte abgelehnt (keine Wiederholung möglich) · Mahnungen laufen normal`, `${SITE_URL}/admin?order=${encodeURIComponent(orderIds[0] || "")}`, { kind: "pay" });
+    return { state: "open" }; // in diesem Lauf keine neue Rechnung mehr anlegen
+  }
+  if (!force && (!r.next_at || Date.now() < new Date(r.next_at).getTime())) return { state: "open" };
+  const tries = (Number(r.tries) || 1) + 1;
+  try {
+    inv = await sx(k.key, "POST", `invoices/${r.inv}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${r.pay_id}-${tries}`);
+    if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);
+    await pool?.query(`UPDATE cust_autopay_retry SET tries=$2 WHERE id=$1`, [r.id, tries]).catch(() => {});
+    const paid = await settleReviewsPaid(email, k, label, inv, r.pay_id, picks, orderIds, amount, cur, `${force ? "neue Zahlungsart / manuell" : "automatischer Versuch"} ${tries}/${MAX_TRIES}`);
+    await closeRetry(r.id, "paid");
+    return { state: "done", paid };
+  } catch (e) {
+    const err = e as StripeErr;
+    const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 300);
+    await pool?.query(`UPDATE cust_autopay SET last_error=$2, updated_at=now() WHERE email=$1`, [email, msg]).catch(() => {});
+    const hard = isHard(err);
+    const last = !hard && tries >= MAX_TRIES;
+    if (last) {
+      await sx(k.key, "POST", `invoices/${r.inv}/void`, {}).catch(() => {});
+      await pool?.query(`UPDATE cust_autopay_retry SET tries=$2, status='failed', last_error=$3, updated_at=now() WHERE id=$1`, [r.id, tries, msg]).catch(() => {});
+      for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "pay", title: `Abbuchung ${tries}× fehlgeschlagen – Rechnung storniert (${amount} ${cur.toUpperCase()})`, detail: `${label} · ${msg} · Mahnungen laufen normal`, auto: true }).catch(() => {});
+      void notifyTeam(`Abbuchung ${tries}× fehlgeschlagen`, `${email} · ${amount} ${cur.toUpperCase()} · ${msg} · Rechnung storniert, Mahnungen laufen normal`, `${SITE_URL}/admin?order=${encodeURIComponent(orderIds[0] || "")}`, { kind: "pay" });
+      return { state: "open" }; // in diesem Lauf keine neue Rechnung mehr anlegen
+    }
+    const next = hard ? null : new Date(new Date(r.created_at).getTime() + RETRY_DAYS[Math.min(tries - 1, RETRY_DAYS.length - 1)] * DAY);
+    await pool?.query(`UPDATE cust_autopay_retry SET tries=$2, hard=$3, next_at=$4, last_error=$5, updated_at=now() WHERE id=$1`, [r.id, tries, hard || r.hard, next, msg]).catch(() => {});
+    for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "pay", title: `Abbuchung Versuch ${tries}/${MAX_TRIES} fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${label} · ${msg}${next ? ` · nächster Versuch ${fmtAt(next)}` : " · harte Ablehnung: keine weiteren automatischen Versuche"}`, auto: true }).catch(() => {});
+    await holdForCard(orderIds, email, label, msg, `${amount} ${cur.toUpperCase()}`, k.mode === "test").catch(() => {});
+    return { state: "open" };
+  }
+}
+
+/** Für das Dashboard („Zahlen"): offene Fehlschlag-Rechnung statt eines zweiten Zahlungslinks (keine Doppelzahlung). */
+export async function openFailedInvoice(email0: string, cur: string): Promise<{ url: string; amount: number; n: number } | null> {
+  const email = String(email0 || "").toLowerCase();
+  const k = keyFor(email); if (!k) return null;
+  const r = (await openRetries(email)).find((x) => x.cur === cur && x.mode === k.mode);
+  if (!r) return null;
+  const inv: any = await sx(k.key, "GET", `invoices/${r.inv}`).catch(() => null);
+  if (!inv || inv.status !== "open" || !inv.hosted_invoice_url) return null;
+  return { url: String(inv.hosted_invoice_url), amount: Number(r.amount), n: Number(r.n) || 1 };
+}
+
 /** Offene Beträge (gelöschte, unbezahlte Bewertungen) aller Aufträge des Kunden abbuchen – je Währung eine Rechnung. */
 export async function chargeDue(email0: string, why = "Löschung"): Promise<AutoCharged | null> {
   const email = String(email0 || "").toLowerCase();
@@ -461,21 +606,37 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
   if (!row || !row.pm || row.mode !== k.mode) return null;
   if (busy.has(email)) return null;
   busy.add(email);
+  // Kunde hat aktiv etwas getan (neue Zahlungsart) → offene Fehlschlag-Rechnung sofort neu belasten; sonst nur nach Plan.
+  const force = why === "Zahlungsart hinterlegt" || why === ADMIN_RETRY;
+  const planOnly = why === "Wiederholung (Plan)"; // retryTick: nur offene Rechnungen prüfen/belasten, nie eine neue anlegen
   try {
-    const { orders } = await loadCustomerOrders(email);
-    const due = orders.filter((o) => o.toPay > 0 && !o.cancelled);
-    if (!due.length) return null;
+    const open0 = (await openRetries(email)).filter((r) => r.mode === k.mode);
+    const first = await loadCustomerOrders(email);
+    const curs = [...new Set([...first.orders.filter((o) => o.toPay > 0 && !o.cancelled).map((o) => o.cur as string), ...open0.map((r) => r.cur)])];
     let res: AutoCharged | null = null;
-    for (const cur of [...new Set(due.map((o) => o.cur))]) {
-      const use = due.filter((o) => o.cur === cur);
+    const add = (p: AutoCharged) => { res = { amount: Math.round((((res as AutoCharged | null)?.amount || 0) + p.amount) * 100) / 100, cur: p.cur, label: p.label, invoiceUrl: p.invoiceUrl }; };
+    for (const cur of curs) {
+      const open = open0.find((r) => r.cur === cur);
+      let paidThis = false;
+      if (open) {
+        const s0 = await settleOpen(email, k, row, open, force);
+        if (s0.paid) { add(s0.paid); paidThis = true; }
+        if (s0.state === "open") continue; // offene Rechnung läuft noch → keine zweite Rechnung (neue Löschungen kommen danach dazu)
+      }
+      // Geplante Wiederholung legt nie eine neue Rechnung an – außer die offene wurde gerade bezahlt: dann weitere
+      // inzwischen gelöschte Bewertungen gleich mit der (jetzt funktionierenden) Zahlungsart abbuchen.
+      if (planOnly && !paidThis) continue;
+      const { orders } = open ? await loadCustomerOrders(email) : first;
+      const use = orders.filter((o) => o.toPay > 0 && !o.cancelled && o.cur === cur);
       const picks: PayRef[] = use.flatMap((o) => o.items.filter((it) => it.status === "removed" && !it.paid).map((it) => ({ o: o.id, k: it.key })));
       const amount = Math.round(use.reduce((s, o) => s + o.toPay, 0) * 100) / 100;
       if (!picks.length || !(amount > 0)) continue;
       const id = newPayId();
       const primary = picks[0].o;
+      const orderIds = [...new Set(use.map((o) => o.id))];
       // Preismodell 2: Express-Aufschlag nur für rechtzeitig gelöschte Bewertungen (xOk) – auf der Rechnung ausgewiesen.
       const nXok = use.reduce((s2, o) => s2 + o.items.filter((it) => it.status === "removed" && !it.paid && (it as { xOk?: boolean }).xOk).length, 0);
-      const desc = `Entfernte Google-Bewertungen · ${picks.length} ×${nXok ? ` · inkl. Express-Löschung ${nXok} ×` : ""} · ${[...new Set(use.map((o) => o.id))].join(", ")}`;
+      const desc = `Entfernte Google-Bewertungen · ${picks.length} ×${nXok ? ` · inkl. Express-Löschung ${nXok} ×` : ""} · ${orderIds.join(", ")}`;
       let inv: any = null;
       try {
         await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});
@@ -485,7 +646,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
           ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
           customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
           default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
-          metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(",") },
+          metadata: { rr_pay: id, rr_email: email, rr_orders: orderIds.join(",") },
         }, tax, { customer: row.customer, amount: Math.round(amount * 100), currency: cur, description: desc }, id));
         inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
         inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
@@ -493,25 +654,27 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       } catch (e) {
         const err = e as StripeErr;
         const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 300);
-        if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {}); // keine offene Doppel-Rechnung stehen lassen
         await pool.query(`UPDATE cust_autopay SET last_error=$2, updated_at=now() WHERE email=$1`, [email, msg]).catch(() => {});
-        await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → Auftrag pausiert, Kunde soll Zahlungsart aktualisieren`, auto: true }).catch(() => {});
-        await holdForCard([...new Set(use.map((o) => o.id))], email, row.label || "", msg, `${amount} ${cur.toUpperCase()}`, k.mode === "test").catch(() => {});
-        void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${msg}`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
+        // Ist die Rechnung finalisiert (Zahlung abgelehnt), bleibt sie OFFEN und wird nach Plan erneut belastet. Sonst (Fehler vor
+        // dem Finalisieren, z. B. Stripe nicht erreichbar) wie bisher: Entwurf weg, beim nächsten Anlass neu.
+        let fin: any = null;
+        if (inv?.id) fin = inv.status === "open" ? inv : await sx(k.key, "GET", `invoices/${inv.id}`).catch(() => null);
+        if (fin && fin.status === "open") {
+          const hard = isHard(err);
+          const next = hard ? null : new Date(Date.now() + RETRY_DAYS[0] * DAY);
+          await pool.query(`INSERT INTO cust_autopay_retry (email, mode, cur, inv, pay_id, amount, n, picks, orders, label, tries, hard, next_at, last_error) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11,$12,$13)`,
+            [email, k.mode, cur, fin.id, id, amount, picks.length, JSON.stringify(picks), JSON.stringify(orderIds), row.label || null, hard, next, msg]);
+          await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → Rechnung ${fin.number || fin.id} bleibt offen · ${next ? `neue Versuche nach ${RETRY_DAYS.join("/")} Tagen (nächster ${fmtAt(next)})` : "harte Ablehnung: keine automatischen Versuche, Kunde muss Zahlungsart ändern"}`, auto: true }).catch(() => {});
+          await sendFailMail(email, fin, amount, cur, row.label || "", picks.length, orderIds).catch((e2) => console.error("Mail „Zahlung fehlgeschlagen“ fehlgeschlagen", e2));
+        } else {
+          if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {}); // Entwurf nicht stehen lassen
+          await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → keine Rechnung angelegt, nächster Anlass versucht es neu`, auto: true }).catch(() => {});
+        }
+        await holdForCard(orderIds, email, row.label || "", msg, `${amount} ${cur.toUpperCase()}`, k.mode === "test").catch(() => {});
+        void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${msg}${fin?.status === "open" ? " · Rechnung bleibt offen, neue Versuche laufen automatisch" : ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
         continue;
       }
-      const url = String(inv.hosted_invoice_url || `https://dashboard.stripe.com/${k.mode === "test" ? "test/" : ""}invoices/${inv.id}`);
-      await addOrderPayment(primary, { id, kind: "invoice", amount, cur, url, n: picks.length, via: "autopay", keys: picks.filter((r) => r.o === primary).map((r) => r.k), refs: picks.filter((r) => r.o !== primary) });
-      await markReviewPaymentPaid(email, amount, `rr_${id}`);
-      await pool.query(`UPDATE cust_autopay SET last_error=NULL, updated_at=now() WHERE email=$1`, [email]).catch(() => {});
-      for (const oid of new Set(picks.map((p) => p.o))) {
-        await insertEvent({ orderId: oid, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${row.label || ""} · ${picks.length} Bewertung(en) · Stripe-Rechnung ${inv.number || inv.id} · Anlass: ${why}`, auto: true }).catch(() => {});
-      }
-      // Rechnung an den Kunden (PDF im Anhang) – nach JEDER Abbuchung, wie bei den Zahlungslinks.
-      await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, row.label || "", picks.length, [...new Set(use.map((o) => o.id))]).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
-      void logCustEvent(email, "payment_success", `Automatisch abgebucht · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", auto: true }, { orderId: primary });
-      void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${picks.length} gelöschte Bewertung(en)`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
-      res = { amount: ((res as AutoCharged | null)?.amount || 0) + amount, cur, label: row.label || "", invoiceUrl: url };
+      add(await settleReviewsPaid(email, k, row.label || "", inv, id, picks, orderIds, amount, cur, why));
     }
     return res;
   } finally { busy.delete(email); }
@@ -536,6 +699,7 @@ const NO_CHARGE: Record<string, string> = {
 let lastErr: { at: string; where: string; msg: string } | null = null; // letzte Stripe-Fehlermeldung (Diagnose, ohne Schlüssel)
 export function registerAutopayRoutes(app: FastifyInstance): void {
   autopayHooks.charge = (email) => chargeDue(email).catch((e) => { app.log.error({ err: e }, "Automatisch bezahlen: Abbuchung fehlgeschlagen"); return null; });
+  autopayHooks.openInvoice = (email, cur) => openFailedInvoice(email, cur).catch(() => null);
   autopayHooks.info = info;
   autopayHooks.saved = (email) => hasSavedMethod(String(email || "").toLowerCase());
   void init().catch((e) => app.log.error({ err: e }, "cust_autopay anlegen fehlgeschlagen"));
@@ -577,9 +741,10 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
         try { return await sx(k.key, "POST", "checkout/sessions", p); }
         catch (e) { if (!/billing_address_collection/i.test(String((e as Error)?.message))) throw e; app.log.warn({ err: e }, "Setup-Checkout: Adressabfrage nicht erlaubt – ohne"); const { billing_address_collection: _b, ...p2 } = p; return sx(k.key, "POST", "checkout/sessions", p2); }
       };
-      // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal, Link.
-      // KEINE Lastschrift/Bankkonto (US-Bankkonto, SEPA): Abbuchung dauert Tage und kann noch platzen.
-      for (const types of [["card", "paypal", "link"], ["card", "link"], ["card"]]) {
+      // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal.
+      // KEINE Lastschrift/Bankkonto (US-Bankkonto, SEPA) und seit 06.11.2026 KEIN Link: Link hängt oft an einem Bankkonto,
+      // 14 von 36 Link-Abbuchungen sind fehlgeschlagen (Karten 3 von 34). Bestehende Link-Kunden bleiben, bis sie wechseln.
+      for (const types of [["card", "paypal"], ["card"]]) {
         try { ses = await mk({ ...params, payment_method_types: types }); break; }
         catch (e) { if (!/custom_text/i.test(String((e as Error)?.message))) { if (types.length === 1) throw e; continue; } app.log.warn({ err: e }, "Setup-Checkout: Hinweistext nicht erlaubt – ohne"); }
         try { const { custom_text: _ct, ...p2 } = params; ses = await mk({ ...p2, payment_method_types: types }); break; }
@@ -610,6 +775,12 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       const si2 = ses.setup_intent;
       if (!si2 || si2.status !== "succeeded" || !si2.payment_method) return reply.code(400).send({ ok: false, error: "not_completed" });
       const pm = si2.payment_method;
+      // Prepaid-Karten: oft leer bis zur nächsten Aufladung → nicht annehmen (06.11.2026).
+      if (pm.type === "card" && pm.card?.funding === "prepaid") {
+        void sx(k.key, "POST", `payment_methods/${pm.id}/detach`, {}).catch(() => {});
+        void logCustEvent(si.email, "autopay_rejected", "Prepaid-Karte abgelehnt", { mode: k.mode });
+        return reply.code(400).send({ ok: false, error: "prepaid" });
+      }
       const label = pmLabel(pm);
       if (row.pm === pm.id) { await releasePayGates(si.email, label).catch(() => 0); return { ok: true, label, charged: null }; } // schon gespeichert (Neuladen)
       if (row.pm && row.pm !== pm.id) void sx(k.key, "POST", `payment_methods/${row.pm}/detach`, {}).catch(() => {});

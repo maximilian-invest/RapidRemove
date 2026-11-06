@@ -9,8 +9,8 @@ import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
-import { autopayAvailable, hasSavedMethod, chargeDue } from "./autopay";
-import { customerSessionInfo, dashLink, keyOf } from "./customers";
+import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY } from "./autopay";
+import { customerSessionInfo, dashLink, keyOf, loadCustomerOrders } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
@@ -333,6 +333,20 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     bumpChange();
     const charged = await chargeDue(o.email, "Löschung (Admin)").catch(() => null);
     return { ok: true, mode: "autopay", n: fresh.length, charged };
+  });
+  /** POST /admin/reviews/charge-retry { orderId } → gelöscht + abgerechnet, aber unbezahlt: jetzt (erneut) von der hinterlegten Zahlungsart abbuchen.
+   *  Offene Fehlschlag-Rechnung wird sofort belastet; sonst neue Rechnung. Schlägt es fehl: Mail an den Kunden + automatische Versuche (7 in 7 Tagen). */
+  app.post("/admin/reviews/charge-retry", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const o = await loadOrder(clip(b.orderId, 40));
+    if (!o || o.service !== "reviews") return reply.code(404).send({ ok: false, error: "order" });
+    if (!(autopayAvailable(o.email) && (await hasSavedMethod(o.email).catch(() => false)))) return reply.code(400).send({ ok: false, error: "Keine Zahlungsart hinterlegt" });
+    await insertEvent({ orderId: o.id, email: o.email, type: "note", title: "Admin: Abbuchung erneut angestoßen", auto: false }).catch(() => {});
+    const charged = await chargeDue(o.email, ADMIN_RETRY).catch(() => null);
+    bumpChange();
+    const due = (await loadCustomerOrders(String(o.email).toLowerCase())).orders.reduce((s, v) => s + (Number(v.toPay) || 0), 0);
+    return { ok: true, charged, due: Math.round(due * 100) / 100 };
   });
   app.post("/admin/orders/prices", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
