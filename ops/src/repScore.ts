@@ -13,9 +13,11 @@
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
-import { customerSessionInfo } from "./customers";
+import { customerSessionInfo, loadCustomerOrders } from "./customers";
 import { notifyTeam } from "./notify";
 import { withBrowserPage } from "./linkProbe";
+import { resolveTier } from "./priceTier";
+import { profilePriceFor, PROFILE_EXPRESS_FEE, PROTECTION_PRICES, freshPriceFor } from "./reviewsPricing";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type J = Record<string, any>;
@@ -44,6 +46,8 @@ async function init(): Promise<void> {
   await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz, ADD COLUMN IF NOT EXISTS archived_at timestamptz, ADD COLUMN IF NOT EXISTS website_manual text`);
   // Wöchentlicher Recherche-Cache je Standort: Suchtreffer, Suchbegriffe, KI-Antworten + Einordnung
   await pool.query(`CREATE TABLE IF NOT EXISTS rep_cache (location_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
+  // Aus dem Reputations-Portal beauftragte Maßnahmen (für „In Arbeit“); Profil/Bewertungen zusätzlich als echter Auftrag (order_id)
+  await pool.query(`CREATE TABLE IF NOT EXISTS rep_orders (id text PRIMARY KEY, location_id text NOT NULL, email text NOT NULL, kind text NOT NULL, detail jsonb, points integer, order_id text, created_at timestamptz NOT NULL DEFAULT now())`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
   // Scans laufen im Prozess: nach einem Neustart (Deploy) ist jeder „laufende“ Scan tot → als abgebrochen markieren
   await pool.query(`UPDATE rep_scans SET status='error', error='abgebrochen (Server-Neustart)', finished_at=now() WHERE status='running'`);
@@ -597,7 +601,7 @@ type Social = { net: string; url: string; followers?: string; inGoogle?: boolean
 type Item = { senti?: string; i: number; src: "google" | "bing" | "news" | "mention" | "link" | "web"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; votes?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
-  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number; neg?: number };
+  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number; neg?: number; list?: J[] }; tier?: J | null;
   kiWhy?: Record<string, string>; kws?: Kw[]; backlinks?: { rank: number; domains: number; links: number } | null;
   web: { fromGbp?: boolean; via?: string; url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
@@ -605,7 +609,7 @@ export type Ctx = {
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
 const W = { search: 30, reviews: 20, press: 15, ki: 15, social: 10, web: 10 } as const;
 type AreaKey = keyof typeof W;
-type Fix = { rank?: boolean; gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean };
+type Fix = { rank?: boolean; gbp?: boolean; negPage1?: boolean; answer?: boolean; social?: boolean; web?: boolean; ki?: boolean; suggest?: boolean; gLink?: boolean; revOverride?: number };
 
 const gbpMissing = (g: J) => [!g.website && "Website", !g.phone && "Telefonnummer", !g.hours && "Öffnungszeiten", g.photos < 8 && "Fotos"].filter(Boolean) as string[];
 function gbpChecks(g: J, rv: { total: number; unanswered: number }, n: number): J[] {
@@ -644,6 +648,7 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
   if (!fix.answer && c.reviews.negUnanswered > 0) reviews -= 0.5;
   const gb = c.loc.gbp as J | undefined;
   if (gb && !fix.gbp) reviews -= Math.min(1.5, 0.5 * gbpMissing(gb).length);
+  if (fix.revOverride != null) reviews = fix.revOverride;
   // Presse & Foren
   const pf = self.filter((x) => x.type === "press" || x.type === "forum" || x.src === "news");
   const seen = new Set<string>();
@@ -715,11 +720,119 @@ function redFlags(c: Ctx): { t: string; area: AreaKey }[] {
   if (c.aiOverviewSent === "neg") f.push({ t: "Google KI-Übersicht äußert sich negativ", area: "ki" });
   return f;
 }
+// schwächster Kernbereich und Anzahl roter Flaggen deckeln den Gesamtscore
+const capOf = (ar: Record<AreaKey, number>, nf: number) => Math.min(ar.reviews <= 2 || ar.search <= 2 ? 45 : ar.reviews <= 4 || ar.search <= 4 ? 60 : 100, nf >= 4 ? 50 : nf >= 2 ? 65 : 100);
+const scoreOf = (c: Ctx, fix: Fix = {}) => { const a = areaScores(c, fix); return Math.min(total(a), capOf(a, redFlags(c).length)); };
+
+/* ---------------- Maßnahmen (Logik: claude/massnahmen-logik.md, 06.11.2026) ----------------
+ * Jede Maßnahme wird simuliert: Daten so ändern, als wäre sie erfolgreich erledigt, dann Score MIT neu berechneten roten
+ * Flaggen und Deckel. Kombinationen werden gemeinsam gerechnet (nicht addiert) → combos["press|profile:reset"] = Score. */
+// Branchen, die vom Google-Profil leben (Laufkundschaft, Maps) → Neustart statt reiner Löschung
+const PROFILE_DEP = new Set(["gastro", "hotel", "beauty", "medical", "health", "auto", "cardealer", "retail"]);
+type MSel = { profile?: "reset" | "remove"; reviews?: boolean; press?: boolean; web?: boolean };
+const isNegPressItem = (x: Item) => x.about !== "other" && x.sent === "neg" && (x.type === "press" || x.type === "forum" || x.src === "news" || (x.type === "review" && x.src === "google" && x.pos <= 30));
+function simScore(c: Ctx, sel: MSel, rev: J[]): number {
+  const c2 = structuredClone(c) as Ctx;
+  const fix: Fix = {};
+  if (sel.profile) {
+    // Profil weg: keine Google-Sterne mehr; neu angelegt = neutral (0 Bewertungen), nur gelöscht = etwas weniger (keine Präsenz)
+    c2.loc = { ...c2.loc, rating: null, reviews: 0 };
+    c2.reviews = { total: 0, unanswered: 0, negUnanswered: 0, neg: 0, list: [] };
+    fix.revOverride = sel.profile === "reset" ? 6 : 5;
+    fix.gbp = true;
+  } else if (sel.reviews && rev.length) {
+    const r = Number(c.loc.rating) || 0, n = Number(c.loc.reviews) || 0, k = rev.length, sum = rev.reduce((s, x) => s + Number(x.rating), 0);
+    const un = rev.filter((x) => !x.answered).length;
+    c2.loc = { ...c2.loc, rating: n - k > 0 ? Math.round(((r * n - sum) / (n - k)) * 10) / 10 : null, reviews: Math.max(0, n - k) };
+    c2.reviews = { ...c2.reviews, neg: Math.max(0, (c2.reviews.neg || 0) - k), negUnanswered: Math.max(0, c2.reviews.negUnanswered - un), unanswered: Math.max(0, c2.reviews.unanswered - un) };
+  }
+  if (sel.press) for (const x of c2.items) if (isNegPressItem(x)) { x.sent = "neu"; if (x.type === "review") x.rating = null; }
+  if (sel.web) c2.web = { ...c2.web, url: c2.web.url || "https://neu.example", perf: 90, seo: 95, https: true, ok: true, fromGbp: true };
+  return scoreOf(c2, fix);
+}
+const newestReviewDays = (s: string) => { const t = Date.parse(s); return Number.isFinite(t) ? Math.max(0, Math.floor((Date.now() - t) / 86400000)) : null; };
+function buildMeasures(c: Ctx, score: number, selfTodos: J[]): J {
+  const t = c.tier || {};
+  const cc = String(t.cc || c.loc.country || "").toUpperCase();
+  const cur = cc === "US" ? "usd" : "eur";
+  const prem = !!t.prem && !t.legacy;
+  const r = Number(c.loc.rating) || 0, n = Number(c.loc.reviews) || 0;
+  const st = String(c.loc.gbp?.status || "OPERATIONAL");
+  const list = (c.reviews.list || []) as J[];
+  const items: J[] = [];
+  const recent30 = list.filter((x) => Number(x.rating) <= 2 && x.days != null && x.days <= 30).length;
+  // 1) Google-Profil (≤ 4,2 Sterne oder dauerhaft geschlossen)
+  let profile: J | null = null;
+  if (c.loc.place_id && (st === "CLOSED_PERMANENTLY" || (n > 0 && r > 0 && r <= 4.2))) {
+    const closed = st === "CLOSED_PERMANENTLY";
+    const dep = PROFILE_DEP.has(String(t.ind || ""));
+    const noWeb = !c.web.url;
+    const rec = closed ? "remove" : dep || noWeb ? "reset" : "remove";
+    profile = {
+      key: "profile", title: "Google-Profil löschen", rec, cur,
+      variants: [{ id: "reset", label: "Löschen + neu anlegen", price: profilePriceFor("reset", cur, prem) }, { id: "remove", label: "Nur löschen", price: profilePriceFor("remove", cur, prem) }].filter((v) => !closed || v.id === "remove"),
+      express: PROFILE_EXPRESS_FEE,
+      sub: closed ? "Als dauerhaft geschlossen angezeigt" : `${String(r).replace(".", ",")} ★ bei ${n} Bewertungen`,
+      alert: recent30 ? `${recent30} neue kritische in 30 Tagen` : (c.reviews.neg || 0) >= 3 ? `${c.reviews.neg} der ${c.reviews.total} neuesten kritisch` : "",
+      warnRemove: noWeb ? "Ohne Website sind Sie danach bei Google nicht mehr auffindbar." : "",
+    };
+    items.push(profile);
+  }
+  // 2) Einzelne Bewertungen (> 4,2 Sterne; 1–2 ★ mit Text, höchstens 28 Tage alt; DE/AT nur, wenn der Schnitt sichtbar steigt)
+  let rev: J[] = [];
+  if (!profile && r > 4.2 && n > 0) {
+    const del = list.filter((x) => Number(x.rating) <= 2 && String(x.text || "").trim() && x.days != null && x.days <= 28);
+    if (del.length) {
+      const k = del.length, sum = del.reduce((s, x) => s + Number(x.rating), 0);
+      const to = n - k > 0 ? Math.round(((r * n - sum) / (n - k)) * 10) / 10 : r;
+      const dach = cc === "DE" || cc === "AT";
+      if (!dach || to >= Math.round((r + 0.1) * 10) / 10) {
+        rev = del;
+        const price = t.fresh || freshPriceFor(cc, prem);
+        items.push({ key: "reviews", title: `${k} ${k === 1 ? "Bewertung" : "Bewertungen"} löschen`, cur, price, total: price * k, from: r, to,
+          left: Math.min(...del.map((x) => 28 - Number(x.days))),
+          reviews: del.map((x) => ({ id: x.id, name: x.name, rating: x.rating, text: String(x.text).slice(0, 140), days: x.days, left: 28 - Number(x.days) })) });
+      }
+    }
+  }
+  // 3) Negative Artikel/Beiträge → kostenlose Löschprüfung (KI-Zitate besonders wichtig)
+  const self = c.items.filter((x) => x.about !== "other");
+  const negP = [...new Map(self.filter(isNegPressItem).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()]
+    .sort((p, q) => (p.src === "google" ? p.pos : 50) - (q.src === "google" ? q.pos : 50)).slice(0, 8);
+  if (negP.length) {
+    const cites = (u: string) => { const h = host(u); return c.ki.filter((k) => (k.answers || []).some((a) => (a.src || []).some((s) => host(s.u) === h))).map((k) => k.name); };
+    const ps = negP.map((x) => ({ title: x.title, link: x.link, host: host(x.link), pos: x.src === "google" ? x.pos : null, ai: cites(x.link) }));
+    const aiAll = [...new Set(ps.flatMap((x) => x.ai))];
+    const top = ps.find((x) => x.pos != null && x.pos <= 10);
+    items.push({ key: "press", title: `${ps.length} negative${ps.length === 1 ? "n Beitrag" : " Beiträge"} löschen lassen`, price: 0, uncertain: true,
+      sub: "Kostenlose Prüfung, sonst verdrängen", alert: aiAll.length ? `${aiAll.join(" und ")} ${aiAll.length > 1 ? "zitieren" : "zitiert"} das` : top ? `Google Platz ${top.pos}` : "", items: ps });
+  }
+  // 4) Eigene Website
+  if (!c.web.url) items.push({ key: "web", title: "Eigene Website", price: 2000, bot: 49.9, sub: "3 Entwürfe, individuell für Sie" });
+  // 5) Schutz (nur zusammen mit einer Profil-Maßnahme)
+  if (profile) items.push({ key: "schutz", title: "Schutz nach der Löschung", options: [{ id: "monthly", price: PROTECTION_PRICES.monthly, per: "Monat" }, { id: "yearly", price: PROTECTION_PRICES.yearly, per: "Jahr" }, { id: "lifetime", price: PROTECTION_PRICES.lifetime, per: "einmalig" }] });
+  // Gemeinsame Simulation aller Kombinationen
+  const pv: (MSel["profile"] | undefined)[] = [undefined, ...(profile ? profile.variants.map((v: J) => v.id) : [])];
+  const others = (["reviews", "press", "web"] as const).filter((k) => items.some((x) => x.key === k));
+  const combos: Record<string, number> = {};
+  for (const p of pv) for (let m = 0; m < 1 << others.length; m++) {
+    const sel: MSel = { profile: p };
+    const keyParts = p ? [`profile:${p}`] : [];
+    others.forEach((k, i) => { if (m & (1 << i)) { sel[k] = true; keyParts.push(k); } });
+    combos[keyParts.sort().join("|")] = simScore(c, sel, rev);
+  }
+  for (const x of items) {
+    if (x.key === "profile") for (const v of x.variants) v.points = Math.max(0, (combos[`profile:${v.id}`] ?? score) - score);
+    else if (x.key !== "schutz") x.points = Math.max(0, (combos[x.key] ?? score) - score);
+  }
+  const free = selfTodos.filter((x) => !profile || (x.key !== "gbp" && x.key !== "answer"));
+  if (n < 30 || profile) free.push({ key: "collect", title: profile ? "Nach dem Neustart Bewertungen sammeln" : "Mehr Bewertungen sammeln", sub: "QR-Code für Ihr Profil" });
+  return { base: score, items, combos, free, alert: recent30 >= 2 ? `${recent30} neue 1–2-Sterne-Bewertungen in 30 Tagen` : "" };
+}
+
 export function evaluate(c: Ctx): J {
   const a = areaScores(c);
   const flagList = redFlags(c);
-  // schwächster Kernbereich und Anzahl roter Flaggen deckeln den Gesamtscore
-  const capOf = (ar: Record<AreaKey, number>, nf: number) => Math.min(ar.reviews <= 2 || ar.search <= 2 ? 45 : ar.reviews <= 4 || ar.search <= 4 ? 60 : 100, nf >= 4 ? 50 : nf >= 2 ? 65 : 100);
   const score = Math.min(total(a), capOf(a, flagList.length));
   const self = c.items.filter((x) => x.about !== "other");
   const negP1 = self.filter((x) => x.src === "google" && x.pos <= 10 && x.sent === "neg");
@@ -745,6 +858,9 @@ export function evaluate(c: Ctx): J {
   if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${kChecked.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
   if (!c.web.url) todos.unshift({ key: "web", title: "Eigene Website fehlt – wichtig für Ihren Ruf", who: "wir", action: "website", points: Math.max(3, gain({ web: true })), area: "web" });
   else if (c.web.fromGbp === false) todos.push({ key: "weblink", title: `Website ${host(c.web.url)} im Google-Profil eintragen`, who: "selbst", action: "website", points: gain({ web: true }) || 2, area: "web" });
+  let measures: J | null = null;
+  try { measures = buildMeasures(c, score, todos.filter((t) => t.who === "selbst").map((t) => ({ key: t.key, title: t.title, area: t.area, glink: t.glink }))); }
+  catch (e) { console.warn("Rep-Maßnahmen", (e as Error).message); }
   const webT = todos.find((t) => t.key === "web");
   const top = [...(webT ? [webT] : []), ...todos.filter((t) => t.points > 0 && t !== webT).sort((x, y) => y.points - x.points)].slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
@@ -822,7 +938,7 @@ export function evaluate(c: Ctx): J {
   const serp1 = g1.map((x) => ({ pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", title: x.title, link: x.link, host: host(x.link) }));
   const flags = flagList.length;
   return {
-    score, tier: tier(score), potential, areas, todos: top, serp1,
+    score, tier: tier(score), potential, areas, todos: top, serp1, measures,
     flagList,
     kpis: { flags, rating: c.loc.rating, reviews: c.loc.reviews, page1Pos: serp1.filter((x) => x.sent === "pos").length, page1Total: serp1.length },
     kiSummary: c.kiSummary || "",
@@ -994,7 +1110,14 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       const rj = await serp({ engine: "google_maps_reviews", place_id: loc.place_id, hl: "de", sort_by: "newestFirst" }).catch(() => ({} as J));
       const list = Array.isArray(rj.reviews) ? rj.reviews.slice(0, 10) : [];
       reviews.total = list.length;
-      for (const r of list) { if (Number(r.rating) <= 2) reviews.neg++; const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
+      const rl: J[] = [];
+      for (const r of list) {
+        if (Number(r.rating) <= 2) reviews.neg++;
+        const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet));
+        if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; }
+        rl.push({ id: String(r.review_id || ""), name: String(r.user?.name || "").slice(0, 60), rating: Number(r.rating) || 0, text: String(r.extracted_snippet?.original || r.snippet || "").slice(0, 600), days: newestReviewDays(String(r.iso_date || "")), link: String(r.link || ""), answered: ans });
+      }
+      (reviews as J).list = rl;
     }
     if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
     if (!site) {
@@ -1279,6 +1402,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
       kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kiWhy: Object.fromEntries([...aiErr.entries()].filter(([, v]) => v.at >= scanStart).map(([k, v]) => [k, v.why])), backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { fromGbp: siteFromGbp, via: siteVia, url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
+    ctx.tier = loc.place_id ? await resolveTier({ email: loc.email, placeId: loc.place_id, country: String(loc.country || "").toUpperCase() }).catch(() => null) : null;
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), pagesRead: checker.memo.size, profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
     await say(97, "Schreibe die Zusammenfassungen für jeden Bereich");
@@ -1310,8 +1434,20 @@ export function registerRepScore(app: FastifyInstance): void {
       const cur = s.rows[0] || null;
       const kiPending = !!done[0] && needsKiSum(done[0].result) && !!process.env.ANTHROPIC_API_KEY;
       if (kiPending) void backfillKiSums(done[0].id, done[0].result);
+      // In Arbeit: im Portal beauftragte Maßnahmen + laufende Aufträge für dieses Google-Profil
+      const inWork: J[] = [];
+      const seenK = new Set<string>();
+      const LBL: Record<string, string> = { profile: "Google-Profil löschen", reviews: "Bewertungen löschen", press: "Negative Beiträge prüfen", web: "Eigene Website" };
+      const oo = l.place_id ? await pool!.query(`SELECT id, service, status, created_at FROM orders WHERE lower(email)=$1 AND raw->>'placeId'=$2 AND COALESCE(status,'') NOT IN ('done','storniert','konvertiert') AND created_at > now() - interval '180 days' ORDER BY created_at DESC`, [String(l.email).toLowerCase(), l.place_id]).catch(() => ({ rows: [] as J[] })) : { rows: [] as J[] };
+      const ro = await pool!.query(`SELECT kind, detail, points, order_id, created_at FROM rep_orders WHERE location_id=$1 AND created_at > now() - interval '120 days' ORDER BY created_at DESC`, [l.id]).catch(() => ({ rows: [] as J[] }));
+      for (const x of ro.rows) { if (seenK.has(x.kind)) continue; seenK.add(x.kind); inWork.push({ kind: x.kind, label: (x.detail && x.detail.label) || LBL[x.kind] || x.kind, at: x.created_at, orderId: x.order_id || null, points: x.points ?? null }); }
+      for (const o of oo.rows) {
+        const k = o.service === "remove" || o.service === "reset" ? "profile" : o.service === "reviews" ? "reviews" : o.service === "press" ? "press" : "";
+        if (!k || seenK.has(k)) continue; seenK.add(k);
+        inWork.push({ kind: k, label: k === "profile" && o.service === "reset" ? "Google-Profil löschen + neu anlegen" : LBL[k], at: o.created_at, orderId: o.id, points: null });
+      }
       out.push({
-        id: l.id, name: l.name, address: l.address, city: l.city, website: l.website, mapsUrl: l.maps_url,
+        id: l.id, name: l.name, address: l.address, city: l.city, website: l.website, mapsUrl: l.maps_url, inWork,
         scan: cur ? (cur.status === "running" && Date.now() - new Date(cur.created_at).getTime() > 12 * 60_000
           ? { id: cur.id, status: "error", progress: cur.progress, step: cur.step, error: "abgebrochen", at: cur.created_at }
           : { id: cur.id, status: cur.status, progress: cur.progress, step: cur.step, error: cur.error, at: cur.created_at }) : null,
@@ -1408,5 +1544,84 @@ export function registerRepScore(app: FastifyInstance): void {
     const what = LBL[String(b.action)] || String(b.action || "anfrage").slice(0, 60);
     if (!a.imp) await notifyTeam("Reputation-Anfrage", `${a.email} · ${loc ? loc.name + (loc.city ? ", " + loc.city : "") : ""} · ${what}`);
     return { ok: true };
+  });
+
+  /* Maßnahmen beauftragen (06.11.2026): Profil + Bewertungen als echter Auftrag über POST /order (Preis, Mails, Zahlungsart,
+   * Partner – alles wie auf der Website); Löschprüfung und Website als Anfrage ans Team. Alles nur, was der letzte Scan
+   * tatsächlich empfiehlt (Server prüft gegen result.measures, nicht gegen den Browser). */
+  const orderHits = new Map<string, number[]>();
+  app.post("/cust/rep/order", async (req, reply) => {
+    const b = (req.body || {}) as J;
+    const a = await auth(b);
+    if (!a) return reply.code(401).send({ ok: false, error: "session" });
+    if (a.off) return reply.code(403).send({ ok: false, error: "off" });
+    if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    const now = Date.now(); const hh = (orderHits.get(a.email) || []).filter((x) => now - x < 3600_000);
+    if (hh.length >= 6) return reply.code(429).send({ ok: false, error: "rate" });
+    hh.push(now); orderHits.set(a.email, hh);
+    const loc = (await pool!.query(`SELECT * FROM rep_locations WHERE id=$1 AND email=$2 AND archived_at IS NULL`, [String(b.locationId || ""), a.email])).rows[0];
+    if (!loc) return reply.code(404).send({ ok: false, error: "location" });
+    const last = (await pool!.query(`SELECT result FROM rep_scans WHERE location_id=$1 AND status='done' ORDER BY created_at DESC LIMIT 1`, [loc.id])).rows[0];
+    const M = last?.result?.measures as J | undefined;
+    if (!M || !Array.isArray(M.items)) return reply.code(409).send({ ok: false, error: "rescan" });
+    const get = (k: string) => (M.items as J[]).find((x) => x.key === k);
+    const s = (b.sel || {}) as J;
+    const prof = s.profile ? get("profile") : null;
+    const variant = prof && (prof.variants as J[]).some((v) => v.id === s.profile) ? String(s.profile) : "";
+    const revM = s.reviews ? get("reviews") : null;
+    const pressM = s.press ? get("press") : null;
+    const webM = s.web ? get("web") : null;
+    const prot = variant === "remove" && get("schutz") && ["monthly", "yearly", "lifetime"].includes(String(s.schutz || "")) ? String(s.schutz) : "";
+    if (!variant && !revM && !pressM && !webM) return reply.code(400).send({ ok: false, error: "empty" });
+    if ((variant || revM) && (b.agb !== true || b.risk !== true)) return reply.code(400).send({ ok: false, error: "agb" });
+    const cust = await loadCustomerOrders(a.email).catch(() => ({ name: "", lang: "de", orders: [] as unknown[] }));
+    const lastO = (await pool!.query(`SELECT name, phone, company, country FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [a.email]).catch(() => ({ rows: [] as J[] }))).rows[0] || {};
+    const cc = String(loc.country || lastO.country || "AT").toUpperCase();
+    const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    const base = {
+      email: a.email, name: cust.name || lastO.name || "", phone: lastO.phone || "", company: loc.name || lastO.company || "", lang: "de", country: cc,
+      profile: loc.name, addr: loc.address || "", mapsUri: loc.maps_url || "", placeId: loc.place_id, placeName: loc.name, placeAddr: loc.address || "", profileCountry: cc,
+      agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      riskConsent: { at: new Date().toISOString(), ip, ua: String(req.headers["user-agent"] || "").slice(0, 240), v: "2026-10-29", via: "reputation" },
+      source: "dashboard", sourceFirst: "dashboard", referrer: "Reputations-Portal", landing: "/my-reviews",
+    };
+    const place = async (payload: J) => {
+      const orderId = "RR-" + (100000 + crypto.randomInt(900000));
+      const res = await app.inject({ method: "POST", url: "/order", payload: { ...base, ...payload, orderId }, headers: { "content-type": "application/json", "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
+      const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as J;
+      if (res.statusCode >= 400 || j.ok === false || j.saved === false) throw new Error(String(j.error || `order ${res.statusCode}`));
+      return orderId;
+    };
+    const rec = async (kind: string, detail: J, points: number | null, orderId: string | null) =>
+      pool!.query(`INSERT INTO rep_orders (id, location_id, email, kind, detail, points, order_id) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [id(), loc.id, a.email, kind, pgJson(detail), points, orderId]);
+    const done: J[] = [];
+    try {
+      if (variant) {
+        const v = (prof!.variants as J[]).find((x) => x.id === variant)!;
+        const wantX = variant === "remove" && s.express === true;
+        const oid = await place({ service: variant === "reset" ? "reset" : "remove", protection: prot, express: wantX,
+          note: `Reputations-Portal: ${v.label}${wantX ? " + Express" : ""}${prot ? ` + Schutz (${prot})` : ""}` });
+        await rec("profile", { label: variant === "reset" ? "Google-Profil löschen + neu anlegen" : "Google-Profil löschen", variant, prot, express: wantX }, Number(v.points) || null, oid);
+        done.push({ kind: "profile", orderId: oid });
+      }
+      if (revM) {
+        const items = (revM.reviews as J[]).map((x) => {
+          const full = ((last.result.reviewsInfo?.list || []) as J[]).find((y) => y.id === x.id) || x;
+          return { ...(full.link ? { url: full.link } : {}), name: full.name, text: full.text, rating: full.rating, days: full.days };
+        });
+        const oid = await place({ service: "reviews", protection: "", reviewItems: items, reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
+          note: `Reputations-Portal (Empfehlung nach Reputations-Check, ${cc}): ${items.length} Bewertung${items.length === 1 ? "" : "en"}\n${items.map((x) => x.url || `${x.name} — "${x.text || ""}"`).join("\n")}` });
+        await rec("reviews", { label: revM.title, n: items.length }, Number(revM.points) || null, oid);
+        done.push({ kind: "reviews", orderId: oid });
+      }
+    } catch (e) {
+      app.log.warn({ err: e }, "Rep-Auftrag");
+      return reply.code(502).send({ ok: false, error: "order", done });
+    }
+    const asks: string[] = [];
+    if (pressM) { await rec("press", { label: "Negative Beiträge prüfen", links: (pressM.items as J[]).map((x) => x.link) }, Number(pressM.points) || null, null); asks.push(`Löschprüfung:\n${(pressM.items as J[]).map((x) => `• ${x.title} – ${x.link}`).join("\n")}`); done.push({ kind: "press" }); }
+    if (webM) { await rec("web", { label: s.bot ? "Eigene Website + Chatbot" : "Eigene Website", bot: !!s.bot }, Number(webM.points) || null, null); asks.push(s.bot ? "Website (2.000 €) + Chatbot 49,90 €/Monat" : "Website (2.000 €)"); done.push({ kind: "web" }); }
+    await notifyTeam("Reputation: Maßnahmen beauftragt", `${a.email} · ${loc.name}${loc.city ? ", " + loc.city : ""}\n${done.map((d) => d.kind + (d.orderId ? ` (${d.orderId})` : "")).join(", ")}${asks.length ? "\n\n" + asks.join("\n\n") : ""}`).catch(() => {});
+    return { ok: true, done };
   });
 }

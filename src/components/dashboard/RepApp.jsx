@@ -2,7 +2,9 @@
 /* Reputations-Score im Kundenportal (Vorschau, nur Konten in REP_PREVIEW).
    Daten: ops /cust/rep/* (Scan läuft im Hintergrund, hier wird gepollt). */
 import React from "react";
-import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2, Check, ShieldCheck, Hourglass } from "lucide-react";
+import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT } from "@/lib/consents";
+import { pagePath } from "@/lib/page-routes";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 const monthOf = (iso) => { try { return MONTHS[new Date(iso).getMonth()]; } catch (e) { return ""; } };
@@ -34,7 +36,86 @@ export function useRep(token, enabled, call) {
   const search = React.useCallback((q) => call("rep/search", { token, q }), [token, call]);
   const setWebsite = React.useCallback(async (locationId, url) => { const r = await call("rep/website", { token, locationId, url }); await load(); return r; }, [token, call, load]);
   const archive = React.useCallback(async (locationId) => { const r = await call("rep/archive", { token, locationId }); await load(); return r; }, [token, call, load]);
-  return { ...st, running, reload: load, scan, request, search, archive, setWebsite };
+  const order = React.useCallback(async (locationId, sel, extra) => { const r = await call("rep/order", { token, locationId, sel, ...(extra || {}) }); await load(); return r; }, [token, call, load]);
+  return { ...st, running, reload: load, scan, request, search, archive, setWebsite, order };
+}
+
+/* ---------------- Maßnahmen: Auswahl → Score (Werte kommen fertig simuliert vom Server: measures.combos) ---------------- */
+const MKIND = { profile: 1, reviews: 1, press: 1, web: 1 };
+const comboKey = (sel) => [sel.profile ? "profile:" + sel.profile : "", sel.reviews ? "reviews" : "", sel.press ? "press" : "", sel.web ? "web" : ""].filter(Boolean).sort().join("|");
+function workSel(m, inWork) {
+  const s = {};
+  for (const w of inWork || []) {
+    if (!MKIND[w.kind]) continue;
+    if (w.kind === "profile") { const p = (m.items || []).find((x) => x.key === "profile"); if (p) s.profile = /neu anlegen/.test(w.label || "") ? "reset" : p.rec; }
+    else if ((m.items || []).some((x) => x.key === w.kind)) s[w.kind] = true;
+  }
+  return s;
+}
+function defaultSel(m, inWork) {
+  const w = workSel(m, inWork), s = {};
+  for (const x of m.items || []) {
+    if (w[x.key]) continue;
+    if (x.key === "profile") s.profile = x.rec;
+    if (x.key === "reviews" || x.key === "press") s[x.key] = true;
+  }
+  return s;
+}
+const scoreOfSel = (m, sel) => { const v = m.combos ? m.combos[comboKey(sel)] : null; return typeof v === "number" ? v : m.base; };
+const eur = (v, cur) => (cur === "usd" ? "$" : "") + Number(v).toLocaleString("de-AT", { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + (cur === "usd" ? "" : " €");
+function useCount(target, from, loop) {
+  const [n, setN] = React.useState(from);
+  const cur = React.useRef(from);
+  React.useEffect(() => {
+    let raf = 0, iv = 0;
+    const run = (start, delay) => {
+      const t0 = performance.now();
+      const step = (t) => {
+        const p = Math.min(1, Math.max(0, (t - t0 - delay) / 1600));
+        const e = 1 - Math.pow(1 - p, 3);
+        const v = Math.round(start + (target - start) * e);
+        cur.current = v; setN(v);
+        if (p < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    };
+    if (loop) { run(from, 900); iv = setInterval(() => { cancelAnimationFrame(raf); run(from, 900); }, 4500); }
+    else run(cur.current, 0);
+    return () => { cancelAnimationFrame(raf); clearInterval(iv); };
+  }, [target, from, loop]);
+  return n;
+}
+function GoalRing({ now, work, sel, n, plus, size }) {
+  const C = 553, d = (v) => Math.max(0, Math.min(100, v)) * 5.53;
+  return (
+    <div className="rp-goal" style={size ? { width: size, height: size } : undefined}>
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#262626" strokeWidth="10" />
+        <circle className="rp-goal-g" cx="100" cy="100" r="88" fill="none" stroke="#4ade80" strokeWidth="10" strokeLinecap="round" style={{ strokeDasharray: `${d(sel)} ${C}`, strokeDashoffset: -d(now + work) }} />
+        {work > 0 ? <circle cx="100" cy="100" r="88" fill="none" stroke="#fbbf24" strokeWidth="10" strokeLinecap="round" style={{ strokeDasharray: `${d(work)} ${C}`, strokeDashoffset: -d(now) }} /> : null}
+        <circle className="rp-goal-o" cx="100" cy="100" r="88" fill="none" stroke="#ff6a00" strokeWidth="10" strokeLinecap="round" style={{ strokeDasharray: `${d(now)} ${C}` }} />
+      </svg>
+      <div className="rp-goal-c"><b className={n > now ? "up" : ""}>{n}</b>{plus ? <i className="rp-goal-p">{plus}</i> : null}</div>
+    </div>
+  );
+}
+/* Übersicht: dunkle Potenzial-Karte mit Knopf „Maßnahmen ansehen“ */
+function PotentialCue({ loc, onOpen }) {
+  const r = loc.latest, m = r.measures;
+  const target = m ? scoreOfSel(m, { ...workSel(m, loc.inWork), ...defaultSel(m, loc.inWork) }) : r.score;
+  const n = useCount(target, r.score, true);
+  if (!m || target <= r.score) return null;
+  return (
+    <section className="rp-cue">
+      <span className="rp-cue-glow" aria-hidden="true" />
+      <GoalRing now={r.score} work={0} sel={n - r.score} n={n} plus={n >= target ? "+" + (target - r.score) + " Punkte" : ""} />
+      <div className="rp-cue-t">
+        <span className="rp-cue-k">IHR POTENZIAL</span>
+        <p className="rp-cue-h">Ihr Weg von {r.score} auf <b className="rp-shim">{target}</b> Punkte</p>
+      </div>
+      <button type="button" className="rp-cue-btn" onClick={onOpen}>Maßnahmen ansehen<ArrowRight /></button>
+    </section>
+  );
 }
 
 /* ---------------- Bausteine ---------------- */
@@ -200,14 +281,18 @@ export function RepSearchSheet({ open, initial, rep, onClose, onPicked, showToas
 }
 
 /* ---------------- Detail (Dashboard) ---------------- */
-function Chart({ history }) {
+function Chart({ history, target }) {
   const pts = history.slice(-6);
-  if (pts.length < 2) {
+  const goal = target && pts.length && target > pts[pts.length - 1].score ? target : null;
+  if (pts.length < 2 && !goal) {
     return <div className="rp-chart-one"><b>{pts[0] ? pts[0].score : "–"}</b><span>Der Verlauf erscheint ab dem 2. Scan.</span></div>;
   }
   const vals = pts.map((p) => p.score);
-  const lo = Math.max(0, Math.floor((Math.min(...vals) - 6) / 10) * 10), hi = Math.min(100, Math.ceil((Math.max(...vals) + 6) / 10) * 10);
-  const X = (i) => 4 + (i * 92) / (pts.length - 1), Y = (v) => 6 + ((hi - v) / (hi - lo || 1)) * 88; // Prozent
+  const all = goal ? [...vals, goal] : vals;
+  const lo = Math.max(0, Math.floor((Math.min(...all) - 6) / 10) * 10), hi = Math.min(100, Math.ceil((Math.max(...all) + 6) / 10) * 10);
+  const slots = pts.length + (goal ? 1 : 0);
+  const X = (i) => (slots < 2 ? 50 : 6 + (i * 86) / (slots - 1)), Y = (v) => 6 + ((hi - v) / (hi - lo || 1)) * 88; // Prozent
+  const gx = goal ? X(pts.length) : 0, gy = goal ? Y(goal) : 0;
   const xy = pts.map((p, i) => [X(i), Y(p.score)]);
   const line = xy.map(([x, y]) => x.toFixed(2) + "," + y.toFixed(2)).join(" ");
   const area = `M${xy[0][0]},100 L` + xy.map(([x, y]) => x.toFixed(2) + "," + y.toFixed(2)).join(" L") + ` L${xy[xy.length - 1][0]},100 Z`;
@@ -218,13 +303,18 @@ function Chart({ history }) {
         {[0, 50, 100].map((g) => <i key={g} className="rp-grid-l" style={{ top: 6 + g * 0.88 + "%" }}><span>{Math.round(hi - (g / 100) * (hi - lo))}</span></i>)}
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="rpcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff8000" stopOpacity=".22" /><stop offset="1" stopColor="#ff8000" stopOpacity="0" /></linearGradient></defs>
+          <defs><linearGradient id="rpgg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#4ade80" stopOpacity=".35" /><stop offset="1" stopColor="#4ade80" stopOpacity="0" /></linearGradient></defs>
+          {goal ? <rect x={(lx + gx) / 2} y="0" width={100 - (lx + gx) / 2} height="100" fill="#eaf9ef" opacity=".75" /> : null}
           <path d={area} fill="url(#rpcg)" />
+          {goal ? <path d={`M${lx},${ly} L${gx},${gy} L${gx},100 L${lx},100 Z`} fill="url(#rpgg)" /> : null}
           <polyline points={line} fill="none" stroke="#ff8000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {goal ? <line className="rp-goal-line" x1={lx} y1={ly} x2={gx} y2={gy} stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeDasharray="7 7" vectorEffect="non-scaling-stroke" /> : null}
         </svg>
         {xy.map(([x, y], i) => <b key={i} className={"rp-dot" + (i === xy.length - 1 ? " last" : "")} style={{ left: x + "%", top: y + "%" }} />)}
         <em className="rp-val" style={{ left: lx + "%", top: ly + "%" }}>{vals[vals.length - 1]}</em>
+        {goal ? <><b className="rp-dot goal" style={{ left: gx + "%", top: gy + "%" }} /><em className="rp-val goal" style={{ left: gx + "%", top: gy + "%" }}>{goal} möglich</em></> : null}
       </div>
-      <div className="rp-chart-x">{pts.map((p, i) => <span key={i} style={{ left: X(i) + "%" }} className={i === pts.length - 1 ? "on" : ""}>{dateOf(p.at)}</span>)}</div>
+      <div className="rp-chart-x">{pts.map((p, i) => <span key={i} style={{ left: X(i) + "%" }} className={i === pts.length - 1 ? "on" : ""}>{dateOf(p.at)}</span>)}{goal ? <span className="goal" style={{ left: gx + "%" }}>Ziel</span> : null}</div>
     </div>
   );
 }
@@ -272,7 +362,9 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
   const [area, setArea] = React.useState(null);
   const [flags, setFlags] = React.useState(false);
-  React.useEffect(() => { setArea(null); setFlags(false); }, [loc.id]);
+  const [view, setView] = React.useState(null);
+  React.useEffect(() => { setArea(null); setFlags(false); setView(null); }, [loc.id]);
+  React.useEffect(() => { try { window.scrollTo(0, 0); } catch (e) { /* */ } }, [view, area]);
   const running = loc.scan && loc.scan.status === "running";
   const ask = async (action) => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
@@ -286,11 +378,14 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
     const a = r.areas.find((x) => x.key === area);
     return <RepArea a={a} r={r} onBack={() => setArea(null)} onAsk={ask} loc={loc} rep={rep} showToast={showToast} imp={imp} />;
   }
+  if (view === "measures" && r.measures) return <RepMeasures loc={loc} rep={rep} onBack={() => setView(null)} showToast={showToast} imp={imp} />;
   const k = r.kpis || {};
+  const mm = r.measures;
+  const goal = mm ? scoreOfSel(mm, { ...workSel(mm, loc.inWork), ...defaultSel(mm, loc.inWork) }) : null;
   return (
     <div className="rp-detail">
       <div className="rp-dh">
-        {multi ? <button type="button" className="rp-back" onClick={onBack} aria-label="Alle Standorte"><ArrowLeft /></button> : null}
+        {onBack ? <button type="button" className="rp-back" onClick={onBack} aria-label="Alle Standorte"><ArrowLeft /></button> : null}
         <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
         {onAdd ? <button type="button" className="rp-add" onClick={onAdd}><Plus />Standort</button> : null}
       </div>
@@ -312,12 +407,13 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
           ))}
         </section>
       ) : null}
+      <PotentialCue loc={loc} onOpen={() => setView("measures")} />
       {r.profile ? <ProfileBox p={r.profile} /> : null}
       <div className="rp-grid">
         <div className="rp-main">
           <section className="rp-box">
-            <div className="rp-box-h"><b>Score-Verlauf</b><span>{loc.history.length} {loc.history.length === 1 ? "Scan" : "Scans"}</span></div>
-            <Chart history={loc.history} />
+            <div className="rp-box-h"><b>Score-Verlauf</b>{goal && goal > r.score ? <span className="rp-ch-leg"><i />bisher<i className="d" />mit Maßnahmen</span> : <span>{loc.history.length} {loc.history.length === 1 ? "Scan" : "Scans"}</span>}</div>
+            <Chart history={loc.history} target={goal} />
           </section>
           <div className="rp-two">
             <section className="rp-box">
@@ -350,7 +446,22 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
           </div>
         </div>
         <aside className="rp-side">
-          <section className="rp-box">
+          {mm ? (
+            <section className="rp-box">
+              <div className="rp-box-h"><b>Das können Sie selbst tun</b><span>kostenlos</span></div>
+              {(mm.free || []).length ? mm.free.map((t) => {
+                const I = TODO_ICON[t.key] || Star; const [c, bg] = TODO_COL[t.key] || ["#d97706", "#fff4e0"];
+                return (
+                  <button key={t.key} type="button" className="rp-row" onClick={() => (t.area ? setArea(t.area) : null)}>
+                    <span className="rp-ico" style={{ color: c, background: bg }}><I /></span>
+                    <span className="rp-t"><b>{t.title}</b>{t.sub ? <span>{t.sub}</span> : null}</span>
+                    {t.area ? <ChevronRight /> : null}
+                  </button>
+                );
+              }) : <div className="rp-empty">Nichts offen – sehr gut!</div>}
+            </section>
+          ) : null}
+          {mm ? null : <section className="rp-box">
             <div className="rp-box-h"><b>Das sollten Sie tun</b></div>
             {r.todos.length ? r.todos.map((t) => {
               const I = TODO_ICON[t.key] || Flag; const [c, bg] = TODO_COL[t.key] || ["#111", "#f4f4f4"];
@@ -362,7 +473,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
                 </button>
               );
             }) : <div className="rp-empty">Nichts Dringendes – sehr gut!</div>}
-          </section>
+          </section>}
           {r.ki && r.ki.length ? (
             <section className="rp-box">
               <div className="rp-box-h"><b>Was KIs sagen</b></div>
@@ -818,14 +929,187 @@ function RepArea({ a, r, onBack, onAsk, loc, rep, showToast, imp }) {
   );
 }
 
+/* ---------------- Maßnahmen-Seite ---------------- */
+const M_ICON = { profile: [Star, "#e23b3b", "#fdecec"], reviews: [Star, "#e23b3b", "#fdecec"], press: [Newspaper, "#e23b3b", "#fdecec"], web: [Globe, "#0ea5e9", "#e6f6fd"], schutz: [ShieldCheck, "#16a34a", "#e8f7ee"] };
+function MIcon({ k }) { const [I, c, bg] = M_ICON[k] || [Star, "#111", "#f4f4f4"]; return <span className="rp-m-ico" style={{ color: c, background: bg }}><I /></span>; }
+function Switch({ on, label, onClick }) { return <button type="button" className={"rp-sw" + (on ? " on" : "")} role="switch" aria-checked={!!on} aria-label={label} onClick={onClick} />; }
+function RepMeasures({ loc, rep, onBack, showToast, imp }) {
+  const r = loc.latest, m = r.measures;
+  const items = m.items || [];
+  const get = (k) => items.find((x) => x.key === k);
+  const work = workSel(m, loc.inWork);
+  const [sel, setSel] = React.useState(() => defaultSel(m, loc.inWork));
+  const [opt, setOpt] = React.useState({ express: false, schutz: "", bot: false });
+  const [free, setFree] = React.useState(false);
+  const [confirm, setConfirm] = React.useState(false);
+  const [agb, setAgb] = React.useState(false);
+  const [risk, setRisk] = React.useState(false);
+  const [fagg, setFagg] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const base = r.score;
+  const workScore = scoreOfSel(m, work);
+  const target = scoreOfSel(m, { ...work, ...sel });
+  const n = useCount(target, base, false);
+  const prof = get("profile"), revM = get("reviews"), pressM = get("press"), webM = get("web"), schutz = get("schutz");
+  const pv = prof && sel.profile ? prof.variants.find((v) => v.id === sel.profile) : null;
+  const tog = (k) => setSel((s) => ({ ...s, [k]: !s[k] }));
+  const togProfile = () => setSel((s) => ({ ...s, profile: s.profile ? null : prof.rec }));
+  const showSchutz = schutz && !work.profile && sel.profile === "remove";
+  const lines = [];
+  let total = 0, monthly = 0;
+  if (pv && !work.profile) { const v = pv.price + (sel.profile === "remove" && opt.express ? prof.express : 0); total += v; lines.push([pv.label + (sel.profile === "remove" && opt.express ? " · Express" : ""), eur(v, prof.cur)]); }
+  if (showSchutz && opt.schutz) { const o = schutz.options.find((x) => x.id === opt.schutz); if (o) { if (o.id === "monthly") monthly += o.price; else total += o.price; lines.push(["Schutz", eur(o.price) + (o.id === "lifetime" ? " einmalig" : " / " + o.per)]); } }
+  if (sel.reviews && revM && !work.reviews) { total += revM.total; lines.push([revM.title, eur(revM.total, revM.cur)]); }
+  if (sel.press && pressM && !work.press) lines.push(["Löschprüfung", "kostenlos"]);
+  if (sel.web && webM && !work.web) { total += webM.price; if (opt.bot) monthly += webM.bot; lines.push(["Eigene Website" + (opt.bot ? " + Chatbot" : ""), eur(webM.price) + (opt.bot ? " + " + eur(webM.bot) + " / Monat" : "")]); }
+  const paid = (pv && !work.profile) || (sel.reviews && revM && !work.reviews);
+  const any = lines.length > 0;
+  const send = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy(true);
+    try {
+      const body = { profile: work.profile ? "" : sel.profile || "", express: !!opt.express, schutz: showSchutz ? opt.schutz : "", reviews: !work.reviews && !!sel.reviews, press: !work.press && !!sel.press, web: !work.web && !!sel.web, bot: !!opt.bot };
+      const res = await rep.order(loc.id, body, { agb, risk });
+      setConfirm(false);
+      showToast((res.done || []).some((d) => d.orderId) ? "Beauftragt! Den Auftrag finden Sie unter „Aufträge“." : "Danke! Wir melden uns innerhalb von 24 Stunden.");
+      setSel({});
+    } catch (e) { showToast("Das hat nicht geklappt – bitte noch einmal versuchen", true); }
+    setBusy(false);
+  };
+  const rows = [];
+  if (prof && !work.profile) rows.push(
+    <div key="profile" className="rp-m-blk">
+      <div className="rp-m-it"><MIcon k="profile" />
+        <span className="rp-m-tx"><b>{prof.title}</b><span>{pv ? eur(pv.price, prof.cur) + " bei Erfolg" : prof.sub}{prof.alert ? <> · <em>{prof.alert}</em></> : null}</span></span>
+        <span className="rp-pill g">+{(pv || prof.variants.find((v) => v.id === prof.rec)).points}</span>
+        <Switch on={!!sel.profile} label={prof.title} onClick={togProfile} />
+      </div>
+      {prof.variants.length > 1 ? (
+        <div className="rp-m-var">
+          {prof.variants.map((v) => (
+            <button key={v.id} type="button" className={"rp-m-vb" + (sel.profile === v.id ? " on" : "")} aria-pressed={sel.profile === v.id} onClick={() => setSel((s) => ({ ...s, profile: v.id }))}>
+              <b>{v.label}</b><span>{eur(v.price, prof.cur)} · +{v.points} Punkte</span>{v.id === prof.rec ? <i className="rp-m-rec">Empfohlen</i> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {sel.profile === "remove" && prof.warnRemove ? <p className="rp-m-warn">{prof.warnRemove}</p> : null}
+      {sel.profile === "remove" ? <div className="rp-m-opts"><button type="button" className={"rp-chip2" + (opt.express ? " on" : "")} onClick={() => setOpt((o) => ({ ...o, express: !o.express }))}>Express +{eur(prof.express)}</button></div> : null}
+    </div>
+  );
+  if (showSchutz) rows.push(
+    <div key="schutz" className="rp-m-blk">
+      <div className="rp-m-it"><MIcon k="schutz" />
+        <span className="rp-m-tx"><b>{schutz.title}</b><span>Taucht das Profil wieder auf, löschen wir es kostenlos</span></span>
+        <span className="rp-pill n">sichert ab</span>
+        <Switch on={!!opt.schutz} label={schutz.title} onClick={() => setOpt((o) => ({ ...o, schutz: o.schutz ? "" : "yearly" }))} />
+      </div>
+      {opt.schutz ? <div className="rp-m-opts">{schutz.options.map((o) => <button key={o.id} type="button" className={"rp-chip2" + (opt.schutz === o.id ? " on" : "")} onClick={() => setOpt((x) => ({ ...x, schutz: o.id }))}>{eur(o.price)} {o.id === "lifetime" ? "lebenslang" : "/ " + o.per}{o.id === "yearly" ? " · 2 Monate gratis" : ""}</button>)}</div> : null}
+    </div>
+  );
+  if (revM && !work.reviews) rows.push(
+    <div key="reviews" className="rp-m-blk">
+      <div className="rp-m-it"><MIcon k="reviews" />
+        <span className="rp-m-tx"><b>{revM.title}</b><span>{String(revM.from).replace(".", ",")} → {String(revM.to).replace(".", ",")} ★ · {eur(revM.total, revM.cur)} bei Erfolg · <em>noch {revM.left} {revM.left === 1 ? "Tag" : "Tage"}</em></span></span>
+        <span className="rp-pill g">+{revM.points}</span>
+        <Switch on={!!sel.reviews} label={revM.title} onClick={() => tog("reviews")} />
+      </div>
+      <div className="rp-m-sub">{revM.reviews.map((x) => <div key={x.id || x.name} className="rp-m-li"><span className="rp-m-st">{"★".repeat(x.rating)}</span><span className="rp-m-q">„{x.text}“</span><span className={"rp-m-left" + (x.left <= 8 ? " hot" : "")}>noch {x.left} T.</span></div>)}</div>
+    </div>
+  );
+  if (pressM && !work.press) rows.push(
+    <div key="press" className="rp-m-blk">
+      <div className="rp-m-it"><MIcon k="press" />
+        <span className="rp-m-tx"><b>{pressM.title}</b><span>{pressM.sub}{pressM.alert ? <> · <em>{pressM.alert}</em></> : null}</span></span>
+        <span className="rp-pill g">bis +{pressM.points}</span>
+        <Switch on={!!sel.press} label={pressM.title} onClick={() => tog("press")} />
+      </div>
+      <div className="rp-m-sub">{pressM.items.slice(0, 4).map((x) => <a key={x.link} className="rp-m-li" href={x.link} target="_blank" rel="noopener noreferrer"><span className="rp-m-q">{x.title}</span><span className="rp-m-h">{x.host}{x.pos ? " · Platz " + x.pos : ""}{x.ai && x.ai.length ? " · " + x.ai.join(", ") : ""}</span></a>)}</div>
+    </div>
+  );
+  if (webM && !work.web) rows.push(
+    <div key="web" className="rp-m-blk">
+      <div className="rp-m-it"><MIcon k="web" />
+        <span className="rp-m-tx"><b>{webM.title}</b><span>{eur(webM.price)} pauschal · {webM.sub}</span></span>
+        <span className="rp-pill g">+{webM.points}</span>
+        <Switch on={!!sel.web} label={webM.title} onClick={() => tog("web")} />
+      </div>
+      {sel.web ? <div className="rp-m-opts"><button type="button" className={"rp-chip2" + (opt.bot ? " on" : "")} onClick={() => setOpt((o) => ({ ...o, bot: !o.bot }))}>+ KI-Chatbot {eur(webM.bot)} / Monat</button></div> : null}
+    </div>
+  );
+  const ag = AGB_CONSENT.de, rk = RISK_CONSENT.de;
+  return (
+    <div className="rp-detail rp-meas">
+      <div className="rp-dh">
+        <button type="button" className="rp-back" onClick={onBack} aria-label="Zurück zur Übersicht"><ArrowLeft /></button>
+        <div><h1>Maßnahmen</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
+      </div>
+      <section className="rp-cue rp-m-hero">
+        <span className="rp-cue-glow" aria-hidden="true" />
+        <GoalRing now={base} work={Math.max(0, workScore - base)} sel={Math.max(0, n - workScore)} n={n} plus={target > base ? "+" + (target - base) + " Punkte" : ""} />
+        <div className="rp-cue-t">
+          <span className="rp-cue-k">BEI ERFOLG</span>
+          <p className="rp-cue-h">Ihr Weg von {base} auf <b className="rp-shim">{target}</b> Punkte</p>
+          <div className="rp-m-leg"><span><i style={{ background: "#ff6a00" }} />Heute <b>{base}</b></span>{workScore > base ? <span><i style={{ background: "#fbbf24" }} />In Arbeit <b>+{workScore - base}</b></span> : null}<span><i style={{ background: "#4ade80" }} />Auswahl <b>+{Math.max(0, target - workScore)}</b></span></div>
+          {m.alert ? <span className="rp-m-alert"><i className="rp-pdot" />{m.alert}</span> : null}
+        </div>
+      </section>
+      <section className="rp-m-list">
+        {(loc.inWork || []).length ? <p className="rp-m-lab">IN ARBEIT</p> : null}
+        {(loc.inWork || []).map((w) => (
+          <div key={w.kind} className="rp-m-blk"><div className="rp-m-it">
+            <span className="rp-m-ico" style={{ color: "#92400e", background: "#fef3c7" }}><Hourglass /></span>
+            <span className="rp-m-tx"><b>{w.label}</b><span>beauftragt am {dateOf(w.at)}{w.orderId ? " · " + w.orderId : ""}</span></span>
+            {w.points ? <span className="rp-pill a">{w.kind === "press" ? "bis " : ""}+{w.points}</span> : null}
+            <span className="rp-m-run">läuft</span>
+          </div></div>
+        ))}
+        {rows.length ? <p className="rp-m-lab">EMPFOHLEN</p> : null}
+        {rows}
+        {!rows.length && !(loc.inWork || []).length ? <div className="rp-empty">Ihre Reputation ist in Ordnung – keine Maßnahme nötig.</div> : null}
+      </section>
+      {(m.free || []).length ? (
+        <>
+          <button type="button" className="rp-m-free" onClick={() => setFree(!free)} aria-expanded={free}><Check /><span>{m.free.length} {m.free.length === 1 ? "Sache" : "Dinge"}, die Sie kostenlos selbst tun können</span>{free ? <ChevronUp /> : <ChevronDown />}</button>
+          {free ? <div className="rp-m-freel">{m.free.map((t) => <div key={t.key} className="rp-m-li"><span className="rp-m-q">{t.title}</span>{t.sub ? <span className="rp-m-h">{t.sub}</span> : null}</div>)}</div> : null}
+        </>
+      ) : null}
+      {rows.length ? (
+        <div className="rp-m-bar">
+          <div className="rp-m-bar-t"><b>{any ? (total ? eur(total) : monthly ? eur(monthly) + " / Monat" : "kostenlos") : "Nichts ausgewählt"}</b><span>{any ? (paid ? "Löschung zahlen Sie erst bei Erfolg" : total || monthly ? "zzgl. USt." : "Prüfung ohne Verpflichtung") : "Maßnahme einschalten"}</span></div>
+          <button type="button" className="rp-m-go" disabled={!any} onClick={() => setConfirm(true)}>Jetzt beauftragen<ArrowRight /></button>
+        </div>
+      ) : null}
+      {confirm ? (
+        <div className="rp-sheet-bg" onClick={(e) => { if (e.target === e.currentTarget) setConfirm(false); }}>
+          <div className="rp-sheet" role="dialog" aria-modal="true" aria-label="Beauftragen">
+            <div className="rp-sheet-h"><b>Ihre Auswahl</b><button type="button" onClick={() => setConfirm(false)} aria-label="Schließen"><X /></button></div>
+            {lines.map(([t, p]) => <div key={t} className="rp-m-cl"><span>{t}</span><b>{p}</b></div>)}
+            {paid ? (
+              <>
+                <label className="rp-m-ck"><input type="checkbox" checked={agb} onChange={(e) => setAgb(e.target.checked)} /><span>{ag.pre}<a href={pagePath("agb", "de")} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", "de")} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
+                <label className="rp-m-ck"><input type="checkbox" checked={fagg} onChange={(e) => setFagg(e.target.checked)} /><span>{FAGG_CONSENT.de.txt}</span></label>
+                <label className="rp-m-ck"><input type="checkbox" checked={risk} onChange={(e) => setRisk(e.target.checked)} /><span>{rk.pre}<a href={pagePath("agb", "de") + "#7-5"} target="_blank" rel="noopener noreferrer">{rk.link}</a>{rk.post}</span></label>
+              </>
+            ) : null}
+            <button type="button" className="rp-m-send" disabled={busy || (paid && (!agb || !risk || !fagg))} onClick={send}>{busy ? <Loader className="spin" /> : null}{paid ? "Zahlungspflichtig beauftragen" : "Anfrage senden"}</button>
+            {paid ? <p className="rp-m-fine">Abgebucht wird erst bei Erfolg · zzgl. USt.</p> : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 /* ---------------- Menüpunkt „Reputation“ ---------------- */
 export function RepTab({ rep, showToast, imp, openSearch }) {
   const locs = rep.locations || [];
   const [sel, setSel] = React.useState(null);
+  const [list, setList] = React.useState(false);
   const scanned = locs.filter((l) => l.latest);
-  const cur = sel ? locs.find((l) => l.id === sel) : locs.length === 1 && scanned.length === 1 ? scanned[0] : null;
+  const cur = sel ? locs.find((l) => l.id === sel) : !list && locs.length === 1 && scanned.length === 1 ? scanned[0] : null;
   if (rep.loading) return <div className="rp-empty" style={{ padding: 60 }}><Loader className="spin" /></div>;
-  if (cur && cur.latest) return <RepDetail loc={cur} rep={rep} multi={locs.length > 1} onBack={() => setSel(null)} showToast={showToast} imp={imp} onAdd={openSearch} />;
+  if (cur && cur.latest) return <RepDetail loc={cur} rep={rep} multi={locs.length > 1} onBack={() => { setSel(null); setList(true); }} showToast={showToast} imp={imp} onAdd={openSearch} />;
   return (
     <div className="rp-detail">
       <div className="rp-dh"><div><h1>Reputation</h1><p>{locs.length ? `${locs.length} ${locs.length === 1 ? "Standort" : "Standorte"}` : "Noch kein Standort geprüft"}</p></div></div>
