@@ -2,7 +2,7 @@
 /* Reputations-Score im Kundenportal (Vorschau, nur Konten in REP_PREVIEW).
    Daten: ops /cust/rep/* (Scan läuft im Hintergrund, hier wird gepollt). */
 import React from "react";
-import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2, Check } from "lucide-react";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 const monthOf = (iso) => { try { return MONTHS[new Date(iso).getMonth()]; } catch (e) { return ""; } };
@@ -32,8 +32,9 @@ export function useRep(token, enabled, call) {
   const scan = React.useCallback(async (body) => { const r = await call("rep/scan", { token, ...body }); await load(); return r; }, [token, call, load]);
   const request = React.useCallback((locationId, action) => call("rep/request", { token, locationId, action }), [token, call]);
   const search = React.useCallback((q) => call("rep/search", { token, q }), [token, call]);
+  const setWebsite = React.useCallback(async (locationId, url) => { const r = await call("rep/website", { token, locationId, url }); await load(); return r; }, [token, call, load]);
   const archive = React.useCallback(async (locationId) => { const r = await call("rep/archive", { token, locationId }); await load(); return r; }, [token, call, load]);
-  return { ...st, running, reload: load, scan, request, search, archive };
+  return { ...st, running, reload: load, scan, request, search, archive, setWebsite };
 }
 
 /* ---------------- Bausteine ---------------- */
@@ -283,7 +284,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   };
   if (area) {
     const a = r.areas.find((x) => x.key === area);
-    return <RepArea a={a} r={r} onBack={() => setArea(null)} onAsk={ask} />;
+    return <RepArea a={a} r={r} onBack={() => setArea(null)} onAsk={ask} loc={loc} rep={rep} showToast={showToast} imp={imp} />;
   }
   const k = r.kpis || {};
   return (
@@ -354,7 +355,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
             {r.todos.length ? r.todos.map((t) => {
               const I = TODO_ICON[t.key] || Flag; const [c, bg] = TODO_COL[t.key] || ["#111", "#f4f4f4"];
               return (
-                <button key={t.key} type="button" className="rp-row" onClick={() => (t.who === "wir" ? ask(t.action) : setArea(t.area))}>
+                <button key={t.key} type="button" className="rp-row" onClick={() => (t.who === "wir" && t.action !== "website" ? ask(t.action) : setArea(t.area))}>
                   <span className="rp-ico" style={{ color: c, background: bg }}><I /></span>
                   <span className="rp-t"><b>{t.title}</b><span>+{t.points} Punkte · {t.who === "wir" ? "wir erledigen das" : "selbst erledigt"}</span></span>
                   <ChevronRight />
@@ -597,7 +598,59 @@ function KwRow({ k }) {
     </div>
   );
 }
-function WebArea({ r }) {
+/* Website selbst eintragen */
+function SiteInput({ loc, rep, showToast, imp, label }) {
+  const [open, setOpen] = React.useState(false);
+  const [v, setV] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+  if (!loc || !rep) return null;
+  const save = async (e) => {
+    e.preventDefault();
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy(true);
+    try { await rep.setWebsite(loc.id, v); setSaved(true); } catch (err) { showToast("Bitte eine gültige Adresse eingeben, z. B. meinefirma.at", true); }
+    setBusy(false);
+  };
+  if (saved) return (
+    <div className="rp-site saved"><span>Gespeichert. Mit einem neuen Scan wird die Website geprüft.</span>
+      <button type="button" className="rp-site-btn" onClick={() => rep.scan({ locationId: loc.id }).then(() => showToast("Neuer Scan läuft")).catch(() => showToast("Scan konnte nicht gestartet werden", true))}><RefreshCw />Neu scannen</button></div>
+  );
+  return open ? (
+    <form className="rp-site" onSubmit={save}>
+      <input type="text" inputMode="url" placeholder="meinefirma.at" value={v} onChange={(e) => setV(e.target.value)} autoFocus />
+      <button type="submit" className="rp-site-btn" disabled={busy || v.trim().length < 4}>{busy ? <Loader className="spin" /> : null}Speichern</button>
+    </form>
+  ) : <button type="button" className="rp-site-link" onClick={() => setOpen(true)}>{label}</button>;
+}
+/* Angebot: eigene Website (wenn keine existiert) */
+function WebsiteOffer({ onAsk }) {
+  const [bot, setBot] = React.useState(false);
+  const [sent, setSent] = React.useState(false);
+  return (
+    <section className="rp-offer">
+      <span className="rp-offer-k">Unsere Empfehlung</span>
+      <h3>Ihre eigene Website</h3>
+      <p>Ohne eigene Website bestimmen Bewertungsportale, Verzeichnisse und KI-Systeme, was Kunden über Sie lesen. Eine eigene Website ist die eine Quelle, die Sie selbst in der Hand haben.</p>
+      <ul>
+        <li><Check />3 individuelle Designentwürfe zur Auswahl</li>
+        <li><Check />Komplett auf Ihr Unternehmen zugeschnitten, kein Baukasten</li>
+        <li><Check />Offizielle Quelle für Google und KI-Antworten</li>
+      </ul>
+      <label className={"rp-offer-opt" + (bot ? " on" : "")}>
+        <input type="checkbox" checked={bot} onChange={(e) => setBot(e.target.checked)} />
+        <span className="rp-t"><b>KI-Chatbot dazu</b><span>Beantwortet Kundenfragen rund um die Uhr</span></span>
+        <em>+ 49,90 € / Monat</em>
+      </label>
+      <div className="rp-offer-f">
+        <span className="rp-offer-p"><b>2.000 €</b> pauschal</span>
+        {sent ? <span className="rp-offer-ok"><Check />Danke, wir melden uns innerhalb von 24 Stunden.</span>
+          : <button type="button" className="rp-offer-btn" onClick={() => { onAsk(bot ? "website_chatbot" : "website"); setSent(true); }}>Unverbindlich anfragen<ArrowRight /></button>}
+      </div>
+    </section>
+  );
+}
+function WebArea({ r, loc, rep, showToast, imp, onAsk }) {
   const [open, setOpen] = React.useState(null);
   const kws = [...(r.kws || [])].map((k) => ({ ...k, best: k.err ? -1 : Math.min(k.g ?? 99, k.noMaps ? 99 : k.pack ?? (k.maps ?? 99)) })).sort((p, q) => (p.err ? 1 : 0) - (q.err ? 1 : 0) || ((p.mine || []).length - (q.mine || []).length) || q.best - p.best);
   const w = r.website || {}, m = w.metrics || {};
@@ -646,7 +699,13 @@ function WebArea({ r }) {
             </>
           ), "S", ok.some((c) => !c.ok) ? "#d97706" : "#16a34a")}
         </div>
-      ) : null}
+      ) : (
+        <>
+          <WebsiteOffer onAsk={onAsk} />
+          <SiteInput loc={loc} rep={rep} showToast={showToast} imp={imp} label="Sie haben doch eine Website? Hier eintragen" />
+        </>
+      )}
+      {w.url && w.via && w.via !== "gbp" ? <SiteInput loc={loc} rep={rep} showToast={showToast} imp={imp} label={w.via === "manual" ? "Andere Website eintragen" : "Nicht Ihre Website? Richtige eintragen"} /> : null}
     </section>
   );
 }
@@ -692,7 +751,7 @@ function CheckRow({ c, detail = true }) {
   );
 }
 const AREA_ICON = { press: Newspaper, search: Search, ki: Sparkles, reviews: Star, social: Users, web: Globe };
-function RepArea({ a, r, onBack, onAsk }) {
+function RepArea({ a, r, onBack, onAsk, loc, rep, showToast, imp }) {
   if (!a) return null;
   const neg = [...new Map(a.items.filter((x) => x.sent === "neg").map((x) => [x.title.toLowerCase(), x])).values()];
   const st = a.status;
@@ -728,7 +787,7 @@ function RepArea({ a, r, onBack, onAsk }) {
             </a>
           )) : <div className="rp-empty"><Users />Keine Social-Media-Profile gefunden.</div>}
         </section>
-      ) : a.key === "web" ? <WebArea r={r} /> : null}
+      ) : a.key === "web" ? <WebArea r={r} loc={loc} rep={rep} showToast={showToast} imp={imp} onAsk={onAsk} /> : null}
       {a.key === "web" || a.key === "ki" || a.key === "social" ? null : (
         <section className="rp-list">
           {a.key === "reviews" ? <ReviewPortals r={r} items={a.items} /> : null}
