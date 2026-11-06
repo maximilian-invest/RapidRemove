@@ -1573,7 +1573,8 @@ export function registerRepScore(app: FastifyInstance): void {
     const webM = s.web ? get("web") : null;
     const prot = variant === "remove" && get("schutz") && ["monthly", "yearly", "lifetime"].includes(String(s.schutz || "")) ? String(s.schutz) : "";
     if (!variant && !revM && !pressM && !webM) return reply.code(400).send({ ok: false, error: "empty" });
-    if ((variant || revM) && (b.agb !== true || b.risk !== true)) return reply.code(400).send({ ok: false, error: "agb" });
+    if ((variant || revM) && b.agb !== true) return reply.code(400).send({ ok: false, error: "agb" });
+    if (revM && b.risk !== true) return reply.code(400).send({ ok: false, error: "risk" });
     const cust = await loadCustomerOrders(a.email).catch(() => ({ name: "", lang: "de", orders: [] as unknown[] }));
     const lastO = (await pool!.query(`SELECT name, phone, company, country FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [a.email]).catch(() => ({ rows: [] as J[] }))).rows[0] || {};
     const cc = String(loc.country || lastO.country || "AT").toUpperCase();
@@ -1582,7 +1583,6 @@ export function registerRepScore(app: FastifyInstance): void {
       email: a.email, name: cust.name || lastO.name || "", phone: lastO.phone || "", company: loc.name || lastO.company || "", lang: "de", country: cc,
       profile: loc.name, addr: loc.address || "", mapsUri: loc.maps_url || "", placeId: loc.place_id, placeName: loc.name, placeAddr: loc.address || "", profileCountry: cc,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
-      riskConsent: { at: new Date().toISOString(), ip, ua: String(req.headers["user-agent"] || "").slice(0, 240), v: "2026-10-29", via: "reputation" },
       source: "dashboard", sourceFirst: "dashboard", referrer: "Reputations-Portal", landing: "/my-reviews",
     };
     const place = async (payload: J) => {
@@ -1609,7 +1609,7 @@ export function registerRepScore(app: FastifyInstance): void {
           const full = ((last.result.reviewsInfo?.list || []) as J[]).find((y) => y.id === x.id) || x;
           return { ...(full.link ? { url: full.link } : {}), name: full.name, text: full.text, rating: full.rating, days: full.days };
         });
-        const oid = await place({ service: "reviews", protection: "", reviewItems: items, reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
+        const oid = await place({ service: "reviews", protection: "", riskConsent: { at: new Date().toISOString(), ip, ua: String(req.headers["user-agent"] || "").slice(0, 240), v: "2026-10-29", via: "reputation" }, reviewItems: items, reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
           note: `Reputations-Portal (Empfehlung nach Reputations-Check, ${cc}): ${items.length} Bewertung${items.length === 1 ? "" : "en"}\n${items.map((x) => x.url || `${x.name} — "${x.text || ""}"`).join("\n")}` });
         await rec("reviews", { label: revM.title, n: items.length }, Number(revM.points) || null, oid);
         done.push({ kind: "reviews", orderId: oid });
