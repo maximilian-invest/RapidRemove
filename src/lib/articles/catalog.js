@@ -196,6 +196,15 @@ export function resolveRelated(lang, relatedList) {
     // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
     // Relative On-Site-Pfade (z. B. Landingpages) direkt durchreichen.
     if (/^\/[a-z]{2}\//.test(r.url)) return { label: r.label, href: cleanHref(r.url) };
+    // Relative deutsche Magazin-Pfade (/magazin/<slug>/) wie einen Artikel-Key behandeln –
+    // vorher fielen diese Einträge stillschweigend weg (u. a. jameda, kununu, trustpilot).
+    const mag = r.url.match(/^\/magazin\/([^/?#]+)\/?$/);
+    if (mag) {
+      const k = mag[1] === "google-unternehmensprofil-loeschen" ? FLAGSHIP_SLUG : mag[1];
+      if (k === FLAGSHIP_SLUG) href = HUB_PATH[lang] || null;
+      else if (DE_ARTICLES[k] || TRANSLATION_ONLY[k]) href = localizedPath(lang, k);
+      return href ? { label: r.label, href } : null;
+    }
     if (slug === FLAGSHIP_SLUG) href = HUB_PATH[lang] || null;
     else if (DE_ARTICLES[slug] || TRANSLATION_ONLY[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;

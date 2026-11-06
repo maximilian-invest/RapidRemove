@@ -86,7 +86,7 @@ export const FAQ = [
   },
   {
     q: "Was kostet es, ein Google-Unternehmensprofil löschen zu lassen?",
-    a: "Bei RapidRemove gilt ein transparenter Fixpreis ab 450 € – und Sie zahlen ausschließlich nach erfolgreicher Löschung (No Cure, No Pay). Ein Anwalt kostet dagegen oft 300 € und mehr pro Stunde, ohne Erfolgsgarantie.",
+    a: "Bei RapidRemove gilt ein transparenter Fixpreis ab 450 € – und Sie zahlen ausschließlich nach erfolgreicher Löschung (No Cure, No Pay). Ein Anwalt kostet dagegen oft 300 € und mehr pro Stunde – unabhängig vom Ergebnis.",
   },
   {
     q: "Kann das Profil danach wieder auftauchen?",
