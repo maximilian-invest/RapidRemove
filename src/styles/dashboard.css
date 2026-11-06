@@ -1669,3 +1669,21 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 @media (prefers-reduced-motion:reduce){.rra .rp-cue *,.rra .rp-cue *::before,.rra .rp-cue *::after,.rra .rp-goal-line,.rra .rp-dot.goal{animation:none !important}}
 
 .rra .rp-foot.top{margin:-6px 0 16px}
+/* Reputation: Aktiv/Archiv */
+.rra .rp-tabs{display:flex;gap:6px;margin:0 0 16px}
+.rra .rp-tabs button{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:19px;background:#f4f4f4;color:#3d3d3d;font-size:14px;font-weight:700}
+.rra .rp-tabs button.on{background:#111;color:#fff}
+.rra .rp-tabs i{font-style:normal;font-size:12px;opacity:.7}
+.rra .rp-loc-wrap{display:flex;align-items:stretch;gap:8px;margin-bottom:10px}
+.rra .rp-loc-wrap .rp-loc{flex:1;min-width:0;margin-bottom:0}
+.rra .rp-loc-x{flex:none;width:52px;border-radius:24px;background:#f4f4f4;color:#6b6b6b;display:grid;place-items:center}
+.rra .rp-loc-x svg{width:18px;height:18px}
+.rra .rp-arch{background:#fafafa;box-shadow:inset 0 0 0 1px #eee}
+.rra .rp-arch .rp-plus b{font-size:18px;font-weight:800}
+.rra .rp-arch-b{display:flex;align-items:center;gap:8px;flex:none}
+.rra .rp-arch-q{font-size:13px;font-weight:600;color:#b91c1c}
+.rra .rp-mini.ghost{background:#f4f4f4;color:#111}
+.rra .rp-mini.red{background:#e23b3b;color:#fff}
+.rra .rp-icon-btn{width:38px;height:38px;border-radius:50%;background:#f4f4f4;color:#6b6b6b;display:grid;place-items:center}
+.rra .rp-icon-btn svg{width:17px;height:17px}
+@media (min-width:821px){.rra .rp-loc-wrap{max-width:780px}.rra .rp-loc-wrap .rp-loc{max-width:none}}

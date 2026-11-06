@@ -2,7 +2,7 @@
 /* Reputations-Score im Kundenportal (Vorschau, nur Konten in REP_PREVIEW).
    Daten: ops /cust/rep/* (Scan läuft im Hintergrund, hier wird gepollt). */
 import React from "react";
-import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2, Check, ShieldCheck, Hourglass } from "lucide-react";
+import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2, Check, ShieldCheck, Hourglass, Archive } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
 
@@ -20,7 +20,7 @@ export function useRep(token, enabled, call) {
   const [st, setSt] = React.useState({ loading: true, enabled: false, locations: [] });
   const load = React.useCallback(async () => {
     if (!token || !enabled) return;
-    try { const r = await call("rep/state", { token }); setSt({ loading: false, enabled: !!r.enabled, locations: r.locations || [], keys: r.keys || {} }); }
+    try { const r = await call("rep/state", { token }); setSt({ loading: false, enabled: !!r.enabled, locations: r.locations || [], archived: r.archived || [], keys: r.keys || {} }); }
     catch (e) { setSt((s) => ({ ...s, loading: false })); }
   }, [token, enabled, call]);
   React.useEffect(() => { load(); }, [load]);
@@ -36,8 +36,10 @@ export function useRep(token, enabled, call) {
   const search = React.useCallback((q) => call("rep/search", { token, q }), [token, call]);
   const setWebsite = React.useCallback(async (locationId, url) => { const r = await call("rep/website", { token, locationId, url }); await load(); return r; }, [token, call, load]);
   const archive = React.useCallback(async (locationId) => { const r = await call("rep/archive", { token, locationId }); await load(); return r; }, [token, call, load]);
+  const unarchive = React.useCallback(async (locationId) => { const r = await call("rep/unarchive", { token, locationId }); await load(); return r; }, [token, call, load]);
+  const destroy = React.useCallback(async (locationId) => { const r = await call("rep/delete", { token, locationId }); await load(); return r; }, [token, call, load]);
   const order = React.useCallback(async (locationId, sel, extra) => { const r = await call("rep/order", { token, locationId, sel, ...(extra || {}) }); await load(); return r; }, [token, call, load]);
-  return { ...st, running, reload: load, scan, request, search, archive, setWebsite, order };
+  return { ...st, running, reload: load, scan, request, search, archive, unarchive, destroy, setWebsite, order };
 }
 
 /* ---------------- Maßnahmen: Auswahl → Score (Werte kommen fertig simuliert vom Server: measures.combos) ---------------- */
@@ -110,8 +112,7 @@ function PotentialCue({ loc, onOpen }) {
       <span className="rp-cue-glow" aria-hidden="true" />
       <GoalRing now={r.score} work={0} sel={n - r.score} n={n} plus={n >= target ? "+" + (target - r.score) + " Punkte" : ""} />
       <div className="rp-cue-t">
-        <span className="rp-cue-k">IHR POTENZIAL</span>
-        <p className="rp-cue-h">Ihr Weg von {r.score} auf <b className="rp-shim">{target}</b> Punkte</p>
+        <p className="rp-cue-h">Einfach zu erreichendes Potenzial <b className="rp-shim">+{target - r.score} Punkte</b></p>
       </div>
       <button type="button" className="rp-cue-btn" onClick={onOpen}>Maßnahmen ansehen<ArrowRight /></button>
     </section>
@@ -386,12 +387,8 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
     <div className="rp-detail">
       <div className="rp-dh">
         {onBack ? <button type="button" className="rp-back" onClick={onBack} aria-label="Alle Standorte"><ArrowLeft /></button> : null}
-        <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
-        {onAdd ? <button type="button" className="rp-add" onClick={onAdd}><Plus />Standort</button> : null}
-      </div>
-      <div className="rp-foot top">
-        <span>Scan vom {dateOf(r.scannedAt || r.at)} · {r.sources} Quellen geprüft</span>
-        <button type="button" onClick={rescan} disabled={running}>{running ? <Loader className="spin" /> : <RefreshCw />}Neu scannen</button>
+        <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""} · Scan vom {dateOf(r.scannedAt || r.at)}</p></div>
+        <button type="button" className="rp-add" onClick={rescan} disabled={running}>{running ? <Loader className="spin" /> : <RefreshCw />}Neu scannen</button>
       </div>
       {running ? <RepRunning loc={loc} /> : loc.scan && loc.scan.status === "error" && (!loc.latest || new Date(loc.scan.at) > new Date(loc.latest.scannedAt || 0)) ? <RepFailed loc={loc} rep={rep} showToast={showToast} /> : null}
       <div className="rp-kpis">
@@ -1106,20 +1103,41 @@ export function RepTab({ rep, showToast, imp, openSearch }) {
   const locs = rep.locations || [];
   const [sel, setSel] = React.useState(null);
   const [list, setList] = React.useState(false);
+  const [tab, setTab] = React.useState("act");
+  const [delAsk, setDelAsk] = React.useState(null);
   const scanned = locs.filter((l) => l.latest);
   const cur = sel ? locs.find((l) => l.id === sel) : !list && locs.length === 1 && scanned.length === 1 ? scanned[0] : null;
   if (rep.loading) return <div className="rp-empty" style={{ padding: 60 }}><Loader className="spin" /></div>;
   if (cur && cur.latest) return <RepDetail loc={cur} rep={rep} multi={locs.length > 1} onBack={() => { setSel(null); setList(true); }} showToast={showToast} imp={imp} onAdd={openSearch} />;
+  const arch = rep.archived || [];
+  const act = async (fn, msg) => { if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; } try { await fn(); showToast(msg); } catch (e) { showToast("Das hat nicht geklappt", true); } };
   return (
     <div className="rp-detail">
       <div className="rp-dh"><div><h1>Reputation</h1><p>{locs.length ? `${locs.length} ${locs.length === 1 ? "Standort" : "Standorte"}` : "Noch kein Standort geprüft"}</p></div></div>
+      <div className="rp-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={tab !== "arch"} className={tab !== "arch" ? "on" : ""} onClick={() => setTab("act")}>Aktiv <i>{locs.length}</i></button>
+        <button type="button" role="tab" aria-selected={tab === "arch"} className={tab === "arch" ? "on" : ""} onClick={() => setTab("arch")}>Archiv <i>{arch.length}</i></button>
+      </div>
+      {tab === "arch" ? (
+        arch.length ? arch.map((l) => (
+          <div key={l.id} className="rp-loc rp-arch">
+            <span className="rp-loc-r"><span className="rp-plus"><b>{l.score ?? "–"}</b></span></span>
+            <span className="rp-t"><b>{l.name}</b><span>{l.address || l.city}</span></span>
+            {delAsk === l.id ? (
+              <span className="rp-arch-b"><span className="rp-arch-q">Endgültig löschen?</span><button type="button" className="rp-mini ghost" onClick={() => setDelAsk(null)}>Nein</button><button type="button" className="rp-mini red" onClick={() => { setDelAsk(null); act(() => rep.destroy(l.id), `${l.name} gelöscht`); }}>Löschen</button></span>
+            ) : (
+              <span className="rp-arch-b"><button type="button" className="rp-mini" onClick={() => act(() => rep.unarchive(l.id), `${l.name} wieder aktiv`)}>Aktivieren</button><button type="button" className="rp-icon-btn" aria-label={`${l.name} endgültig löschen`} onClick={() => setDelAsk(l.id)}><Trash2 /></button></span>
+            )}
+          </div>
+        )) : <div className="rp-empty">Keine archivierten Standorte.</div>
+      ) : <>
       {locs.map((l) => (
         l.latest ? (
-          <button key={l.id} type="button" className="rp-loc" onClick={() => setSel(l.id)}>
+          <div key={l.id} className="rp-loc-wrap"><button type="button" className="rp-loc" onClick={() => setSel(l.id)}>
             <span className="rp-loc-r"><Ring score={l.latest.score} potential={0} size={64} stroke={6} uid={"lr" + l.id} /><b>{l.latest.score}</b></span>
             <span className="rp-t"><b>{l.name}</b><span>{l.address || l.city}</span><span className="rp-loc-s"><em>{l.latest.tier}</em><Delta now={l.latest.score} prev={l.prevScore} prevAt={l.prevAt} /></span></span>
             <ChevronRight />
-          </button>
+          </button><button type="button" className="rp-loc-x" aria-label={`${l.name} archivieren`} title="Archivieren" onClick={() => act(() => rep.archive(l.id), `${l.name} archiviert`)}><Archive /></button></div>
         ) : l.scan && l.scan.status === "running" ? <RepRunning key={l.id} loc={l} /> : (
           <div key={l.id} className="rp-loc"><span className="rp-t"><b>{l.name}</b><span>{l.scan && l.scan.status === "error" ? "Scan fehlgeschlagen – bitte erneut versuchen" : "Noch nicht gescannt"}</span></span><button type="button" className="rp-mini" onClick={() => rep.scan({ locationId: l.id }).catch(() => showToast("Scan konnte nicht gestartet werden", true))}>Scannen</button><RemoveLoc loc={l} rep={rep} showToast={showToast} imp={imp} /></div>
         )
@@ -1129,6 +1147,7 @@ export function RepTab({ rep, showToast, imp, openSearch }) {
         <span className="rp-t"><b>{locs.length ? "Weiteren Standort prüfen" : "Erstes Unternehmen prüfen"}</b><span>Filiale, neue Firma oder Konkurrent</span></span>
         <ChevronRight />
       </button>
+      </>}
     </div>
   );
 }

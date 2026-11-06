@@ -754,7 +754,8 @@ const scoreOf = (c: Ctx, fix: Fix = {}) => { const a = areaScores(c, fix); retur
 // Branchen, die vom Google-Profil leben (Laufkundschaft, Maps) → Neustart statt reiner Löschung
 const PROFILE_DEP = new Set(["gastro", "hotel", "beauty", "medical", "health", "auto", "cardealer", "retail"]);
 type MSel = { profile?: "reset" | "remove"; reviews?: boolean; press?: boolean; web?: boolean };
-const isNegPressItem = (x: Item) => x.about !== "other" && x.sent === "neg" && (x.type === "press" || x.type === "forum" || x.src === "news" || (x.type === "review" && x.src === "google" && x.pos <= 30));
+// Nur Artikel/Beiträge, die sich löschen lassen – Bewertungsportale (Trustpilot & Co.) entfernen ihre Firmenseiten nicht
+const isNegPressItem = (x: Item) => x.about !== "other" && x.sent === "neg" && x.type !== "review" && !REVIEW.test(host(x.link)) && (x.type === "press" || x.type === "forum" || x.src === "news");
 function simScore(c: Ctx, sel: MSel, rev: J[]): number {
   const c2 = structuredClone(c) as Ctx;
   const fix: Fix = {};
@@ -770,7 +771,7 @@ function simScore(c: Ctx, sel: MSel, rev: J[]): number {
     c2.loc = { ...c2.loc, rating: n - k > 0 ? Math.round(((r * n - sum) / (n - k)) * 10) / 10 : null, reviews: Math.max(0, n - k) };
     c2.reviews = { ...c2.reviews, neg: Math.max(0, (c2.reviews.neg || 0) - k), negUnanswered: Math.max(0, c2.reviews.negUnanswered - un), unanswered: Math.max(0, c2.reviews.unanswered - un) };
   }
-  if (sel.press) for (const x of c2.items) if (isNegPressItem(x)) { x.sent = "neu"; if (x.type === "review") x.rating = null; }
+  if (sel.press) for (const x of c2.items) if (isNegPressItem(x)) x.sent = "neu";
   if (sel.web) c2.web = { ...c2.web, url: c2.web.url || "https://neu.example", perf: 90, seo: 95, https: true, ok: true, fromGbp: true };
   return scoreOf(c2, fix);
 }
@@ -1516,7 +1517,8 @@ export function registerRepScore(app: FastifyInstance): void {
     const a = await auth((req.body || {}) as J);
     if (!a) return reply.code(401).send({ ok: false, error: "session" });
     if (a.off) return { ok: true, enabled: false };
-    return { ok: true, enabled: true, locations: await locsOf(a.email), keys: { places: !!gkey(), serp: !!skey(), ai: !!process.env.ANTHROPIC_API_KEY } };
+    const arch = await pool!.query(`SELECT l.id, l.name, l.address, l.city, l.archived_at, (SELECT score FROM rep_scans s WHERE s.location_id=l.id AND s.status='done' ORDER BY s.created_at DESC LIMIT 1) AS score FROM rep_locations l WHERE l.email=$1 AND l.archived_at IS NOT NULL ORDER BY l.archived_at DESC`, [a.email]).catch(() => ({ rows: [] as J[] }));
+    return { ok: true, enabled: true, locations: await locsOf(a.email), archived: arch.rows.map((x) => ({ id: x.id, name: x.name, address: x.address, city: x.city, at: x.archived_at, score: x.score })), keys: { places: !!gkey(), serp: !!skey(), ai: !!process.env.ANTHROPIC_API_KEY } };
   });
 
   app.post("/cust/rep/search", async (req, reply) => {
@@ -1584,6 +1586,32 @@ export function registerRepScore(app: FastifyInstance): void {
     if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
     const r = await pool!.query(`UPDATE rep_locations SET archived_at=now() WHERE id=$1 AND email=$2 AND archived_at IS NULL`, [String(b.locationId || ""), a.email]);
     if (!r.rowCount) return reply.code(404).send({ ok: false, error: "location" });
+    return { ok: true };
+  });
+
+  /* Archivierten Standort wieder aktivieren bzw. endgültig löschen (mit allen Scans, Cache und Portal-Beauftragungen) */
+  app.post("/cust/rep/unarchive", async (req, reply) => {
+    const b = (req.body || {}) as J;
+    const a = await auth(b);
+    if (!a) return reply.code(401).send({ ok: false, error: "session" });
+    if (a.off) return reply.code(403).send({ ok: false, error: "off" });
+    if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    const r = await pool!.query(`UPDATE rep_locations SET archived_at=NULL WHERE id=$1 AND email=$2 AND archived_at IS NOT NULL`, [String(b.locationId || ""), a.email]);
+    if (!r.rowCount) return reply.code(404).send({ ok: false, error: "location" });
+    return { ok: true };
+  });
+  app.post("/cust/rep/delete", async (req, reply) => {
+    const b = (req.body || {}) as J;
+    const a = await auth(b);
+    if (!a) return reply.code(401).send({ ok: false, error: "session" });
+    if (a.off) return reply.code(403).send({ ok: false, error: "off" });
+    if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    const lid = String(b.locationId || "");
+    const r = await pool!.query(`DELETE FROM rep_locations WHERE id=$1 AND email=$2 AND archived_at IS NOT NULL`, [lid, a.email]);
+    if (!r.rowCount) return reply.code(404).send({ ok: false, error: "location" });
+    await pool!.query(`DELETE FROM rep_scans WHERE location_id=$1`, [lid]).catch(() => {});
+    await pool!.query(`DELETE FROM rep_cache WHERE location_id=$1`, [lid]).catch(() => {});
+    await pool!.query(`DELETE FROM rep_orders WHERE location_id=$1`, [lid]).catch(() => {});
     return { ok: true };
   });
 
