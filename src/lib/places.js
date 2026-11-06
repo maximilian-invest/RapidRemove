@@ -26,6 +26,8 @@ const FIELD_MASK = [
   "places.rating",
   "places.userRatingCount",
   "places.primaryTypeDisplayName",
+  "places.primaryType", // fester Kategorie-Code (z. B. "pizza_restaurant") → Branche/Preis, siehe src/lib/industry.js
+  "places.types",
   "places.businessStatus",
   "places.googleMapsUri",
   "places.addressComponents",
@@ -87,6 +89,7 @@ export async function searchProfiles(query, lang = "de") {
     placeId: p.id || "",
     name: p.displayName?.text || q,
     cat: p.primaryTypeDisplayName?.text || "",
+    ptype: p.primaryType || "", types: Array.isArray(p.types) ? p.types.slice(0, 12) : [],
     rating: fmtRating(p.rating, lang),
     reviews: p.userRatingCount || 0,
     addr: p.formattedAddress || "",
@@ -119,7 +122,7 @@ export function manualCandidate(query, lang = "de") {
    per ?p=<placeId> geteilter Wizard-Link wieder zum vollen Profil auflösen. */
 const DETAIL_FIELD_MASK = [
   "id", "displayName", "formattedAddress", "rating", "userRatingCount",
-  "primaryTypeDisplayName", "businessStatus", "googleMapsUri", "websiteUri", "addressComponents",
+  "primaryTypeDisplayName", "primaryType", "types", "businessStatus", "googleMapsUri", "websiteUri", "addressComponents",
 ].join(",");
 
 /** Lädt ein Profil per placeId; liefert es im Wizard-Kandidatenformat oder null. */
@@ -134,7 +137,7 @@ export async function fetchProfileById(placeId, lang = "de") {
     if (!p || !p.id) return null;
     return {
       id: "p1", placeId: p.id, name: p.displayName?.text || "",
-      cat: p.primaryTypeDisplayName?.text || "", rating: fmtRating(p.rating, lang),
+      cat: p.primaryTypeDisplayName?.text || "", ptype: p.primaryType || "", types: Array.isArray(p.types) ? p.types.slice(0, 12) : [], rating: fmtRating(p.rating, lang),
       reviews: p.userRatingCount || 0, addr: p.formattedAddress || "",
       mapsUri: p.googleMapsUri || "", businessStatus: p.businessStatus || "", primary: true, cc: countryOf(p),
       website: p.websiteUri || "", // Unternehmens-Website (für die Lead-Recherche im Admin)

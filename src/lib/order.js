@@ -27,6 +27,23 @@ export async function fetchPayDiscount() {
   return discCache;
 }
 
+/* Preis nach Land × Branche (06.11.2026): Frisch-Preis je Bewertung (199/249/309) für dieses Profil – und für diese E-Mail
+   (Bestandskunden zahlen weiter 199). Server entscheidet; ohne Antwort bleibt der Standardpreis (null). */
+const fpCache = new Map();
+export async function fetchFreshPrice({ placeId = "", placeType = "", placeTypes = [], country = "", email = "" } = {}) {
+  if (!OPS) return null;
+  const em = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email || "").trim()) ? String(email).trim().toLowerCase() : "";
+  const key = [placeId, placeType, country, em].join("|");
+  if (fpCache.has(key)) return fpCache.get(key);
+  const pr = fetch(OPS + "/price-quote", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ placeId, placeType, placeTypes: Array.isArray(placeTypes) ? placeTypes.slice(0, 12) : [], country, email: em }) })
+    .then((r) => r.json()).then((j) => (j && j.ok && Number(j.fresh) > 0 ? Number(j.fresh) : null)).catch(() => null);
+  fpCache.set(key, pr);
+  const v = await pr;
+  if (v == null) fpCache.delete(key);
+  return v;
+}
+
 export async function submitOrder(payload) {
   if (!OPS) return { ok: false, skipped: true };
   const res = await fetch(OPS + "/order", {

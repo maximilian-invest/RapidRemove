@@ -5,8 +5,8 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { vatNote, PRICE_V2_FRESH, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
-import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
+import { vatNote, PRICE_V2_FRESH, fromPrice, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
+import { fetchPayDiscount, findReviewByLink, fetchFreshPrice } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
@@ -14,20 +14,21 @@ const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.
 
 /** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – 199 bis 4 Wochen mit Text; ältere/ohne Text seit 05.11.2026 pausiert, zählen nicht),
  *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
-export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none" }) {
+/** unit = Frisch-Preis je Bewertung für dieses Profil/diesen Kunden (Land × Branche, vom Server via /price-quote), Standard 199. */
+export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none", unit = PRICE_V2_FRESH }) {
   const usd = country === "US";
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
     const nPaused = reviews.filter((r) => r.sw || r.age === "old").length; // älter als 4 Wochen oder ohne Text → pausiert (Januar 2027)
     const n250 = 0, nSw = 0;
     const n = Math.max(1, reviews.length - nPaused);
-    const sub = n * PRICE_V2_FRESH;
+    const sub = n * unit;
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
     const payD = pp ? Math.round(total * 0.1) : 0;
     total -= payD;
-    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: PRICE_V2_FRESH, nSw, n250, nPaused };
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit, nSw, n250, nPaused };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -47,7 +48,7 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
       <div className="so-h"><span className="so-ic"><Icon /></span><b>{c.svc[co.service]}</b></div>
       <div className="so-p">
         {co.service === "reviews"
-          ? <><s className={co.pct ? "" : "hide"}>{fmt(PRICE_V2_FRESH, p.usd)}</s><b>{fmt(Math.round(PRICE_V2_FRESH * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
+          ? <><s className={co.pct ? "" : "hide"}>{fmt(PRICE_V2_FRESH, p.usd)}</s><b>{co.pct ? fmt(Math.round(PRICE_V2_FRESH * (100 - (co.pct || 0)) / 100), p.usd) : fromPrice(lang, fmt(PRICE_V2_FRESH, p.usd))}</b><span>{c.perRev} · {vatNote(lang)}</span></>
           : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b><span>{vatNote(lang)}</span></>}
       </div>
       <div className="so-f"><ShieldCheck />{c.after}</div>
@@ -91,7 +92,16 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const discOff = !(isRev ? disc.reviews : disc.profiles);
   const dach = discOff || ["DE", "AT", "CH"].includes(f.country) || ["DE", "AT", "CH"].includes(co.placeCountry || ""); // dach = keine PayPal/Wise-Auswahl
   const payPref = dach ? "none" : f.payPref;
-  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref });
+  // Preis nach Land × Branche: der Server nennt den Frisch-Preis für dieses Profil (+ E-Mail: Bestandskunden 199).
+  const [unit, setUnit] = React.useState(PRICE_V2_FRESH);
+  const emOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim()) ? f.email.trim().toLowerCase() : "";
+  React.useEffect(() => {
+    if (!isRev) return undefined;
+    let live = true;
+    const t = setTimeout(() => { fetchFreshPrice({ placeId: co.placeId || "", country: co.placeCountry || "", email: emOk }).then((v) => { if (live && v) setUnit(v); }); }, emOk ? 500 : 0);
+    return () => { live = false; clearTimeout(t); };
+  }, [isRev, co.placeId, co.placeCountry, emOk]);
+  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref, unit });
   const legal = (k) => pagePath(k, lang);
   const submit = async () => {
     const b = {};
@@ -107,7 +117,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     try {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
-        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "", placeId: co.placeId || "",
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
@@ -137,7 +147,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-body">
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
-          {isRev ? <div className="cs-r"><span>{`${revs.length - p.nPaused} × ${fmt(PRICE_V2_FRESH, p.usd)}`}</span><span>{fmt(revs.length - p.nPaused ? p.sub : 0, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {isRev ? <div className="cs-r"><span>{`${revs.length - p.nPaused} × ${fmt(p.unit, p.usd)}`}</span><span>{fmt(revs.length - p.nPaused ? p.sub : 0, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>

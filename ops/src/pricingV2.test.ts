@@ -77,3 +77,27 @@ ok("expressMet am Wochenende: bis Di 24:00 ja, danach nein", () => {
   assert.equal(expressMet(a, "2026-10-20T22:01:00.000Z"), false);
 });
 console.log(`\n${n} Tests ok`);
+
+// ---- Preis nach Land × Branche (06.11.2026) ----
+import { freshPriceFor, round9, PRICE_V2_FRESH_TIERS } from "./reviewsPricing";
+import { industryOf, isPremiumIndustry, industryFromDisplay } from "./industry";
+ok("Land × Branche: 199 / 249 / 249 / 309", () => {
+  assert.equal(freshPriceFor("AT", false), 199); assert.equal(freshPriceFor("FR", false), 199);
+  assert.equal(freshPriceFor("US", false), 249); assert.equal(freshPriceFor("ch", false), 249); assert.equal(freshPriceFor("JP", false), 249);
+  assert.equal(freshPriceFor("IT", true), 249); assert.equal(freshPriceFor("US", true), 309); assert.equal(freshPriceFor("", true), 249);
+  assert.deepEqual([...PRICE_V2_FRESH_TIERS].sort(), [199, 249, 309]); assert.equal(round9(248.75), 249); assert.equal(round9(311.25), 309);
+});
+ok("Listenpreis mit Preisstufe; 250er bleiben 250; unbekannte Stufe → 199", () => {
+  assert.equal(listPriceV2({ days: 3 }, 309), 309); assert.equal(listPriceV2({ days: 40 }, 309), PRICE_V2_OTHER);
+  assert.equal(listPriceV2({ days: 3 }, 500), 199); assert.equal(lpOf({ lp: 249 }), 249); assert.equal(lpOf({ lp: 309 }), 309); assert.ok(isFreshLp(249) && isFreshLp(309));
+});
+ok("Quote mit 309 und 249: Summe + Mengenrabatt", () => {
+  const q = quoteReviews([{ lp: 309 }, { lp: 309 }, { lp: 309 }], "usd"); assert.equal(q.total, Math.round(927 * 0.9)); assert.equal(q.per, "$309 (−10 %)");
+  const q2 = quoteReviews([{ lp: 249 }, { lp: 199 }], "eur"); assert.equal(q2.total, 448);
+});
+ok("Branche aus Google-Code", () => {
+  assert.equal(industryOf("pizza_restaurant", []), "gastro"); assert.equal(industryOf("", ["point_of_interest", "dentist"]), "medical");
+  assert.equal(industryOf("car_dealer"), "cardealer"); assert.equal(industryOf("car_repair"), "auto"); assert.equal(industryOf("lawyer"), "legal");
+  assert.ok(isPremiumIndustry("gastro") && isPremiumIndustry("hotel") && !isPremiumIndustry("beauty") && !isPremiumIndustry("auto"));
+  assert.equal(industryOf(null, null), "unknown"); assert.equal(industryFromDisplay("Ristorante"), "gastro"); assert.equal(industryFromDisplay("Zahnarzt"), "medical");
+});

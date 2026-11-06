@@ -94,6 +94,23 @@ export const PRICE_V2_FRESH_LEGACY = 99;
 export const PRICE_V2_FRESH_LEGACY2 = 179;
 export const PRICE_V2_FRESH_LEGACIES = [PRICE_V2_FRESH_LEGACY2, PRICE_V2_FRESH_LEGACY];
 export const PRICE_V2_OTHER = 250;
+/* Preis nach Land × Branche (06.11.2026) – synchron mit ops/src/reviewsPricing.ts. Nur Einzelbewertungen, nur Neukunden:
+   Land des Profils US/CA/GB/AU/CH/NO/DK/SE/JP → 249, sonst 199; Premium-Branche (src/lib/industry.js) +25 % auf 9 gerundet
+   → 249 bzw. 309. Bestandskunden: 199 (entscheidet der Server, Wizard fragt /price-quote). */
+export const REVIEW_HIGH_COUNTRIES = ["US", "CA", "GB", "AU", "CH", "NO", "DK", "SE", "JP"];
+export const REVIEW_HIGH_PRICE = 249;
+export const PREMIUM_PCT = 25;
+export const round9 = (v) => Math.round((v + 1) / 10) * 10 - 1;
+export function freshPriceFor(country, premium) {
+  const base = REVIEW_HIGH_COUNTRIES.includes(String(country || "").toUpperCase()) ? REVIEW_HIGH_PRICE : PRICE_V2_FRESH;
+  return premium ? round9((base * (100 + PREMIUM_PCT)) / 100) : base;
+}
+export const PRICE_V2_FRESH_TIERS = [...new Set([PRICE_V2_FRESH, freshPriceFor("US", false), freshPriceFor("AT", true), freshPriceFor("US", true)])];
+/** „ab 199" je Sprache (Preis steht erst fest, wenn Profil-Land + Branche bekannt sind). */
+const FROM_WORD = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", sv: "från", da: "fra", no: "fra" };
+export const fromPrice = (lang, priceStr) => (lang === "ja" ? `${priceStr}〜` : `${FROM_WORD[lang] || FROM_WORD.en} ${priceStr}`);
+/** Höchster Frisch-Preis (für „199–309"-Angaben, JSON-LD). */
+export const PRICE_V2_FRESH_MAX = Math.max(...PRICE_V2_FRESH_TIERS);
 /* Pause (05.11.2026, synchron mit ops/src/reviewsPricing.ts): Bewertungen älter als 4 Wochen und ohne Text (alle 250er, damit
    auch Express) sind 2026 nicht mehr bestellbar → „Wieder verfügbar ab Januar 2027". Bestandsaufträge laufen weiter. */
 export const REVIEWS_OTHER_PAUSED = true;
@@ -149,18 +166,21 @@ export function expressDueMs(startMs = Date.now()) {
 }
 /** Veraltet – Kundenanzeige kommt aus src/lib/durations.js (Admin → Express & Löschdauer). */
 export const STD_DAYS = { fresh: [3, 5], other: [1, 2] };
-export const listPriceV2 = (it) => {
+/** fresh = Frisch-Preis dieses Auftrags (Land × Branche); Standard 199. */
+export const listPriceV2 = (it, fresh = PRICE_V2_FRESH) => {
   const d = Number(it && it.days);
   const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
-  return it && (it.nt || it.sw || old) ? PRICE_V2_OTHER : PRICE_V2_FRESH;
+  return it && (it.nt || it.sw || old) ? PRICE_V2_OTHER : (PRICE_V2_FRESH_TIERS.includes(fresh) ? fresh : PRICE_V2_FRESH);
 };
-export const lpOf = (it) => { const v = Number(it && it.lp); return v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v) || v === PRICE_V2_OTHER ? v : 0; };
-export const isFreshLp = (v) => v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v);
+export const isFreshLp = (v) => PRICE_V2_FRESH_TIERS.includes(v) || PRICE_V2_FRESH_LEGACIES.includes(v);
+export const lpOf = (it) => { const v = Number(it && it.lp); return isFreshLp(v) || v === PRICE_V2_OTHER ? v : 0; };
 /** Bestellung (neu): Preismodell 2. items: [{ old?, nt?, sw?, days?, cp?, lp?, x? }]. opts.legacy = Bestandsauftrag:
  *  Bewertungen ohne lp nach Preismodell 1 rechnen (179/+50/300). opts.express = Express für alle 250er (Bestellprozess). */
 export function reviewQuote(items, lang, opts = {}) {
   const list0 = Array.isArray(items) ? items : [];
-  const list = opts.legacy ? list0 : list0.map((it) => (cpOf(it) || lpOf(it) ? it : { ...it, lp: listPriceV2(it) }));
+  // opts.fresh = Frisch-Preis für diesen Kunden/dieses Profil (Land × Branche, vom Server bestätigt) – Standard 199.
+  const fresh = PRICE_V2_FRESH_TIERS.includes(Number(opts.fresh)) ? Number(opts.fresh) : PRICE_V2_FRESH;
+  const list = opts.legacy ? list0 : list0.map((it) => (cpOf(it) || lpOf(it) ? it : { ...it, lp: listPriceV2(it, fresh) }));
   const v2 = list.filter((it) => !cpOf(it) && lpOf(it));
   if (!v2.length) return reviewQuoteV1(list, lang);
   const v1 = reviewQuoteV1(list.filter((it) => cpOf(it) || !lpOf(it)), lang);
@@ -176,8 +196,8 @@ export function reviewQuote(items, lang, opts = {}) {
   const subStd = subV2 + (v1.subtotal - v1.cpTotal);
   const total = Math.round(subStd * (100 - pct) / 100) + v1.cpTotal + xTotal;
   const subtotal = subStd + v1.cpTotal + xTotal;
-  return { ...v1, n, pct, subtotal, total, discount: subtotal - total, n99, n250, nFreshNew, nFreshOld, nX, xTotal, xFee: EXPRESS_FEE, p99: PRICE_V2_FRESH, p99Old: PRICE_V2_FRESH_LEGACY, p250: PRICE_V2_OTHER, v2: true,
-    base: PRICE_V2_FRESH, ntTotal: v1.ntTotal };
+  return { ...v1, n, pct, subtotal, total, discount: subtotal - total, n99, n250, nFreshNew, nFreshOld, nX, xTotal, xFee: EXPRESS_FEE, p99: fresh, p99Old: PRICE_V2_FRESH_LEGACY, p250: PRICE_V2_OTHER, v2: true,
+    base: fresh, ntTotal: v1.ntTotal };
 }
 function reviewQuoteV1(items, lang) {
   const base = 179; // Preismodell 1 (Bestandsaufträge)

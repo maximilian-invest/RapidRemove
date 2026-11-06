@@ -60,6 +60,7 @@ import { serpKey, fetchPlaceReviews, findPlaceReview, serpUsage } from "./review
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
+import { registerPriceTier, resolveTier, industryInfo, type Tier } from "./priceTier";
 import { registerRepScore } from "./repScore";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
@@ -220,6 +221,7 @@ registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, custome
   sendInvite: async (email, name, lang) => { await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url: await dashLink(email, lang) })), replyTo: process.env.MAIL_REPLY_TO }); },
 }); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
+registerPriceTier(app, ADMIN_TOKEN); // Preis nach Land × Branche (/price-quote) + Branchen-Auswertung (/admin/industry-*)
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
 registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
@@ -576,18 +578,34 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   }
   // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (199 frisch seit 05.11.2026 – davor 179, 16.–22.10.: 99 / 250 alles andere). Nicht bei Bulk und
   // nicht bei Kunden-Konditionen (cp). Express (+100, Ziel 30 Std.) nur für 250er und nur, wenn im Bestellprozess gewählt.
+  // Preis nach Land × Branche (06.11.2026): Frisch-Preis 199/249/309 je nach Profil-Land + Google-Kategorie, nur Neukunden.
+  // Land/Branche holt der Server selbst bei Google (placeId) – der Browser-Wert ist nur Fallback. Bestandskunden: 199.
+  let tier: Tier | null = null;
+  if (isReviews && !bulk && !pricing) {
+    tier = await resolveTier({ email, placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, category: b.category, country: ruleCountry })
+      .catch((e) => { app.log.error({ err: e }, "Preisstufe fehlgeschlagen – Standardpreis"); return null; });
+    if (tier) (b as Record<string, unknown>).priceTier = { fresh: tier.fresh, cc: tier.cc, ind: tier.ind, ptype: tier.ptype, prem: tier.prem, legacy: tier.legacy, src: tier.src, at: new Date().toISOString() };
+  }
   if (isReviews && !bulk) {
     const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren
     let nx = 0;
     for (const it of reviewItems) {
       if (cpOf(it)) continue;
-      it.lp = listPriceV2(it);
+      it.lp = listPriceV2(it, tier ? tier.fresh : undefined);
       if (wantX && it.lp === PRICE_V2_OTHER) { it.x = true; nx++; }
     }
     (b as Record<string, unknown>).priceV = 2;
     if (nx) (b as Record<string, unknown>).revExpress = { n: nx, fee: EXPRESS_FEE, h: EXPRESS_CUSTOMER_H, at: new Date().toISOString() };
   }
   delete (b as Record<string, unknown>).reviewExpress;
+  // Branche jeder Bestellung festhalten (Statistik: welche Branchen bestellen was) – raw.ind = Gruppe, raw.ptype = Google-Code.
+  if (!isPress) {
+    try {
+      const info = tier ? { ind: tier.ind, ptype: tier.ptype, src: tier.src } : await industryInfo({ placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, category: b.category });
+      Object.assign(b as Record<string, unknown>, { ind: info.ind, ptype: info.ptype || "", indSrc: info.src });
+    } catch (e) { app.log.warn({ err: e }, "Branche ermitteln fehlgeschlagen"); }
+  }
+  delete (b as Record<string, unknown>).placeType; delete (b as Record<string, unknown>).placeTypes;
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
   if (isReviews) (b as Record<string, unknown>).reviewItems = reviewItems;
@@ -610,6 +628,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   const revChatPct = revPayDisc ? 0 : req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
   const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct, revPayDisc ? 10 : 0); // PayPal/Wise −10 % zusätzlich zum Mengenrabatt
   if (isReviews) (b as Record<string, unknown>).amount = revQ.total; // Server-Preis ist maßgeblich (inkl. PayPal/Wise-Rabatt)
+  if (isReviews && !bulk && !pricing) (b as Record<string, unknown>).saleTotal = revQ.total; // Affiliate-Sale = Server-Preis (Land × Branche)
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).

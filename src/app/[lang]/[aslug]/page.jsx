@@ -10,7 +10,7 @@ import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
 import { ReviewsRoute } from "@/components/ReviewsServicePage";
 import { rvwCopy } from "@/lib/reviews-copy";
 import { getDurationsServer } from "@/lib/durations-server";
-import { PRICE_V2_FRESH } from "@/lib/pricing";
+import { PRICE_V2_FRESH, PRICE_V2_FRESH_MAX } from "@/lib/pricing";
 import Kontakt from "@/components/Kontakt";
 import ReportPage from "@/components/ReportPage";
 import { REPORT, reportJsonLd } from "@/lib/report-data";
@@ -110,9 +110,9 @@ export default async function Page({ params }) {
           provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
           areaServed: "Worldwide (outside Germany and Austria)",
           // Ab 05.11.2026 ein Preis je gelöschter Bewertung (≤ 4 Wochen + Text, Wert aus pricing.js); ältere/ohne Text erst wieder ab Jänner 2027.
-          offers: { "@type": "AggregateOffer", lowPrice: String(PRICE_V2_FRESH), highPrice: String(PRICE_V2_FRESH), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
-            priceSpecification: { "@type": "UnitPriceSpecification", minPrice: String(PRICE_V2_FRESH), maxPrice: String(PRICE_V2_FRESH), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
-            description: `Per removed review, excl. VAT: ${PRICE_V2_FRESH} for reviews with text up to 4 weeks old; older reviews and star-only ratings available again from January 2027; charged only after successful removal` } },
+          offers: { "@type": "AggregateOffer", lowPrice: String(PRICE_V2_FRESH), highPrice: String(PRICE_V2_FRESH_MAX), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
+            priceSpecification: { "@type": "UnitPriceSpecification", minPrice: String(PRICE_V2_FRESH), maxPrice: String(PRICE_V2_FRESH_MAX), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
+            description: `Per removed review, excl. VAT: from ${PRICE_V2_FRESH} (up to ${PRICE_V2_FRESH_MAX} depending on country and industry) for reviews with text up to 4 weeks old; older reviews and star-only ratings available again from January 2027; charged only after successful removal` } },
         { "@type": "FAQPage", mainEntity: [...(r.faq || []), ...(r.faqMore || [])].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
         { "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },

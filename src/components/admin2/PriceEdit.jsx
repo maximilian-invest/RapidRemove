@@ -51,8 +51,8 @@ export default function PriceEdit({ ctx, id }) {
               const k = keyOf(it); const t = ptBy[k];
               return (
                 <div key={k} className="rlr cpr">
-                  <div className="t"><b>{t ? t.code + " · " : ""}{it.name || it.url || "Bewertung"} <RStars n={rvStars(it, t)} /></b><span>{[199, 179, 99, 250].includes(Number(it.lp)) ? `Preisliste ${it.lp}${Number(it.lp) === 99 ? " (Bestand, alter Preis)" : ""}${it.x ? " + Express 100" : ""}` : it.nt || it.sw ? "Software · Preisliste 300" : it.old ? "älter 4 Wo. · Preisliste 229" : "Preisliste 179"}</span></div>
-                  <div className="cpin"><input inputMode="decimal" placeholder={all || ([199, 179, 99, 250].includes(Number(it.lp)) ? String(it.lp) : it.nt || it.sw ? "300" : it.old ? "229" : "179")} value={map[k] || ""} onChange={(e) => { const v = e.target.value; setMap((m) => ({ ...m, [k]: v })); }} /><span>{c}</span></div>
+                  <div className="t"><b>{t ? t.code + " · " : ""}{it.name || it.url || "Bewertung"} <RStars n={rvStars(it, t)} /></b><span>{[199, 249, 309, 179, 99, 250].includes(Number(it.lp)) ? `Preisliste ${it.lp}${Number(it.lp) === 99 ? " (Bestand, alter Preis)" : ""}${it.x ? " + Express 100" : ""}` : it.nt || it.sw ? "Software · Preisliste 300" : it.old ? "älter 4 Wo. · Preisliste 229" : "Preisliste 179"}</span></div>
+                  <div className="cpin"><input inputMode="decimal" placeholder={all || ([199, 249, 309, 179, 99, 250].includes(Number(it.lp)) ? String(it.lp) : it.nt || it.sw ? "300" : it.old ? "229" : "179")} value={map[k] || ""} onChange={(e) => { const v = e.target.value; setMap((m) => ({ ...m, [k]: v })); }} /><span>{c}</span></div>
                 </div>
               );
             })}

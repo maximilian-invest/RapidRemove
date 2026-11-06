@@ -4,14 +4,15 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, freshPriceFor, fromPrice, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
 import { useExpressOn, useDurations } from "@/lib/express-status";
 import { maxDays } from "@/lib/durations";
 /* Balkenlänge „Typische Dauer": im Verhältnis zur längsten Standard-Dauer (mind. 18 %). */
 const durBarW = (t, d) => Math.max(18, Math.round((maxDays(t) / Math.max(maxDays(d.fresh), maxDays(d.other))) * 100)) + "%";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount, fetchFreshPrice } from "@/lib/order";
+import { industryOf, isPremiumIndustry } from "@/lib/industry";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
@@ -2189,7 +2190,22 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;
   const pausedN = reviewList.filter((it) => isPausedReview(it)).length; // Pause 05.11.2026 (z. B. per Link eingefügte ältere Bewertung)
-  const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail });
+  // Preis nach Land × Branche (06.11.2026): Schätzung sofort aus Profil-Land + Google-Kategorie, dann bestätigt der Server
+  // (/price-quote, inkl. E-Mail → Bestandskunden zahlen weiter 199). Der Server schreibt den Preis bei der Bestellung ohnehin selbst fest.
+  const revPid = (revPlace && revPlace.placeId) || "", revPtype = (revPlace && revPlace.ptype) || "";
+  const revTypes = (revPlace && Array.isArray(revPlace.types)) ? revPlace.types : [];
+  const freshGuess = revPlace ? freshPriceFor(revCountry, isPremiumIndustry(industryOf(revPtype, revTypes))) : PRICE_V2_FRESH;
+  const [freshSrv, setFreshSrv] = React.useState(null);
+  const emQ = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(contact.email || "").trim()) ? String(contact.email).trim().toLowerCase() : "";
+  React.useEffect(() => {
+    setFreshSrv(null);
+    if (!revFlow || !revPlace) return undefined;
+    let live = true;
+    const tm = setTimeout(() => { fetchFreshPrice({ placeId: revPid, placeType: revPtype, placeTypes: revTypes, country: revCountry, email: emQ }).then((v) => { if (live && v) setFreshSrv(v); }); }, emQ ? 400 : 0);
+    return () => { live = false; clearTimeout(tm); };
+  }, [revFlow, revPid, revPtype, revCountry, emQ]); // eslint-disable-line react-hooks/exhaustive-deps
+  const freshUnit = freshSrv || freshGuess;
+  const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail, fresh: freshUnit });
   const hasX = rq.n250 > 0; // Express nur, wenn mindestens eine 250er-Bewertung im Warenkorb ist
   const servicePriceNum = revFlow
     ? rq.total
@@ -2394,7 +2410,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
       // die Bewertungen vor sich, die der Kunde bezahlt hat.
       ...(revFlow ? {
-        note: `${rv.service} (${[rq.n99 ? `${rq.n99} × ${money(rl, PRICE_V2_FRESH)}` : "", rq.n250 ? `${rq.n250} × ${money(rl, PRICE_V2_OTHER)}` : ""].filter(Boolean).join(" + ")}${rq.pct ? `, −${rq.pct} % Mengenrabatt` : ""}${rq.nX ? `, EXPRESS ${rq.nX} × ${money(rl, EXPRESS_FEE)}` : ""} = ${fmtMoney(rl, rq.total)}):\n${reviewList.map((it) => (it.url || `${it.name} — "${it.text}"`) + (listPriceV2(it) === PRICE_V2_OTHER ? `  [${money(rl, PRICE_V2_OTHER)}${rq.nX ? " · EXPRESS" : ""}]` : "")).join("\n")}`,
+        note: `${rv.service} (${[rq.n99 ? `${rq.n99} × ${money(rl, freshUnit)}` : "", rq.n250 ? `${rq.n250} × ${money(rl, PRICE_V2_OTHER)}` : ""].filter(Boolean).join(" + ")}${rq.pct ? `, −${rq.pct} % Mengenrabatt` : ""}${rq.nX ? `, EXPRESS ${rq.nX} × ${money(rl, EXPRESS_FEE)}` : ""} = ${fmtMoney(rl, rq.total)}):\n${reviewList.map((it) => (it.url || `${it.name} — "${it.text}"`) + (listPriceV2(it) === PRICE_V2_OTHER ? `  [${money(rl, PRICE_V2_OTHER)}${rq.nX ? " · EXPRESS" : ""}]` : "")).join("\n")}`,
         reviewExpress: !!(rvx && hasX && xAvail), // Server setzt Express nur auf die 250er (und nur, wenn im Admin an)
         reviewItems: reviewList,
         reviewUrls: reviewList.map((it) => it.url).filter(Boolean),
@@ -2404,8 +2420,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       chatSid: (() => { try { return sessionStorage.getItem("rr_site_chat_sid") || ""; } catch (e) { return ""; } })(), // Website-Chat ↔ Bestellung
       profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
-      placeId: selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",
-      category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
+      placeId: revFlow ? revPid : selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",
+      category: revFlow && revPlace ? (revPlace.cat || "") : selected ? selected.cat : "", rating: selected ? selected.rating : "",
+      placeType: revFlow ? revPtype : selected ? (selected.ptype || "") : "", placeTypes: revFlow ? revTypes : selected && Array.isArray(selected.types) ? selected.types : [], // Branche (Google-Code) – Server prüft per placeId nach
       reviews: selected ? selected.reviews : 0,
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
@@ -3773,7 +3790,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="pf"><div className="ph"><LMapPin /></div><div><b>{nm}</b><span>{revFlow ? bp.delN(reviewCount) : svcLabel}</span></div></div>
               <div className="lines">
                 {revFlow ? (<React.Fragment>
-                  {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, PRICE_V2_FRESH)}<small>{xp.fresh} · {xp.tf99}</small></span><b>{fmtMoney(cur, rq.n99 * PRICE_V2_FRESH)}</b></div> : null}
+                  {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, freshUnit)}<small>{xp.fresh} · {xp.tf99}</small></span><b>{fmtMoney(cur, rq.n99 * freshUnit)}</b></div> : null}
                   {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}{rvx ? "" : " · " + xp.stdD}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
                   {hasX && !xAvail ? (
@@ -3888,7 +3905,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="bpx-cmp bpr-fade" style={{ animationDelay: ".16s" }}>
               <div className="h"><LClock />{xp.cmpH}</div>
               <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}{rq.n99 ? " · " + money(rl, PRICE_V2_OTHER) : ""}</span><div className="bar"><i style={{ width: durBarW(dur.other, dur) }} /></div><b>{xp.cmpStdV}</b></div>
-              {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, PRICE_V2_FRESH)}</span><div className="bar"><i style={{ width: durBarW(dur.fresh, dur) }} /></div><b>{xp.d99}</b></div> : null}
+              {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, freshUnit)}</span><div className="bar"><i style={{ width: durBarW(dur.fresh, dur) }} /></div><b>{xp.d99}</b></div> : null}
               {xAvail ? <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xwk ? xp.cmpXBy(fmtXDueShort(expressDueMs(), t.code)) : xp.cmpXV(EXPRESS_HOURS)}</b></div> : null}
             </div>
             <p className="bpr-fpn bpx-swn"><LInfo /><span>{xAvail ? xp.startNote + (xwk ? " " + xp.xWk : "") + " " : ""}{rq.n99 ? xp.only(rq.n99) : ""}</span></p>
@@ -4346,7 +4363,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="hd"><h3 id="pi-sheet-t">{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><LX /></button></div>
             <div className="bpr-tiers">
               {(() => { const xp = xpCopy(t.code); return (<React.Fragment>
-                <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{money(rl, PRICE_V2_FRESH)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span><span className="q"><LClock />{xp.tf99}</span></div>
+                <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{revPlace ? money(rl, freshUnit) : fromPrice(lang, money(rl, PRICE_V2_FRESH))}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span><span className="q"><LClock />{xp.tf99}</span></div>
                 {/* Pause 05.11.2026: ältere/textlose (250er) und Express nicht bestellbar → nur Hinweis. */}
                 <div className="bpr-tier paused"><b>{xp.other}</b><div className="p pz">{reviewPauseText(lang)}</div><span>{xp.otherSub}</span></div>
               </React.Fragment>); })()}

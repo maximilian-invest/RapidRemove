@@ -29,6 +29,24 @@ export const PRICE_V2_FRESH_LEGACY2 = 179;
 /** Alle früheren Frisch-Preise, die als gespeichertes lp weiter gelten. */
 export const PRICE_V2_FRESH_LEGACIES: readonly number[] = [PRICE_V2_FRESH_LEGACY2, PRICE_V2_FRESH_LEGACY];
 export const PRICE_V2_OTHER = 250;
+/* Preis nach Land × Branche (06.11.2026, Maximilian) – nur Einzelbewertungen, nur NEUKUNDEN:
+ *  Land des Google-Profils: USA, Kanada, UK, Australien, Schweiz, Norwegen, Dänemark, Schweden, Japan → 249, sonst 199.
+ *  Premium-Branche (industry.ts: Gastro, Hotel, Ärzte/Kliniken, Anwälte, Immobilien, Autohäuser, Finanz/Versicherung) → +25 %,
+ *  auf eine Zahl mit 9 am Ende gerundet: 199 → 249, 249 → 309. Gleicher Zahlenwert in € und $.
+ *  Bestandskunden (E-Mail hat schon einen Auftrag oder ein Kundenkonto) zahlen weiter PRICE_V2_FRESH (199) – Server entscheidet.
+ *  Der gewählte Preis wird je Bewertung als lp festgeschrieben (wie bisher) → Abrechnung, Dashboard, Admin unverändert. */
+export const REVIEW_HIGH_COUNTRIES: readonly string[] = ["US", "CA", "GB", "AU", "CH", "NO", "DK", "SE", "JP"];
+export const REVIEW_HIGH_PRICE = 249;
+export const PREMIUM_PCT = 25;
+/** Auf die nächste Zahl mit 9 am Ende runden (248,75 → 249, 311,25 → 309). */
+export const round9 = (v: number): number => Math.round((v + 1) / 10) * 10 - 1;
+/** Frisch-Preis je Bewertung für Neukunden: 199 / 249 / 309. */
+export function freshPriceFor(country: string | null | undefined, premium: boolean): number {
+  const base = REVIEW_HIGH_COUNTRIES.includes(String(country || "").toUpperCase()) ? REVIEW_HIGH_PRICE : PRICE_V2_FRESH;
+  return premium ? round9((base * (100 + PREMIUM_PCT)) / 100) : base;
+}
+/** Alle Frisch-Listenpreise für neue Bestellungen (Basis, Land, Premium, Land+Premium). */
+export const PRICE_V2_FRESH_TIERS: readonly number[] = [...new Set([PRICE_V2_FRESH, freshPriceFor("US", false), freshPriceFor("AT", true), freshPriceFor("US", true)])];
 /* Pause (05.11.2026, Maximilian): Bewertungen älter als 4 Wochen und ohne Text (= alle 250er, damit auch Express) werden
  *  für den Rest von 2026 NICHT mehr neu angenommen – Kunden sehen „Wieder verfügbar ab Januar 2027".
  *  Bestandsaufträge (schon gespeicherte 250er) laufen unverändert weiter. Admin darf weiterhin manuell anlegen. */
@@ -81,15 +99,16 @@ export const expressPartnerDueMs = (startMs: number): number => expressCustomerD
 const isoOrNull = (v: string | null | undefined, f: (ms: number) => number) => { const a = Date.parse(String(v || "")); return Number.isFinite(a) ? new Date(f(a)).toISOString() : null; };
 export const expressCustomerDue = (startIso: string | null | undefined) => isoOrNull(startIso, expressCustomerDueMs);
 export const expressPartnerDue = (startIso: string | null | undefined) => isoOrNull(startIso, expressPartnerDueMs);
-export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string | null; rating?: number | null; days?: number | null }): number => {
+/** fresh = Frisch-Preis dieses Auftrags (Land × Branche, siehe freshPriceFor); Standard 199. */
+export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string | null; rating?: number | null; days?: number | null }, fresh: number = PRICE_V2_FRESH): number => {
   const days = Number(it.days);
   const old = it.old === true || (Number.isFinite(days) && it.days !== null && it.days !== undefined && days > 28);
-  return it.nt || it.sw || old ? PRICE_V2_OTHER : PRICE_V2_FRESH;
+  return it.nt || it.sw || old ? PRICE_V2_OTHER : (PRICE_V2_FRESH_TIERS.includes(fresh) ? fresh : PRICE_V2_FRESH);
 };
-/** Listenpreis einer gespeicherten Bewertung (0 = Bestandsauftrag, Preismodell 1). 99 bleibt für Bestandsaufträge gültig. */
-export const lpOf = (it: { lp?: unknown } | null | undefined): number => { const v = Number(it?.lp); return v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v) || v === PRICE_V2_OTHER ? v : 0; };
-/** Frisch-Preis (199 neu, 179/99 Bestand)? */
-export const isFreshLp = (v: number): boolean => v === PRICE_V2_FRESH || PRICE_V2_FRESH_LEGACIES.includes(v);
+/** Frisch-Preis (199/249/309 neu, 179/99 Bestand)? */
+export const isFreshLp = (v: number): boolean => PRICE_V2_FRESH_TIERS.includes(v) || PRICE_V2_FRESH_LEGACIES.includes(v);
+/** Listenpreis einer gespeicherten Bewertung (0 = Bestandsauftrag, Preismodell 1). 99/179 bleiben für Bestandsaufträge gültig. */
+export const lpOf = (it: { lp?: unknown } | null | undefined): number => { const v = Number(it?.lp); return isFreshLp(v) || v === PRICE_V2_OTHER ? v : 0; };
 /** Express-Zusage eingehalten? (gelöscht bis zur Kunden-Frist: 30 Std. bzw. Di 24:00 bei Wochenend-Start) */
 export function expressMet(startIso: string | null | undefined, removedIso: string | null | undefined): boolean {
   const a = Date.parse(String(startIso || "")), b = Date.parse(String(removedIso || ""));
@@ -152,7 +171,7 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   // n99 = Anzahl frischer Bewertungen (Name historisch): 179 neu, 99 Bestand – jede mit IHREM gespeicherten lp.
   const n99 = v2.filter((it) => isFreshLp(lpOf(it))).length, n250 = v2.length - n99;
   const nFreshNew = v2.filter((it) => lpOf(it) === PRICE_V2_FRESH).length, nFreshOld = n99 - nFreshNew;
-  // Bestands-Frischpreise (179 bzw. 99) jeweils mit IHREM lp summieren.
+  // Alle anderen Frischpreise (Land/Branche 249/309, Bestand 179/99) jeweils mit IHREM lp summieren.
   const freshOldLps = v2.map(lpOf).filter((v) => isFreshLp(v) && v !== PRICE_V2_FRESH);
   const subFreshOld = freshOldLps.reduce((a, b) => a + b, 0);
   // Express: „full" = bestellt (Maximalbetrag), „rest" = nur eingehaltene (xOk). Ohne Rabatt.
