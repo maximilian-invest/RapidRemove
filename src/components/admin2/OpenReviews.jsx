@@ -4,11 +4,9 @@
  * (reviewItems bzw. angenommene), nicht nur die Partner-Aufgaben – auch Bewertungen, die (noch) nicht beim Partner liegen.
  * Je Bewertung: Verfasser als Direktlink zur Bewertung, Sterne, Alter heute, Partner-Status.
  *
- * Auto-Scan wie im Partner-Dashboard („Scan all reviews", ops/src/removalScan.ts): Google-Link UND Bewertungsliste müssen
- * „gelöscht" sagen, plus Nachweis „war bei Bestellung online".
- *   – Mit Partner-Aufgabe (Not started/Working): → „Gelöscht" (= Kunde wird automatisch belastet), sonst unverändert.
- *   – Ohne Partner-Aufgabe (Weiterleitung abgedreht): wie „Gelöschte abrechnen" vermerken + von der hinterlegten Zahlungsart
- *     abbuchen (ops/src/scanBill.ts); ohne Zahlungsart → „Gelöscht · abrechnen" (Team verrechnet per Rechnung).
+ * Auto-Scan mit der Prüfung aus dem Partner-Dashboard („Scan all reviews", ops/src/removalScan.ts): Google-Link UND Bewertungsliste
+ * müssen „gelöscht" sagen, plus Nachweis „war bei Bestellung online". NUR ANZEIGE (Maximilian 06.11.2026): nichts wird verrechnet –
+ * nach dem Scan erscheint „Laut Scan gelöscht · bitte prüfen" mit Direktlinks, das Team prüft und rechnet händisch ab.
  * Kleine Pakete nacheinander (Server-Browser schafft 2 gleichzeitig) → Fortschritt. */
 import React from "react";
 import { ScanSearch, Zap, CheckCircle2, Eye, HelpCircle, Square, ShieldCheck, Store, ExternalLink, ChevronDown } from "lucide-react";
@@ -22,8 +20,7 @@ const fmtT = (v) => (v ? new Date(v).toLocaleTimeString("de-AT", { hour: "2-digi
 const ageL = (d) => (d < 1 ? "heute" : d === 1 ? "1 Tag" : d + " Tage");
 const keyOfItem = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
 const RES = {
-  gone: ["Gelöscht", "ok", CheckCircle2, " · verrechnet"],
-  gone_manual: ["Gelöscht · abrechnen", "ok", CheckCircle2],
+  gone: ["Laut Scan gelöscht", "ok", CheckCircle2],
   visible: ["Noch online", "vis", Eye],
   unknown: ["Unklar", "unk", HelpCircle],
   skipped: ["Übersprungen", "vis", Eye],
@@ -101,7 +98,7 @@ export function useReviewScan(onDone) {
 export function ScanCard({ sc, rows }) {
   const { scan, busy, res } = sc;
   const vals = Object.values(res);
-  const nGone = vals.filter((x) => x.result === "gone").length, nMan = vals.filter((x) => x.result === "gone_manual").length;
+  const nGone = vals.filter((x) => x.result === "gone").length;
   const nVis = vals.filter((x) => x.result === "visible").length, nUnk = vals.filter((x) => x.result === "unknown").length;
   const pct = scan ? Math.round((scan.done / Math.max(1, scan.total)) * 100) : 0;
   const n = rows.length;
@@ -111,14 +108,14 @@ export function ScanCard({ sc, rows }) {
       <span className="t">
         {!scan ? <>
           <b>Auto-Scan · {n} Bewertung{n === 1 ? "" : "en"} prüfbar</b>
-          <span>Wie beim Partner: Nur wenn Google-Link <i>und</i> Bewertungsliste „gelöscht“ sagen → <b>Gelöscht</b> + automatische Abbuchung. Gilt für jede Bewertung, egal ob beim Partner.</span>
+          <span>Prüft wie beim Partner doppelt (Google-Link <i>und</i> Bewertungsliste). <b>Es wird nichts verrechnet</b> – die laut Scan gelöschten prüfst du danach per Link und rechnest händisch ab.</span>
         </> : busy ? <>
           <b>Scan läuft · {scan.done} / {scan.total}</b>
           <span className="bar"><i style={{ "--w": pct + "%" }} /></span>
-          <span>{nGone + nMan} gelöscht · {nVis} noch online · {nUnk} unklar</span>
+          <span>{nGone} laut Scan gelöscht · {nVis} noch online · {nUnk} unklar</span>
         </> : <>
           <b>{scan.phase === "stopped" ? "Scan gestoppt" : "Scan fertig"} · {fmtT(scan.at)}</b>
-          <span className="orv-sum">{nGone ? <em className="ok">{nGone} gelöscht ✓ verrechnet</em> : null}{nMan ? <em className="ok">{nMan} gelöscht – bitte abrechnen</em> : null}<em className="vis">{nVis} noch online</em>{nUnk ? <em className="unk">{nUnk} unklar – bitte prüfen</em> : null}</span>
+          <span className="orv-sum"><em className="ok">{nGone} laut Scan gelöscht</em><em className="vis">{nVis} noch online</em>{nUnk ? <em className="unk">{nUnk} unklar</em> : null}<em className="vis">nichts verrechnet</em></span>
         </>}
       </span>
       {busy ? <button type="button" className="orv-stop" onClick={sc.stop}><Square />Stopp</button>
@@ -209,6 +206,26 @@ export function OrderReviews({ rows, open, toggle, sc, now, Avatar, RStars, open
         {open && sRows.length > 1 ? <button type="button" className="ordrv-s" disabled={sc.busy} onClick={() => sc.run(sRows)}><ScanSearch />Alle {sRows.length} scannen</button> : null}
       </div>
       {open ? rows.map((r, j) => <FlatRow key={r.k} r={r} j={j} now={now} sc={sc} openOrder={openOrder} Avatar={Avatar} RStars={RStars} compact toast={toast} />) : null}
+    </div>
+  );
+}
+
+/** Nach dem Scan: alle laut Scan gelöschten Bewertungen mit Direktlink – das Team prüft selbst und rechnet händisch ab. */
+export function GoneList({ sc, rows, openOrder, onBill, toast, RStars }) {
+  const gone = rows.filter((r) => r.kind === "review" && sc.res[r.k] && sc.res[r.k].result === "gone");
+  if (!gone.length) return null;
+  return (
+    <div className="orv-gone">
+      <div className="orv-gone-h"><b>Laut Scan gelöscht · bitte prüfen</b><span>{gone.length} Bewertung{gone.length === 1 ? "" : "en"} · Link öffnen, kontrollieren, dann händisch abrechnen. Nichts wurde verrechnet.</span></div>
+      {gone.map((r) => (
+        <div key={r.k} className="orv-gone-r">
+          <span className="t">
+            <span className="l2"><RvLink r={r} toast={toast}>{(r.it && r.it.name) || (r.t && (r.t.name || r.t.reviewer)) || "Bewertung"}</RvLink><RStars n={r.stars} /></span>
+            <button type="button" className="cu" onClick={() => openOrder(r.o.id)}>{r.o.profile || r.o.company || r.o.name}{r.o.name && r.o.name !== (r.o.profile || r.o.company) ? " · " + r.o.name : ""}</button>
+          </span>
+          <button type="button" className="ordrv-s" onClick={() => onBill(r.o.id)}>Abrechnen</button>
+        </div>
+      ))}
     </div>
   );
 }

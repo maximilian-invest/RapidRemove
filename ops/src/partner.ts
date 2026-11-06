@@ -13,7 +13,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, bumpChange } from "./db";
 import { checkRemoval, removalShot } from "./removalCheck";
 import { checkRemovalStrict } from "./removalScan";
-import { itemCheckId, loadScanItem, markRemovedAndCharge } from "./scanBill";
+import { itemCheckId, loadScanItem } from "./scanBill";
 import { probeReviewLink } from "./linkProbe";
 import { expandShortLink } from "./monitor";
 import { applySwTariff } from "./swTariff";
@@ -1085,9 +1085,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { ok: true, results: out };
   });
 
-  // Admin: Auto-Scan aus Aufträge → In Bearbeitung → Liste (06.11.2026). Exakt dieselbe strenge Prüfung und dieselben Regeln
-  // wie „Scan all reviews" im Partner-Dashboard (checkRemovalStrict + partnerApply OHNE Admin-Sonderrechte):
-  // nur „gone" → (Not started → Working →) Removed = Kunde wird automatisch belastet. Pause/Software-Sperren gelten wie beim Partner.
+  // Admin: Auto-Scan aus Aufträge → In Bearbeitung (06.11.2026). Dieselbe strenge Prüfung wie „Scan all reviews" im Partner-Dashboard
+  // (checkRemovalStrict), aber NUR ANZEIGE: nichts wird auf Removed gesetzt, nichts verrechnet (Maximilian 06.11.: Team prüft die
+  // laut Scan gelöschten Bewertungen per Link und rechnet händisch ab).
   const scanDe = (d: { result: string; why: string }): string => {
     const w = d.why || "";
     if (d.result === "gone") return "Doppelt bestätigt: Google-Link „nicht mehr verfügbar“ + nicht mehr in der Bewertungsliste.";
@@ -1118,18 +1118,10 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
         if (scanBusy.has(id)) { out.push({ id, code: x.code, result: "skipped", why: "Wird gerade schon geprüft." }); continue; }
         scanBusy.add(id);
         try {
+          // 06.11.2026 (Maximilian): NICHT automatisch verrechnen – Scan zeigt nur an, das Team prüft und rechnet händisch ab.
           const d = await checkRemovalStrict(x as Parameters<typeof checkRemovalStrict>[0]);
           const item: Out = { id, code: x.code, result: d.result, why: scanDe(d) };
-          if (d.result === "gone") {
-            let err = "";
-            if (x.status === "new") { const w = await partnerApply(id, "working", undefined, { quiet: true, preview, pid: null }); if (w.error) err = w.error; }
-            if (!err) {
-              const r = await partnerApply(id, "removed", undefined, { quiet: true, preview, verified: true, pid: null, via: "Auto-Scan Admin · Google-Link + Bewertungsliste" });
-              if (!r.row) err = r.error || "failed";
-            }
-            if (err) { item.result = "unknown"; item.why = err.includes("hold") ? "Auftrag pausiert, bis der Kunde zahlt – nichts geändert." : err.includes("software") ? "Software-Fall – wartet auf den Kunden, nichts geändert." : "Konnte nicht gespeichert werden – nichts geändert."; }
-          }
-          if (item.result !== "gone" && x.order_id) await insertEvent({ orderId: x.order_id, type: "note", title: `Auto-Scan (Admin): ${x.code} ${item.result === "visible" ? "noch sichtbar" : "nicht eindeutig – unverändert"}`, detail: d.why, auto: true }).catch(() => {});
+          if (x.order_id) await insertEvent({ orderId: x.order_id, type: "note", title: `Auto-Scan (Admin): ${x.code} ${item.result === "gone" ? "laut Scan gelöscht – händisch prüfen" : item.result === "visible" ? "noch sichtbar" : "nicht eindeutig"} (nichts verrechnet)`, detail: d.why, auto: true }).catch(() => {});
           out.push(item);
         } catch (e) {
           out.push({ id, code: x.code, result: "unknown", why: "Prüfung fehlgeschlagen – nichts geändert." });
@@ -1150,13 +1142,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
           // Auftrag „In Bearbeitung" zählt wie Partner-Status „Working" (Nachweis „war online", Entscheidung 06.11.2026).
           const d = await checkRemovalStrict({ id: cid, order_id: x.orderId, url: L.it.url || null, name: L.it.name || null, text: L.it.text || null, rating: L.it.rating ?? null, status: L.order.status === "progress" ? "working" : "new" });
           const item: Out = { ...base, result: d.result, why: scanDe(d) };
-          if (d.result === "gone") {
-            const m = await markRemovedAndCharge(x.orderId, L.key, "Auto-Scan Admin · Google-Link + Bewertungsliste");
-            if (m.mode === "nopm") { item.result = "gone_manual"; item.why = "Doppelt bestätigt gelöscht – keine Zahlungsart hinterlegt, bitte über „Gelöschte abrechnen“ verrechnen."; }
-            else if (m.mode === "already") { item.result = "skipped"; item.why = "Schon abgerechnet."; }
-            else if (m.mode === "error") { item.result = "unknown"; item.why = "Konnte nicht gespeichert werden – nichts geändert."; }
-          }
-          if (item.result !== "gone") await insertEvent({ orderId: x.orderId, type: "note", title: `Auto-Scan (Admin): ${L.it.name || "Bewertung"} ${item.result === "visible" ? "noch sichtbar" : item.result === "gone_manual" ? "gelöscht – manuell abrechnen" : "nicht eindeutig – unverändert"}`, detail: d.why, auto: true }).catch(() => {});
+          await insertEvent({ orderId: x.orderId, type: "note", title: `Auto-Scan (Admin): ${L.it.name || "Bewertung"} ${item.result === "gone" ? "laut Scan gelöscht – händisch prüfen" : item.result === "visible" ? "noch sichtbar" : "nicht eindeutig"} (nichts verrechnet)`, detail: d.why, auto: true }).catch(() => {});
           out.push(item);
         } catch (e) {
           out.push({ ...base, result: "unknown", why: "Prüfung fehlgeschlagen – nichts geändert." });
@@ -1166,7 +1152,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     };
     await Promise.all([worker(), worker(), itemWorker()]);
     const gone = out.filter((x) => x.result === "gone");
-    if (gone.length) void notifyTeam(`Auto-Scan (Admin) · ${gone.length} gelöscht ✓`, "verrechnet · " + gone.map((x) => x.code || x.orderId).join(", "), rvLink(gone.map((g) => ({ code: g.code || null, order_id: g.orderId || ((rows.find((r) => Number(r.id) === g.id) || {}).order_id as string | null) }))), { kind: "partner" });
+    if (gone.length) void notifyTeam(`Auto-Scan (Admin) · ${gone.length} laut Scan gelöscht`, "bitte prüfen, nichts verrechnet · " + gone.map((x) => x.code || x.orderId).join(", "), rvLink(gone.map((g) => ({ code: g.code || null, order_id: g.orderId || ((rows.find((r) => Number(r.id) === g.id) || {}).order_id as string | null) }))), { kind: "partner" });
     return { ok: true, results: out };
   });
 

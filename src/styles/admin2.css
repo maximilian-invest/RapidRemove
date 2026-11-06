@@ -1012,3 +1012,13 @@
 .an.desk .rvl:hover{text-decoration-color:var(--ink)}
 .an .orv-m .l3 .ps.x .dt{background:var(--danger)}
 @media (max-width:520px){.an .ordrv{margin-left:0}}
+/* Nach dem Scan: laut Scan gelöscht · bitte prüfen (nichts verrechnet) */
+.an .orv-gone{background:#eefaf2;border-radius:20px;padding:14px 16px 6px;margin:0 0 16px}
+.an .orv-gone-h{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.an .orv-gone-h b{font-size:14px;font-weight:600;color:#14532d}
+.an .orv-gone-h span{font-size:12.5px;color:#3f7a52}
+.an .orv-gone-r{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid #d7efdf}
+.an .orv-gone-r .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.an .orv-gone-r .l2{display:flex;align-items:center;gap:4px;font-size:13.5px;font-weight:500;min-width:0}
+.an .orv-gone-r .cu{font-size:12px;color:var(--g3);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an.desk .orv-gone-r .cu:hover{text-decoration:underline}

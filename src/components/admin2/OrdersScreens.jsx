@@ -12,7 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { flatRows, reviewRowsOf, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews } from "./OpenReviews";
+import { flatRows, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews, GoneList } from "./OpenReviews";
 import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
@@ -134,6 +134,7 @@ export function OrdersList({ ctx }) {
         </div>
       ) : null}
       {isWork && (scanRows.length || sc.scan) ? <ScanCard sc={sc} rows={scanRows} /> : null}
+      {isWork ? <GoneList sc={sc} rows={allRows} openOrder={openOrder} onBill={(id) => { openOrder(id); requestAnimationFrame(() => ctx.pushSub("bill", id)); }} toast={ctx.toast} RStars={RStars} /> : null}
       {flat ? (
         <>
           <div className="card ls orv">
