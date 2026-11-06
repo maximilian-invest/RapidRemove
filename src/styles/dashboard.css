@@ -1484,3 +1484,15 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-kw-q small{font-size:12px;color:#8a8a8a;font-weight:600}
 
 .rra .rp-kimiss{margin:12px 0 0;font-size:13px;font-weight:600;color:#b91c1c}
+
+/* Reputation: Standort entfernen */
+.rra .rp-rm{display:inline-flex;align-items:center;gap:6px;margin:18px 0 0;background:none;border:0;padding:6px 0;font:inherit;font-size:13px;font-weight:600;color:#9a9a9a;cursor:pointer}
+.rra .rp-rm svg{width:15px;height:15px}
+.rra .rp-rm:hover{color:#b91c1c}
+.rra .rp-rm.on{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fdecec;border-radius:14px;padding:12px 14px;color:#7f1d1d;cursor:default}
+.rra .rp-rm.on span{flex:1;min-width:180px;font-size:14px}
+.rra .rp-rm-no,.rra .rp-rm-yes{border:0;border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.rra .rp-rm-no{background:#fff;color:#2a2a2a}
+.rra .rp-rm-yes{background:#b91c1c;color:#fff}
+.rra .rp-rm-yes svg{width:14px;height:14px}
+.rra .rp-loc .rp-rm{margin:0 0 0 auto}

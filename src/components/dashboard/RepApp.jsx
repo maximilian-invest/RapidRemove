@@ -2,7 +2,7 @@
 /* Reputations-Score im Kundenportal (Vorschau, nur Konten in REP_PREVIEW).
    Daten: ops /cust/rep/* (Scan läuft im Hintergrund, hier wird gepollt). */
 import React from "react";
-import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Search, Loader, Plus, Flag, MessageCircle, Sparkles, Globe, Users, Newspaper, Star, ExternalLink, RefreshCw, X, Trash2 } from "lucide-react";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 const monthOf = (iso) => { try { return MONTHS[new Date(iso).getMonth()]; } catch (e) { return ""; } };
@@ -32,7 +32,8 @@ export function useRep(token, enabled, call) {
   const scan = React.useCallback(async (body) => { const r = await call("rep/scan", { token, ...body }); await load(); return r; }, [token, call, load]);
   const request = React.useCallback((locationId, action) => call("rep/request", { token, locationId, action }), [token, call]);
   const search = React.useCallback((q) => call("rep/search", { token, q }), [token, call]);
-  return { ...st, running, reload: load, scan, request, search };
+  const archive = React.useCallback(async (locationId) => { const r = await call("rep/archive", { token, locationId }); await load(); return r; }, [token, call, load]);
+  return { ...st, running, reload: load, scan, request, search, archive };
 }
 
 /* ---------------- Bausteine ---------------- */
@@ -250,6 +251,22 @@ function ProfileBox({ p }) {
     </section>
   );
 }
+function RemoveLoc({ loc, rep, showToast, imp, onDone }) {
+  const [ask, setAsk] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const go = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy(true);
+    try { await rep.archive(loc.id); showToast(`${loc.name} entfernt`); onDone && onDone(); } catch (e) { showToast("Das hat nicht geklappt", true); setBusy(false); }
+  };
+  return ask ? (
+    <div className="rp-rm on">
+      <span>{loc.name} entfernen? Der Verlauf bleibt gespeichert.</span>
+      <button type="button" className="rp-rm-no" onClick={() => setAsk(false)} disabled={busy}>Abbrechen</button>
+      <button type="button" className="rp-rm-yes" onClick={go} disabled={busy}>{busy ? <Loader className="spin" /> : null}Entfernen</button>
+    </div>
+  ) : <button type="button" className="rp-rm" onClick={() => setAsk(true)}><Trash2 />Standort entfernen</button>;
+}
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
   const [area, setArea] = React.useState(null);
@@ -355,6 +372,7 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
         <span>Scan vom {dateOf(r.scannedAt || r.at)} · {r.sources} Quellen geprüft</span>
         <button type="button" onClick={rescan} disabled={running}>{running ? <Loader className="spin" /> : <RefreshCw />}Neu scannen</button>
       </div>
+      <RemoveLoc loc={loc} rep={rep} showToast={showToast} imp={imp} onDone={onBack} />
     </div>
   );
 }
@@ -752,7 +770,7 @@ export function RepTab({ rep, showToast, imp, openSearch }) {
             <ChevronRight />
           </button>
         ) : l.scan && l.scan.status === "running" ? <RepRunning key={l.id} loc={l} /> : (
-          <div key={l.id} className="rp-loc"><span className="rp-t"><b>{l.name}</b><span>{l.scan && l.scan.status === "error" ? "Scan fehlgeschlagen – bitte erneut versuchen" : "Noch nicht gescannt"}</span></span><button type="button" className="rp-mini" onClick={() => rep.scan({ locationId: l.id }).catch(() => showToast("Scan konnte nicht gestartet werden", true))}>Scannen</button></div>
+          <div key={l.id} className="rp-loc"><span className="rp-t"><b>{l.name}</b><span>{l.scan && l.scan.status === "error" ? "Scan fehlgeschlagen – bitte erneut versuchen" : "Noch nicht gescannt"}</span></span><button type="button" className="rp-mini" onClick={() => rep.scan({ locationId: l.id }).catch(() => showToast("Scan konnte nicht gestartet werden", true))}>Scannen</button><RemoveLoc loc={l} rep={rep} showToast={showToast} imp={imp} /></div>
         )
       ))}
       <button type="button" className="rp-loc add" onClick={openSearch}>
