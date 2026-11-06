@@ -1503,3 +1503,34 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-flag{display:flex;align-items:center;gap:10px;width:100%;background:#fdecec;border:0;border-radius:14px;padding:12px 14px;text-align:left;font:inherit;font-size:14px;font-weight:600;color:#7f1d1d;cursor:pointer}
 .rra .rp-flag svg{width:16px;height:16px;flex:none}
 .rra .rp-flag span{flex:1}
+
+/* Reputation: Website eintragen + Angebot */
+.rra .rp-site{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.rra .rp-site input{flex:1;min-width:200px;height:44px;border:1px solid #e2e2e2;border-radius:12px;padding:0 14px;font:inherit;font-size:15px;background:#fff}
+.rra .rp-site-btn{height:44px;border:0;border-radius:12px;padding:0 16px;background:#111;color:#fff;font:inherit;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.rra .rp-site-btn:disabled{opacity:.5;cursor:default}
+.rra .rp-site-btn svg{width:15px;height:15px}
+.rra .rp-site.saved{background:#ecf8ef;border-radius:14px;padding:10px 12px;color:#14532d;font-size:14px;font-weight:600}
+.rra .rp-site.saved span{flex:1}
+.rra .rp-site-link{margin-top:14px;background:none;border:0;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:#6b6b6b;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.rra .rp-offer{position:relative;overflow:hidden;background:linear-gradient(135deg,#141414 0%,#2a1a0e 100%);color:#fff;border-radius:24px;padding:26px 24px 22px}
+.rra .rp-offer::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,128,0,.45),rgba(255,128,0,0) 70%)}
+.rra .rp-offer-k{position:relative;display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#ffb066}
+.rra .rp-offer h3{position:relative;margin:6px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.rra .rp-offer p{position:relative;margin:0 0 16px;font-size:15px;line-height:1.55;color:#d9d2cb;max-width:620px}
+.rra .rp-offer ul{position:relative;list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:8px}
+.rra .rp-offer li{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.rra .rp-offer li svg{width:18px;height:18px;color:#ff8000;flex:none}
+.rra .rp-offer-opt{position:relative;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 14px;cursor:pointer;margin-bottom:18px}
+.rra .rp-offer-opt.on{border-color:#ff8000;background:rgba(255,128,0,.12)}
+.rra .rp-offer-opt input{width:18px;height:18px;accent-color:#ff8000;flex:none}
+.rra .rp-offer-opt .rp-t b{color:#fff}
+.rra .rp-offer-opt .rp-t span{color:#c9c1b9}
+.rra .rp-offer-opt em{font-style:normal;font-weight:700;font-size:14px;color:#ffb066;white-space:nowrap}
+.rra .rp-offer-f{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.rra .rp-offer-p{font-size:15px;color:#d9d2cb}
+.rra .rp-offer-p b{font-size:26px;font-weight:800;color:#fff;margin-right:4px}
+.rra .rp-offer-btn{height:48px;border:0;border-radius:999px;padding:0 22px;background:#ff8000;color:#fff;font:inherit;font-size:15px;font-weight:800;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.rra .rp-offer-btn svg{width:17px;height:17px}
+.rra .rp-offer-ok{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:#9be3b0}
+.rra .rp-offer-ok svg{width:18px;height:18px}

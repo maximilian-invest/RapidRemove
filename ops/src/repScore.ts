@@ -41,7 +41,7 @@ async function init(): Promise<void> {
     progress integer NOT NULL DEFAULT 0, step text, score integer, result jsonb, error text,
     created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS rep_scans_loc ON rep_scans (location_id, created_at DESC)`);
-  await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz, ADD COLUMN IF NOT EXISTS archived_at timestamptz`);
+  await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz, ADD COLUMN IF NOT EXISTS archived_at timestamptz, ADD COLUMN IF NOT EXISTS website_manual text`);
   // Wöchentlicher Recherche-Cache je Standort: Suchtreffer, Suchbegriffe, KI-Antworten + Einordnung
   await pool.query(`CREATE TABLE IF NOT EXISTS rep_cache (location_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
@@ -743,9 +743,10 @@ export function evaluate(c: Ctx): J {
   const kChecked = (c.kws || []).filter(kwOk);
   const weak = kChecked.filter((k) => kwVal(k) < 6);
   if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${kChecked.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
-  if (!c.web.url) todos.push({ key: "web", title: "Keine eigene Website gefunden", who: "selbst", action: "website", points: 3, area: "web" });
+  if (!c.web.url) todos.unshift({ key: "web", title: "Eigene Website fehlt – wichtig für Ihren Ruf", who: "wir", action: "website", points: Math.max(3, gain({ web: true })), area: "web" });
   else if (c.web.fromGbp === false) todos.push({ key: "weblink", title: `Website ${host(c.web.url)} im Google-Profil eintragen`, who: "selbst", action: "website", points: gain({ web: true }) || 2, area: "web" });
-  const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
+  const webT = todos.find((t) => t.key === "web");
+  const top = [...(webT ? [webT] : []), ...todos.filter((t) => t.points > 0 && t !== webT).sort((x, y) => y.points - x.points)].slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
   const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), read: ((x as J).hit as Hit | undefined)?.k, rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
   // Suche: ALLE Treffer von Google Seite 1–5 + Bing zeigen (auch „andere Firma“), sortiert nach Position
@@ -798,7 +799,7 @@ export function evaluate(c: Ctx): J {
       const base = [
         { label: "Geprüft", value: "Google-Profil, Google-Firmenkasten und Google-Suche nach dem Namen (Seite 1–5)" },
         { label: "Website im Google-Profil", value: c.web.fromGbp === false || !c.web.url ? "nicht hinterlegt" : "hinterlegt", tone: c.web.fromGbp === false || !c.web.url ? "bad" as const : "good" as const },
-        { label: "Eigene Website", value: c.web.url ? host(c.web.url) + (c.web.via === "kg" ? " (aus dem Google-Firmenkasten)" : c.web.via === "google" ? " (über die Google-Suche gefunden)" : "") : "keine gefunden", tone: c.web.url ? "good" as const : "bad" as const },
+        { label: "Eigene Website", value: c.web.url ? host(c.web.url) + (c.web.via === "kg" ? " (aus dem Google-Firmenkasten)" : c.web.via === "google" ? " (über die Google-Suche gefunden)" : c.web.via === "manual" ? " (von Ihnen eingetragen)" : "") : "keine gefunden", tone: c.web.url ? "good" as const : "bad" as const },
         ...(c.web.url && c.web.perf != null ? [{ label: "Ladezeit am Handy (Google PageSpeed)", value: `${c.web.perf}/100`, tone: c.web.perf >= 70 ? "good" as const : "bad" as const }] : []),
       ];
       const ks = (c.kws || []).filter(kwOk);
@@ -875,6 +876,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     let site = String(loc.website || "");
     const siteFromGbp = !!site;
     let siteVia = siteFromGbp ? "gbp" : "";
+    if (!site && loc.website_manual) { site = String(loc.website_manual); siteVia = "manual"; }
     let hp0 = site ? await homepage(site) : { https: false, title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
     let profile: Profile | null = loc.profile && Number(loc.profile.pv) === PROFILE_V && loc.profile_at && Date.now() - new Date(loc.profile_at).getTime() < 7 * 86400_000 && Number(process.env.REP_CACHE_DAYS ?? 7) > 0 ? (loc.profile as Profile) : null;
     if (!profile) {
@@ -1369,6 +1371,21 @@ export function registerRepScore(app: FastifyInstance): void {
     return { ok: true, locationId: loc.id, scanId: sid };
   });
 
+  /* Website selbst eintragen (wenn keine im Google-Profil steht oder die gefundene falsch ist) */
+  app.post("/cust/rep/website", async (req, reply) => {
+    const b = (req.body || {}) as J;
+    const a = await auth(b);
+    if (!a) return reply.code(401).send({ ok: false, error: "session" });
+    if (a.off) return reply.code(403).send({ ok: false, error: "off" });
+    if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    let u = String(b.url || "").trim().slice(0, 300);
+    if (u && !/^https?:\/\//i.test(u)) u = "https://" + u;
+    if (u) { try { const x = new URL(u); if (!/\./.test(x.hostname)) throw new Error("host"); u = x.origin + (x.pathname === "/" ? "/" : x.pathname); } catch { return reply.code(400).send({ ok: false, error: "url" }); } }
+    const r = await pool!.query(`UPDATE rep_locations SET website_manual=$3 WHERE id=$1 AND email=$2 AND archived_at IS NULL`, [String(b.locationId || ""), a.email, u || null]);
+    if (!r.rowCount) return reply.code(404).send({ ok: false, error: "location" });
+    return { ok: true, url: u };
+  });
+
   /* Standort entfernen = archivieren: verschwindet aus dem Portal, Verlauf bleibt (beim erneuten Hinzufügen wieder da) */
   app.post("/cust/rep/archive", async (req, reply) => {
     const b = (req.body || {}) as J;
@@ -1387,7 +1404,8 @@ export function registerRepScore(app: FastifyInstance): void {
     if (!a) return reply.code(401).send({ ok: false, error: "session" });
     if (a.off) return reply.code(403).send({ ok: false, error: "off" });
     const loc = b.locationId ? (await pool!.query(`SELECT name, city FROM rep_locations WHERE id=$1 AND email=$2`, [String(b.locationId), a.email])).rows[0] : null;
-    const what = String(b.action || "anfrage").slice(0, 60);
+    const LBL: Record<string, string> = { website: "Website-Angebot (2.000 € pauschal, 3 Designentwürfe)", website_chatbot: "Website-Angebot (2.000 € pauschal) + Chatbot 49,90 €/Monat" };
+    const what = LBL[String(b.action)] || String(b.action || "anfrage").slice(0, 60);
     if (!a.imp) await notifyTeam("Reputation-Anfrage", `${a.email} · ${loc ? loc.name + (loc.city ? ", " + loc.city : "") : ""} · ${what}`);
     return { ok: true };
   });
