@@ -62,7 +62,7 @@ function defaultSel(m, inWork) {
   return s;
 }
 const scoreOfSel = (m, sel) => { const v = m.combos ? m.combos[comboKey(sel)] : null; return typeof v === "number" ? v : m.base; };
-const eur = (v, cur) => (cur === "usd" ? "$" : "") + Number(v).toLocaleString("de-AT", { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + (cur === "usd" ? "" : " €");
+const eur = (v, cur) => { const n = Number(v) || 0; const [i, d] = n.toFixed(n % 1 ? 2 : 0).split("."); return (cur === "usd" ? "$" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (d ? "," + d : "") + (cur === "usd" ? "" : " €"); };
 function useCount(target, from, loop) {
   const [n, setN] = React.useState(from);
   const cur = React.useRef(from);
@@ -952,6 +952,8 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
   const n = useCount(target, base, false);
   const prof = get("profile"), revM = get("reviews"), pressM = get("press"), webM = get("web"), schutz = get("schutz");
   const pv = prof && sel.profile ? prof.variants.find((v) => v.id === sel.profile) : null;
+  const gainOf = (k, v) => { const all = { ...work, ...sel }; return scoreOfSel(m, { ...all, [k]: v }) - scoreOfSel(m, { ...all, [k]: k === "profile" ? null : false }); };
+  const Pts = ({ k, v, pre }) => { const g = gainOf(k, v); return g > 0 ? <span className="rp-pill g">{pre || ""}+{g}</span> : null; };
   const tog = (k) => setSel((s) => ({ ...s, [k]: !s[k] }));
   const togProfile = () => setSel((s) => ({ ...s, profile: s.profile ? null : prof.rec }));
   const showSchutz = schutz && !work.profile && sel.profile === "remove";
@@ -981,14 +983,14 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
     <div key="profile" className="rp-m-blk">
       <div className="rp-m-it"><MIcon k="profile" />
         <span className="rp-m-tx"><b>{prof.title}</b><span>{pv ? eur(pv.price, prof.cur) + " bei Erfolg" : prof.sub}{prof.alert ? <> · <em>{prof.alert}</em></> : null}</span></span>
-        <span className="rp-pill g">+{(pv || prof.variants.find((v) => v.id === prof.rec)).points}</span>
+        <Pts k="profile" v={sel.profile || prof.rec} />
         <Switch on={!!sel.profile} label={prof.title} onClick={togProfile} />
       </div>
       {prof.variants.length > 1 ? (
         <div className="rp-m-var">
           {prof.variants.map((v) => (
             <button key={v.id} type="button" className={"rp-m-vb" + (sel.profile === v.id ? " on" : "")} aria-pressed={sel.profile === v.id} onClick={() => setSel((s) => ({ ...s, profile: v.id }))}>
-              <b>{v.label}</b><span>{eur(v.price, prof.cur)} · +{v.points} Punkte</span>{v.id === prof.rec ? <i className="rp-m-rec">Empfohlen</i> : null}
+              <b>{v.label}</b><span>{eur(v.price, prof.cur)}{gainOf("profile", v.id) > 0 ? " · +" + gainOf("profile", v.id) + " Punkte" : ""}</span>{v.id === prof.rec ? <i className="rp-m-rec">Empfohlen</i> : null}
             </button>
           ))}
         </div>
@@ -1011,7 +1013,7 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
     <div key="reviews" className="rp-m-blk">
       <div className="rp-m-it"><MIcon k="reviews" />
         <span className="rp-m-tx"><b>{revM.title}</b><span>{String(revM.from).replace(".", ",")} → {String(revM.to).replace(".", ",")} ★ · {eur(revM.total, revM.cur)} bei Erfolg · <em>noch {revM.left} {revM.left === 1 ? "Tag" : "Tage"}</em></span></span>
-        <span className="rp-pill g">+{revM.points}</span>
+        <Pts k="reviews" v={true} />
         <Switch on={!!sel.reviews} label={revM.title} onClick={() => tog("reviews")} />
       </div>
       <div className="rp-m-sub">{revM.reviews.map((x) => <div key={x.id || x.name} className="rp-m-li"><span className="rp-m-st">{"★".repeat(x.rating)}</span><span className="rp-m-q">„{x.text}“</span><span className={"rp-m-left" + (x.left <= 8 ? " hot" : "")}>noch {x.left} T.</span></div>)}</div>
@@ -1021,7 +1023,7 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
     <div key="press" className="rp-m-blk">
       <div className="rp-m-it"><MIcon k="press" />
         <span className="rp-m-tx"><b>{pressM.title}</b><span>{pressM.sub}{pressM.alert ? <> · <em>{pressM.alert}</em></> : null}</span></span>
-        <span className="rp-pill g">bis +{pressM.points}</span>
+        <Pts k="press" v={true} pre="bis " />
         <Switch on={!!sel.press} label={pressM.title} onClick={() => tog("press")} />
       </div>
       <div className="rp-m-sub">{pressM.items.slice(0, 4).map((x) => <a key={x.link} className="rp-m-li" href={x.link} target="_blank" rel="noopener noreferrer"><span className="rp-m-q">{x.title}</span><span className="rp-m-h">{x.host}{x.pos ? " · Platz " + x.pos : ""}{x.ai && x.ai.length ? " · " + x.ai.join(", ") : ""}</span></a>)}</div>
@@ -1031,7 +1033,7 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
     <div key="web" className="rp-m-blk">
       <div className="rp-m-it"><MIcon k="web" />
         <span className="rp-m-tx"><b>{webM.title}</b><span>{eur(webM.price)} pauschal · {webM.sub}</span></span>
-        <span className="rp-pill g">+{webM.points}</span>
+        <Pts k="web" v={true} />
         <Switch on={!!sel.web} label={webM.title} onClick={() => tog("web")} />
       </div>
       {sel.web ? <div className="rp-m-opts"><button type="button" className={"rp-chip2" + (opt.bot ? " on" : "")} onClick={() => setOpt((o) => ({ ...o, bot: !o.bot }))}>+ KI-Chatbot {eur(webM.bot)} / Monat</button></div> : null}
