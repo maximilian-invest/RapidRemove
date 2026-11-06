@@ -100,7 +100,7 @@ function ArticleBody() {
             <span className="am-dot" />
             <span><Icon.clock />{ARTICLE_META.readingMin} Min. Lesezeit</span>
             <span className="am-dot" />
-            <span>Aktualisiert: Oktober 2026</span>
+            <span>Aktualisiert: November 2026</span>
           </div>
         </div>
       </header>
@@ -472,7 +472,7 @@ function ArticleBody() {
             <div className="cta-trust"><Icon.shieldCheck /> Null Risiko · Zahlung nur nach erfolgreicher Löschung</div>
           </div>
 
-          <div className="art-updated"><Icon.checkCircle /> Zuletzt aktualisiert: Juni 2026 · juristisch geprüft</div>
+          <div className="art-updated"><Icon.checkCircle /> Zuletzt aktualisiert: November 2026 · juristisch geprüft</div>
 
           <div className="art-author">
             <img className="aa-ava" src={asset(HUB_AUTHOR.image)} alt={HUB_AUTHOR.name} style={{ objectFit: "cover" }} />

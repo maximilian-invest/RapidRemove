@@ -11,12 +11,12 @@ export const ARTICLE_META = {
   url: `${SITE_URL}/${ARTICLE_SLUG}`,
   category: "Google-Policy",
   title:
-    "Google Unternehmensprofil löschen (My Business): Anleitung",
+    "Google Unternehmensprofil löschen 2026: So geht's wirklich",
   h1: "Google-Unternehmensprofil löschen – wie geht das wirklich?",
   description:
-    "Google Mein Unternehmen löschen: Was „dauerhaft geschlossen“ wirklich bewirkt, warum alle Bewertungen bleiben – und wie das Profil ganz verschwindet.",
+    "Google lässt Sie Ihr Profil nicht löschen – „dauerhaft geschlossen“ lässt Eintrag und Bewertungen online. So verschwindet es wirklich. Stand: Nov. 2026",
   datePublished: "2026-05-12",
-  dateModified: "2026-10-11",
+  dateModified: "2026-11-06",
   author: "Maximilian Hölzl",
   authorRole: "Gründer & Reputations-Experte, RapidRemove",
   authorImage: "/assets/maximilian-hoelzl.jpg",
