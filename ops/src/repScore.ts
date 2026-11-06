@@ -1422,6 +1422,33 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       ...(googText ? [mk("Google KI-Übersicht", googAns, cls?.goog, googSrc)] : []),
       ...(pplxText ? [mk("Perplexity", pplxAns, cls?.pplx, pplxSrc)] : []),
     ];
+    // Zusammenspiel KI ↔ Presse & Foren: Quellen, die KIs bei Kritik/Erfahrungen/Seriosität negativ zitieren, sind auch in
+    // Presse & Foren kritisch – vorhandene Treffer werden auf „kritisch“ gestellt, fehlende Artikel kommen dazu.
+    {
+      const norm = (u: string) => String(u || "").replace(/^https?:\/\/(www\.)?/i, "").replace(/[?#].*$/, "").replace(/\/$/, "").toLowerCase();
+      const SKIP = /handelsregister|moneyhouse|zefix|northdata|wikipedia|google\.|linkedin|xing|easymonitoring|help\.ch|local\.ch|search\.ch|dnb\.com|companyhouse|firmenwissen/i;
+      const cited = new Map<string, { u: string; t: string; by: Set<string> }>();
+      for (const k of ki) for (const a of k.answers || []) {
+        if (a.sent !== "neg" || !["kritik", "erfahrungen", "serioes"].includes(a.key)) continue;
+        for (const s of a.src || []) {
+          const h = host(s.u);
+          if (!h || (own0 && h.endsWith(own0)) || SKIP.test(h) || DIRS.test(h) || SOCIALD.test(h)) continue;
+          const key = norm(s.u); const e = cited.get(key) || { u: s.u, t: s.t, by: new Set<string>() }; e.by.add(k.name); cited.set(key, e);
+        }
+      }
+      let up = 0, add = 0;
+      for (const [key, e] of cited) {
+        const by = `von ${[...e.by].join(", ")} als Kritik genannt`;
+        const hit = items.filter((x) => norm(x.link) === key && x.about !== "other" && x.type !== "own");
+        if (hit.length) { for (const x of hit) if (x.sent !== "neg") { x.sent = "neg"; x.note = x.note ? x.note + " · " + by : by; up++; } continue; }
+        const h = host(e.u);
+        const known = PRESS.test(h) || FORUM.test(h) || REVIEW.test(h);
+        if (add >= 6 || (!known && e.by.size < 2)) continue;
+        items.push({ i: 100000 + add, src: "web", pos: 99, title: String(e.t || h).slice(0, 160), snippet: "", link: e.u, sent: "neg", about: "self", type: REVIEW.test(h) ? "review" : FORUM.test(h) ? "forum" : "press", note: by });
+        add++;
+      }
+      if (up || add) console.log(`Rep-Scan ${name}: KI-Kritikquellen → ${up} Treffer auf kritisch, ${add} neu in Presse & Foren`);
+    }
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
       kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kiWhy: Object.fromEntries([...aiErr.entries()].filter(([, v]) => v.at >= scanStart).map(([k, v]) => [k, v.why])), backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { fromGbp: siteFromGbp, via: siteVia, url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
