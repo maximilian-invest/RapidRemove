@@ -1323,7 +1323,9 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     let kiDone = 0;
     const kiTotal = QUESTIONS.length * 4;
     const told = <T,>(ai: string, x: { q: string }, pr: Promise<T>) => pr.then((v) => { kiDone++; void say(78 + Math.round((kiDone / kiTotal) * 8), `${ai} gefragt: „${short(x.q.replace(/„|“/g, ""))}“ (${kiDone} von ${kiTotal})`); return v; });
-    const fromCache = !!(cache && cache.qk === QUESTIONS.map((x) => x.key).join(",") && Array.isArray(cache.claudeAns));
+    // KI-Antworten aus dem Cache nur, wenn alle eingerichteten KIs damals geantwortet haben (sonst neu fragen, z. B. nach einem Limit)
+    const cachedAll = !!cache && (!process.env.OPENAI_API_KEY || (cache.gptAns || []).some(Boolean)) && (!process.env.GEMINI_API_KEY || (cache.gemAns || []).some(Boolean)) && (!process.env.PERPLEXITY_API_KEY || (cache.pplxAns || []).some(Boolean));
+    const fromCache = !!(cache && cachedAll && cache.qk === QUESTIONS.map((x) => x.key).join(",") && Array.isArray(cache.claudeAns));
     const newSrc = (): Src[][] => QUESTIONS.map(() => [] as Src[]);
     const claudeSrc: Src[][] = fromCache && Array.isArray(cache!.claudeSrc) ? cache!.claudeSrc : newSrc();
     const gptSrc: Src[][] = fromCache && Array.isArray(cache!.gptSrc) ? cache!.gptSrc : newSrc();
