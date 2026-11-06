@@ -1,28 +1,45 @@
 # RapidRemove
 
-> RapidRemove (Simple Solution OG, Salzgasse 2, 5400 Hallein, Austria; VAT ID ATU72401536) removes Google Business Profiles and individual Google reviews on behalf of business owners – only through the procedures Google itself provides (policy reports, the appeal in Google's Reviews Management Tool and Google's legal removal request). Payment only after successful removal.
+> RapidRemove (Simple Solution OG, Salzgasse 2, 5400 Hallein, Austria; VAT ID ATU72401536) helps business owners remove their Google Business Profile or individual Google reviews that violate Google's policies. We act only on behalf of the owner or managing director and only through the procedures Google itself provides (policy reports, the appeal in Google's Reviews Management Tool, Google's legal removal request and Google's own profile settings). Whether something is removed is decided by Google alone. Customers pay only after a successful removal.
 
-Key facts:
-- Individual Google review removal: $179 / €179 per removed review, charged only once the review is gone. Reviews older than 4 weeks: +$50 / +€50. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. Available outside Germany and Austria.
-- Full Google Business Profile removal (profile incl. all reviews), pay on success.
-- 1,600+ Google Business Profiles removed since 2023, clients in 50+ countries. Rated 5.0 on Trustpilot.
-- We only take cases where removal is legally permissible. Honest criticism from real customers is not removed, and we do not remove profiles that help consumers identify fraud.
+## Key facts
+- Founded 2017. 1,600+ Google Business Profiles removed since 2023, clients in 25+ countries.
+- Every request is checked first (free check). Cases where removal is not legally permissible are declined at no cost.
+- Honest criticism from real customers is not removed. We do not remove profiles that help consumers identify fraud or other harmful activity.
+- Prices are net (excl. VAT). Most clients are businesses.
+
+## Services and prices
+- **Full Google Business Profile removal** (the listing incl. all reviews disappears from Google Search and Maps): from €450 / $495, charged only after the removal. Optional protection plan available.
+- **Individual Google review removal** (reviews that break Google's content policies, e.g. fake, spam, conflict of interest, off-topic, harassment): from €199 / $199 per removed review (from 249 in the US, CA, UK, AU, CH, NO, DK, SE and JP), charged per review only once it is gone. Currently for reviews up to 4 weeks old with text; older reviews and star-only ratings again from January 2027. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. Usually removed within 7–21 days.
+- Individual review removal is **not offered for businesses in Germany and Austria** (legal situation there; only via a lawyer).
+- Removed reviews can come back if the author successfully appeals to Google; we have no influence over Google's decisions.
+
+## How it works
+1. Free check of the Google profile or the reviews (online, a few minutes).
+2. Order; the owner confirms the request is legitimate.
+3. We file the removal through Google's procedures and track it in the customer dashboard.
+4. Payment only after the profile or review is verifiably gone.
 
 ## Services
 - [Remove a Google review (EN)](https://www.rapid-remove.com/en/remove-single-reviews): pricing, which reviews Google removes, process, FAQ
 - [Google review removal cost & how to order (EN)](https://www.rapid-remove.com/en/magazine/google-review-removal-service)
-- [Delete a Google Business Profile (EN guide)](https://www.rapid-remove.com/en/magazine/delete-google-business-profile)
-- [Google-Unternehmensprofil löschen (DE)](https://www.rapid-remove.com/magazin/google-unternehmensprofil-loeschen)
+- [Delete a Google Business Profile – the 4 options (EN guide)](https://www.rapid-remove.com/en/magazine/delete-google-business-profile)
+- [Google Unternehmensprofil löschen (DE)](https://www.rapid-remove.com/magazin/google-unternehmensprofil-loeschen)
 
 ## Guides
 - [Remove Google reviews: methods & costs](https://www.rapid-remove.com/en/magazine/remove-google-reviews)
 - [How to delete a Google review](https://www.rapid-remove.com/en/magazine/how-to-delete-a-google-review)
 - [Identify, report & remove fake Google reviews](https://www.rapid-remove.com/en/magazine/remove-fake-google-reviews)
-- [Negative Google review: lawyer or technical removal?](https://www.rapid-remove.com/en/magazine/negative-google-review-lawyer-or-removal)
+- [Negative Google review: lawyer or removal?](https://www.rapid-remove.com/en/magazine/negative-google-review-lawyer-or-removal)
 - [Remove a 1-star review without text](https://www.rapid-remove.com/en/magazine/remove-1-star-review-without-text)
+
+## Delete a Google Business Profile – other languages
+- [Español](https://www.rapid-remove.com/es/revista/eliminar-perfil-de-empresa-google) · [Português](https://www.rapid-remove.com/pt/revista/eliminar-perfil-empresa-google) · [Français](https://www.rapid-remove.com/fr/magazine/supprimer-profil-etablissement-google) · [Italiano](https://www.rapid-remove.com/it/rivista/eliminare-profilo-attivita-google) · [Nederlands](https://www.rapid-remove.com/nl/magazine/google-bedrijfsprofiel-verwijderen)
+- [日本語](https://www.rapid-remove.com/ja/magazine/google-business-profile-sakujo) · [Svenska](https://www.rapid-remove.com/sv/magasin/radera-google-foretagsprofil) · [Dansk](https://www.rapid-remove.com/da/magasin/slet-google-virksomhedsprofil) · [Norsk](https://www.rapid-remove.com/no/magasin/slett-google-bedriftsprofil)
 
 ## Data
 - [Google Business Profile Removal Report 2026](https://www.rapid-remove.com/en/google-business-profile-removal-report) (CSV, CC BY 4.0)
 
-## Contact
-- helpdesk@rapid-remove.com · https://www.rapid-remove.com/en/contact
+## Company
+- [About us](https://www.rapid-remove.com/en/about-us) · [Terms](https://www.rapid-remove.com/en/terms-and-conditions) · [Imprint (DE)](https://www.rapid-remove.com/impressum)
+- helpdesk@rapid-remove.com · +43 6245 93 0 53 · https://www.rapid-remove.com/en/contact
