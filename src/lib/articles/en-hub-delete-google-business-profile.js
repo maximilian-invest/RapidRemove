@@ -116,7 +116,7 @@ const article = {
 
     { t: "h2", id: "how", text: "How a full profile removal actually works", toc: "How removal works" },
     { t: "p", text: "The only reliable way to make a profile and its reviews disappear is a **complete removal of the Business Profile** through Google's official processes – not deleting reviews one by one. When the whole profile is removed, **every review disappears with it**, including fake ones. It is the difference between treating symptoms and removing the cause." },
-    { t: "p", text: "This is exactly what RapidRemove does. The key advantages:" },
+    { t: "p", text: "This is exactly what RapidRemove does – see our [Google Business Profile removal service](/en/magazine/google-business-profile-removal-service) for pricing and the full process. The key advantages:" },
     { t: "ul", items: [
       "**Speed:** profile removal typically in 24–48 hours instead of months",
       "**Complete:** the entire profile, including **all** reviews, in one go",
