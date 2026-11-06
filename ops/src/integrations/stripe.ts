@@ -340,6 +340,9 @@ export async function listPaymentLinks(): Promise<{ id: string; url: string; ite
   return out;
 }
 
+/** Nach dem Anlegen eines neuen Links: Cache leeren, damit er sofort gefunden wird. */
+export function clearPaymentLinkCache(): void { plCache = null; }
+
 function sigOf(items: { amount: number; interval: string }[]): string {
   return items.map((i) => `${i.amount}@${i.interval}`).sort().join("+");
 }

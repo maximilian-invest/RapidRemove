@@ -70,7 +70,7 @@ const article = {
       "Only the owner or managing director can place the order. We never remove competitors' or third parties' profiles.",
       "You transfer ownership of the Business Profile to us through Google's official function. **We never need your password.** Gmail, Google Ads and your website stay untouched.",
       "We remove the profile, usually about 24 hours after the ownership transfer. If Google asks for verification first, it can take longer.",
-      "You only pay after successful removal: **from $495**, or **$950** for removal plus setting up a new profile. If the removal doesn't work, you pay nothing.",
+      "You only pay after successful removal: **from $495**, or **from $950** for removal plus setting up a new profile. If the removal doesn't work, you pay nothing.",
     ] },
     { t: "p", text: "Afterwards you can start a new profile without the old reviews if you wish. Google verifies new profiles itself, so its approval is up to Google." },
     { t: "warn", title: "The honest downsides", text: "Your **good reviews and photos go too**. Third parties can later suggest a new listing for your location; optional protection from $24.90 a month covers that. If a profile can't be removed, you'll need to reclaim ownership from Google yourself. If you only want to get rid of a few reviews and keep your profile, routes 1 to 3 fit better. More: [how deleting a Google Business Profile works](/en/magazine/delete-google-business-profile/)." },

@@ -7,7 +7,7 @@ import { pagePath } from "@/lib/page-routes";
 import { HUB_PATH } from "@/lib/articles/hubs";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, vatNote } from "@/lib/pricing";
+import { money, profileFor, vatNote, fromPrice } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
 import { getResumeProfile } from "@/lib/resume";
@@ -529,7 +529,7 @@ function Pricing({ id, onStart }) {
               {c.feat && <span className="tag">{c.tag}</span>}
               <div className="pname">{c.name}</div>
               <div className="pdesc">{c.desc}</div>
-              <div className="price">{money(lang, c.price)} <small>{vatNote(lang)}</small></div>
+              <div className="price">{fromPrice(lang, money(lang, c.price))} <small>{vatNote(lang)}</small></div>{/* „ab": Premium-Branchen +25 % (06.11.2026) */}
               <ul>
                 {c.feats.map((f, j) => <li key={j}><Icon.check /> {f}</li>)}
               </ul>

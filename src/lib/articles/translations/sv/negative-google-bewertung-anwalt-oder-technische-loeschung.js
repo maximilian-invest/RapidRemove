@@ -70,7 +70,7 @@ const article = {
       "Bara ägaren eller verkställande direktören kan lägga beställningen. Vi tar aldrig bort konkurrenters eller tredje parts profiler.",
       "Du överför ägarskapet för företagsprofilen till oss via Googles officiella funktion. **Vi behöver aldrig ditt lösenord.** Gmail, Google Ads och din webbplats påverkas inte.",
       "Vi tar bort profilen, oftast cirka 24 timmar efter överföringen av ägarskapet. Om Google först begär en verifiering kan det ta längre tid.",
-      "Du betalar först efter lyckad borttagning: **från 450 €**, eller **850 €** för borttagning plus uppsättning av en ny profil. Om borttagningen inte lyckas betalar du ingenting.",
+      "Du betalar först efter lyckad borttagning: **från 450 €**, eller **från 850 €** för borttagning plus uppsättning av en ny profil. Om borttagningen inte lyckas betalar du ingenting.",
     ] },
     { t: "p", text: "Därefter kan du starta en ny profil utan de gamla recensionerna om du vill. Google verifierar nya profiler själv, så det är upp till Google att godkänna den." },
     { t: "warn", title: "De ärliga nackdelarna", text: "Dina **goda recensioner och foton försvinner också**. Tredje part kan senare föreslå en ny post för din adress; ett valfritt skydd från 24,90 € i månaden täcker det. Om en profil inte kan tas bort måste du själv återta ägarskapet från Google. Om du bara vill bli av med några få recensioner och behålla din profil passar väg 1 till 3 bättre. Mer: [så fungerar det att radera en Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/)." },

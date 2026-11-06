@@ -4,14 +4,14 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, freshPriceFor, fromPrice, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, freshPriceFor, fromPrice, profilePricesStr, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
 import { useExpressOn, useDurations } from "@/lib/express-status";
 import { maxDays } from "@/lib/durations";
 /* Balkenlänge „Typische Dauer": im Verhältnis zur längsten Standard-Dauer (mind. 18 %). */
 const durBarW = (t, d) => Math.max(18, Math.round((maxDays(t) / Math.max(maxDays(d.fresh), maxDays(d.other))) * 100)) + "%";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount, fetchFreshPrice } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount, fetchFreshPrice, fetchPriceQuote } from "@/lib/order";
 import { industryOf, isPremiumIndustry } from "@/lib/industry";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
@@ -1834,7 +1834,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }, []);
   const nil = NOT_IN_LIST[t.code] || NOT_IN_LIST.en;
   const conv = convFor(t.code);
-  const p = profileFor(lang);
+  const p0 = profileFor(lang);
+  let p = p0; // Profil-Preise: nach der Profil-Auswahl ggf. Premium-Branche (siehe unten, profPrem)
   // „Weitermachen": gespeicherter Stand (geprüftes Profil + Schritt + Auswahlen +
   // Kontaktdaten). Ist er gesetzt, startet der Wizard GENAU dort wieder.
   const R = (initialResume && initialResume.placeId) ? initialResume : null;
@@ -2068,6 +2069,22 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }, []);
 
   const selected = candidates.find((c) => c.id === selectedId) || candidates[0];
+  // Profil-Löschung nach Branche (06.11.2026): Premium-Branche +25 % (559 € / $619, Neustart 1.059 € / $1.189) für Neukunden.
+  // Sofort-Schätzung aus der Google-Kategorie, dann bestätigt der Server (/price-quote, mit E-Mail: Bestandskunden alter Preis).
+  // Den verbindlichen Betrag legt der Server bei der Bestellung selbst fest.
+  const selPid = (selected && selected.placeId) || "", selPtype = (selected && selected.ptype) || "";
+  const profPremGuess = !!(selected && (selected.ptype || (Array.isArray(selected.types) && selected.types.length)) && isPremiumIndustry(industryOf(selected.ptype, selected.types)));
+  const [profPremSrv, setProfPremSrv] = React.useState(null);
+  const emP = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(contact.email || "").trim()) ? String(contact.email).trim().toLowerCase() : "";
+  React.useEffect(() => {
+    setProfPremSrv(null);
+    if (!selPid && !selPtype) return undefined;
+    let live = true;
+    const tm = setTimeout(() => { fetchPriceQuote({ placeId: selPid, placeType: selPtype, placeTypes: (selected && selected.types) || [], email: emP }).then((q) => { if (live && q) setProfPremSrv(q.pp); }); }, emP ? 400 : 0);
+    return () => { live = false; clearTimeout(tm); };
+  }, [selPid, selPtype, emP]); // eslint-disable-line react-hooks/exhaustive-deps
+  const profPrem = profPremSrv == null ? profPremGuess : profPremSrv;
+  p = profPrem ? { ...p0, ...profilePricesStr(lang, true) } : p0;
   // Land des Google-Profils (Adresse) → Verfahren je Bewertung (alte US-Bewertungen mit Text = Software).
   const revPlace = pickPlace || selected || null;
   const revCountry = (revPlace && revPlace.cc) || addrCountry((revPlace && revPlace.addr) || "");

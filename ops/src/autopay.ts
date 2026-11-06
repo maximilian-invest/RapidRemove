@@ -14,7 +14,7 @@ import type { FastifyInstance } from "fastify";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { sendMail } from "./mailer";
-import { fmtReviewMoney } from "./reviewsPricing";
+import { fmtReviewMoney, profileOneTime } from "./reviewsPricing";
 import RechnungAuto, { rechnungAutoSubject } from "./emails/RechnungAuto";
 import { checkAddress, checkVat } from "./billingCheck";
 import { pool, insertEvent, setOrderRawField } from "./db";
@@ -376,7 +376,8 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
   if (!k || !row || !row.pm || row.mode !== k.mode) return null; // keine Zahlungsart → normaler Weg (Zahlungslink)
   const cur = o.country === "US" ? "usd" : "eur";
   const express = raw.express === true || raw.express === "true";
-  const amount = Math.round(((Number(o.amount) || 0) + (express ? Number(raw.expressAmount) || 0 : 0) + (o.protection === "lifetime" ? Number(o.prot_amount) || 0 : 0)) * 100) / 100;
+  // Leistung + Express (profileOneTime: Altbestand mit amount inkl. Express nicht doppelt) + ggf. lebenslanger Schutz.
+  const amount = Math.round((profileOneTime(Number(o.amount) || 0, express, Number(raw.expressAmount) || 0) + (o.protection === "lifetime" ? Number(o.prot_amount) || 0 : 0)) * 100) / 100;
   if (!(amount > 0)) return null;
   const protMonthly = (o.protection === "monthly" || o.protection === "monitor") && Number(o.prot_amount) > 0 ? Math.round(Number(o.prot_amount) * 100) / 100 : 0;
   const id = newPayId();

@@ -70,7 +70,7 @@ const article = {
       "Solo el propietario o el gerente puede hacer el encargo. Nunca eliminamos perfiles de competidores ni de terceros.",
       "Nos transfieres la propiedad del Perfil de Empresa mediante la función oficial de Google. **Nunca necesitamos tu contraseña.** Gmail, Google Ads y tu web no se tocan.",
       "Eliminamos el perfil, normalmente unas 24 horas después de la transferencia de propiedad. Si Google pide antes una verificación, puede tardar más.",
-      "Solo pagas tras la eliminación correcta: **a partir de 450 €**, o **850 €** por la eliminación más la creación de un perfil nuevo. Si la eliminación no funciona, no pagas nada.",
+      "Solo pagas tras la eliminación correcta: **a partir de 450 €**, o **a partir de 850 €** por la eliminación más la creación de un perfil nuevo. Si la eliminación no funciona, no pagas nada.",
     ] },
     { t: "p", text: "Después, si quieres, puedes empezar un perfil nuevo sin las reseñas antiguas. Google verifica él mismo los perfiles nuevos, así que su aprobación depende de Google." },
     { t: "warn", title: "Las desventajas, con honestidad", text: "Tus **buenas reseñas y fotos también desaparecen**. Más adelante, terceros pueden proponer una nueva ficha para tu ubicación; la protección opcional a partir de 24,90 € al mes cubre ese caso. Si un perfil no se puede eliminar, tendrás que recuperar tú mismo la propiedad a través de Google. Si solo quieres librarte de unas pocas reseñas y conservar tu perfil, las vías 1 a 3 encajan mejor. Más información: [cómo funciona eliminar un Perfil de Empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/)." },

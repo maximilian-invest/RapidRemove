@@ -47,6 +47,28 @@ export function freshPriceFor(country: string | null | undefined, premium: boole
 }
 /** Alle Frisch-Listenpreise für neue Bestellungen (Basis, Land, Premium, Land+Premium). */
 export const PRICE_V2_FRESH_TIERS: readonly number[] = [...new Set([PRICE_V2_FRESH, freshPriceFor("US", false), freshPriceFor("AT", true), freshPriceFor("US", true)])];
+
+/* ---- Profil-Löschung nach Branche (06.11.2026, Maximilian) – synchron mit src/lib/pricing.js ----
+ *  Premium-Branche (industry.ts) +25 %, auf 9 gerundet: Löschung 450 € → 559 €, $495 → $619; Löschen + Neustart 850 € → 1.059 €, $950 → $1.189.
+ *  Kein Länderaufschlag (Währung wie bisher: USD = "US", sonst EUR). Bestandskunden: alter Preis. Express +149 bleibt gleich.
+ *  orders.amount = NUR die Leistung (ohne Express); Express steht in raw.expressAmount (so rechnen Autopay, Admin, Dashboard). */
+export type ProfileService = "remove" | "reset";
+export const PROFILE_BASE: Record<ProfileService, { eur: number; usd: number }> = { remove: { eur: 450, usd: 495 }, reset: { eur: 850, usd: 950 } };
+export const PROFILE_EXPRESS_FEE = 149;
+export function profilePriceFor(service: string, cur: string, premium: boolean): number {
+  const b = PROFILE_BASE[(service === "reset" ? "reset" : "remove") as ProfileService][cur === "usd" ? "usd" : "eur"];
+  return premium ? round9((b * (100 + PREMIUM_PCT)) / 100) : b;
+}
+/** Alle Listenpreise der Profil-Leistungen (Standard + Premium, € und $). */
+export const PROFILE_LIST_PRICES: readonly number[] = [...new Set((["remove", "reset"] as const).flatMap((s) => (["eur", "usd"] as const).flatMap((c) => [profilePriceFor(s, c, false), profilePriceFor(s, c, true)])))];
+/** Einmalbetrag einer Profil-Bestellung (Leistung + Express). Ältere Bestellungen speicherten amount schon INKL. Express
+ *  (Wizard bis 06.11.2026) → dann nicht doppelt zählen. */
+export function profileOneTime(amount: number, express: boolean, expressAmount: number): number {
+  const a = Number(amount) || 0, x = express ? Number(expressAmount) || 0 : 0;
+  if (!x) return a;
+  if (!PROFILE_LIST_PRICES.includes(a) && PROFILE_LIST_PRICES.includes(Math.round((a - x) * 100) / 100)) return a; // Altbestand: Express schon drin
+  return Math.round((a + x) * 100) / 100;
+}
 /* Pause (05.11.2026, Maximilian): Bewertungen älter als 4 Wochen und ohne Text (= alle 250er, damit auch Express) werden
  *  für den Rest von 2026 NICHT mehr neu angenommen – Kunden sehen „Wieder verfügbar ab Januar 2027".
  *  Bestandsaufträge (schon gespeicherte 250er) laufen unverändert weiter. Admin darf weiterhin manuell anlegen. */

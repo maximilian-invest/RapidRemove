@@ -71,7 +71,7 @@ const article = {
       "Kun ejeren eller den administrerende direktør kan afgive ordren. Vi fjerner aldrig konkurrenters eller tredjeparters profiler.",
       "Du overdrager ejerskabet af virksomhedsprofilen til os via Googles officielle funktion. **Vi har aldrig brug for din adgangskode.** Gmail, Google Ads og dit website forbliver urørt.",
       "Vi fjerner profilen, som regel ca. 24 timer efter overdragelsen af ejerskabet. Hvis Google først beder om en bekræftelse, kan det tage længere tid.",
-      "Du betaler først efter vellykket fjernelse: **fra 450 €**, eller **850 €** for fjernelse plus oprettelse af en ny profil. Hvis fjernelsen ikke lykkes, betaler du ingenting.",
+      "Du betaler først efter vellykket fjernelse: **fra 450 €**, eller **fra 850 €** for fjernelse plus oprettelse af en ny profil. Hvis fjernelsen ikke lykkes, betaler du ingenting.",
     ] },
     { t: "p", text: "Bagefter kan du oprette en ny profil uden de gamle anmeldelser, hvis du ønsker det. Google bekræfter selv nye profiler, så godkendelsen er op til Google." },
     { t: "warn", title: "De ærlige ulemper", text: "Dine **gode anmeldelser og billeder forsvinder også**. Tredjeparter kan senere foreslå et nyt opslag for din adresse; en valgfri beskyttelse fra 24,90 € om måneden dækker det. Hvis en profil ikke kan fjernes, skal du selv generhverve ejerskabet fra Google. Hvis du kun vil af med nogle få anmeldelser og beholde din profil, passer vej 1 til 3 bedre. Mere: [sådan fungerer sletning af en Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/)." },

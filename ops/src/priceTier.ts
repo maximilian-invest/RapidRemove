@@ -12,6 +12,7 @@ import { pool, dbReady } from "./db";
 import { industryOf, industryFromDisplay, isPremiumIndustry, INDUSTRY_LABEL, type IndustryKey } from "./industry";
 import { freshPriceFor, PRICE_V2_FRESH } from "./reviewsPricing";
 import { isTestEmail } from "./testAccounts";
+import { resolveReviewLink } from "./monitor";
 
 const gkey = () => (process.env.GOOGLE_MAPS_API_KEY || "").trim();
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
@@ -96,8 +97,13 @@ export function registerPriceTier(app: FastifyInstance, adminToken: string) {
     const b = (req.body || {}) as Record<string, unknown>;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
     if (limited("pq:" + ip, 60)) return reply.code(429).send({ ok: false, error: "rate limited" });
-    const t = await resolveTier({ email: b.email, placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, country: b.country });
-    return { ok: true, fresh: t.fresh, cc: t.cc };
+    // Website-Chat (Profil-Löschung): nur der Profil-Link ist bekannt → zu placeId auflösen (wie /chat/site/order).
+    let placeId = clip(b.placeId, 200);
+    const link = clip(b.link, 500);
+    if (!placeId && /^https?:\/\/\S+$/i.test(link)) placeId = await resolveReviewLink(link).then((r) => r.place?.placeId || "").catch(() => "");
+    const t = await resolveTier({ email: b.email, placeId, placeType: b.placeType, placeTypes: b.placeTypes, country: b.country });
+    // pp = Profil-Löschung zum Premium-Preis (Premium-Branche, Neukunde) – der Browser rechnet daraus 559/619/1.059/1.189.
+    return { ok: true, fresh: t.fresh, cc: t.cc, pp: t.prem && !t.legacy };
   });
 
   const auth = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;

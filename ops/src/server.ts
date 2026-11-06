@@ -12,7 +12,8 @@ import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listC
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
-import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
+import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks, clearPaymentLinkCache } from "./integrations/stripe";
+import { ensureProfileLink } from "./profileLinks";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale, trackSignup } from "./integrations/firstpromoter";
 import { sendPush } from "./integrations/push";
@@ -22,7 +23,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
 import { registerExpressSwitch, expressOn } from "./expressSwitch";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -586,6 +587,27 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       .catch((e) => { app.log.error({ err: e }, "Preisstufe fehlgeschlagen – Standardpreis"); return null; });
     if (tier) (b as Record<string, unknown>).priceTier = { fresh: tier.fresh, cc: tier.cc, ind: tier.ind, ptype: tier.ptype, prem: tier.prem, legacy: tier.legacy, src: tier.src, at: new Date().toISOString() };
   }
+  // Profil-Löschung nach Branche (06.11.2026): Server legt den Preis fest – Premium-Branche (Neukunde) +25 % (559 € / $619,
+  // Neustart 1.059 € / $1.189), sonst 450/495/850/950. amount = NUR die Leistung, Express separat in expressAmount
+  // (bis 06.11. schickte der Wizard amount inkl. Express → Autopay hat Express doppelt gerechnet).
+  let profTier: Tier | null = null;
+  if (!isReviews && !isPress && (service === "remove" || service === "reset") && !internal) {
+    profTier = await resolveTier({ email, placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, category: b.category, country: ruleCountry })
+      .catch((e) => { app.log.error({ err: e }, "Preisstufe (Profil) fehlgeschlagen – Standardpreis"); return null; });
+    const pCur = clip(b.country, 6) === "US" ? "usd" : "eur";
+    const prem = !!profTier && profTier.prem && !profTier.legacy;
+    const list = profilePriceFor(service, pCur, prem);
+    const cPct = req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0; // Chat-Rabatt nur über den internen Chat-Aufruf
+    const amt = cPct ? Math.round(list * (100 - cPct)) / 100 : list;
+    const wantX = service === "remove" && (b.express === true || b.express === "true");
+    const xAmt = wantX ? PROFILE_EXPRESS_FEE : 0;
+    const prot = String(b.protection || "");
+    Object.assign(b as Record<string, unknown>, {
+      amount: amt, express: wantX, expressAmount: xAmt,
+      saleTotal: Math.round((amt + xAmt + (prot === "lifetime" ? Number(b.protAmount) || 0 : 0)) * 100) / 100,
+      profilePrice: { list, prem, legacy: !!profTier?.legacy, cur: pCur, ind: profTier?.ind || "", chatPct: cPct || undefined, at: new Date().toISOString() },
+    });
+  }
   if (isReviews && !bulk) {
     const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren
     let nx = 0;
@@ -601,7 +623,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Branche jeder Bestellung festhalten (Statistik: welche Branchen bestellen was) – raw.ind = Gruppe, raw.ptype = Google-Code.
   if (!isPress) {
     try {
-      const info = tier ? { ind: tier.ind, ptype: tier.ptype, src: tier.src } : await industryInfo({ placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, category: b.category });
+      const t0 = tier || profTier;
+      const info = t0 ? { ind: t0.ind, ptype: t0.ptype, src: t0.src } : await industryInfo({ placeId: b.placeId, placeType: b.placeType, placeTypes: b.placeTypes, category: b.category });
       Object.assign(b as Record<string, unknown>, { ind: info.ind, ptype: info.ptype || "", indSrc: info.src });
     } catch (e) { app.log.warn({ err: e }, "Branche ermitteln fehlgeschlagen"); }
   }
@@ -2072,17 +2095,36 @@ async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: strin
     catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
     if (!url) return { code: 400, error: "Unbekannter oder inaktiver Zahlungslink." };
   }
-  if (!url) url = payLinkFor(service, protection, currency, express);
+  // Profil-Preise nach Branche (06.11.2026): Einmalbetrag = Leistung + Express. orders.amount ist ab jetzt OHNE Express;
+  // Altbestand speicherte amount INKL. Express → beides erkennen (Listenpreis ± 149), nie doppelt.
+  const serviceAmount = Number(b.serviceAmount) || 0;
+  const isProfileSvc = service === "remove" || service === "reset" || service === "express";
+  const svcKey = service === "express" ? "remove" : service;
+  let oneTime = serviceAmount;
+  if (express && serviceAmount > 0) {
+    if (PROFILE_LIST_PRICES.includes(serviceAmount)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
+    else if (!PROFILE_LIST_PRICES.includes(Math.round((serviceAmount - PROFILE_EXPRESS_FEE) * 100) / 100)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
+  }
+  // Feste Express-Links gelten nur für den Standardpreis (450 € / $495 + 149).
+  const stdExpress = PROFILE_BASE.remove[currency === "usd" ? "usd" : "eur"] + PROFILE_EXPRESS_FEE;
+  if (!url && (!express || !serviceAmount || oneTime === stdExpress)) url = payLinkFor(service, protection, currency, express);
   if (!url) {
     if (!hasSecretKey()) return { code: 400, error: "STRIPE_SECRET_KEY nicht gesetzt" };
-    const serviceAmount = Number(b.serviceAmount) || 0;
     const protAmount = Number(b.protAmount) || 0;
     const protType = clip(b.protType, 20);
     const items: { amount: number; interval: string }[] = [];
-    if (serviceAmount > 0) items.push({ amount: Math.round(serviceAmount * 100), interval: "once" });
+    if (oneTime > 0) items.push({ amount: Math.round(oneTime * 100), interval: "once" });
     if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "monthly" || protType === "monitor" ? "month" : "once" });
     try { const m = await matchPaymentLink(items); url = m.url; available = m.available; }
     catch (e) { app.log.error({ err: e }, "Payment-Link-Suche fehlgeschlagen"); }
+    // Kein passender Link, aber ein Listenpreis der Profil-Löschung → Link mit den Einstellungen der bestehenden Links anlegen.
+    if (!url && isProfileSvc && oneTime > 0) {
+      try {
+        const r = await ensureProfileLink({ service: svcKey, currency, protection: protection || "none", oneTime, express });
+        if (r.url) { url = r.url; clearPaymentLinkCache(); app.log.info({ service, currency, protection, oneTime }, "Profil-Zahlungslink bereitgestellt"); }
+        else if (r.error) app.log.warn({ service, currency, protection, oneTime, err: r.error }, "Profil-Zahlungslink nicht angelegt");
+      } catch (e) { app.log.error({ err: e }, "Profil-Zahlungslink anlegen fehlgeschlagen"); }
+    }
   }
   if (!url) return { code: 400, error: `Kein passender Stripe-Zahlungslink gefunden (${service}|${protection}|${currency}).`, available };
   return { url, available };
@@ -2111,7 +2153,10 @@ app.post("/admin/paylink", async (req, reply) => {
   if (!r.url) return reply.code(r.code || 400).send({ ok: false, error: r.error, available: r.available });
   const url = r.url;
   const orderId = clip(b.orderId, 40);
-  const total = Number(b.total) || 0;
+  let total = Number(b.total) || 0;
+  // Ab 06.11.2026 ist orders.amount OHNE Express → Express in die genannte Summe aufnehmen (Altbestand hatte ihn schon drin).
+  { const sa = Number(b.serviceAmount) || 0, pa = Number(b.protAmount) || 0;
+    if (express && PROFILE_LIST_PRICES.includes(sa) && Math.abs(total - (sa + pa)) < 0.01) total = Math.round((total + PROFILE_EXPRESS_FEE) * 100) / 100; }
   try {
     const tplKey = clip(b.template, 40) || "zahlungslink";
     const t = TEMPLATES[tplKey] || TEMPLATES["zahlungslink"];

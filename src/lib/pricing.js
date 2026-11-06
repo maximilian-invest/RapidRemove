@@ -106,6 +106,15 @@ export function freshPriceFor(country, premium) {
   return premium ? round9((base * (100 + PREMIUM_PCT)) / 100) : base;
 }
 export const PRICE_V2_FRESH_TIERS = [...new Set([PRICE_V2_FRESH, freshPriceFor("US", false), freshPriceFor("AT", true), freshPriceFor("US", true)])];
+/* Profil-Löschung nach Branche (06.11.2026) – synchron mit ops/src/reviewsPricing.ts: Premium-Branche +25 % auf 9 gerundet
+   (450 → 559 €, $495 → $619, 850 → 1.059 €, $950 → $1.189). Kein Länderaufschlag. Bestandskunden: alter Preis. */
+export const PROFILE_BASE = { remove: { eur: 450, usd: 495 }, reset: { eur: 850, usd: 950 } };
+export function profilePriceFor(service, cur, premium) {
+  const b = PROFILE_BASE[service === "reset" ? "reset" : "remove"][cur === "usd" ? "usd" : "eur"];
+  return premium ? round9((b * (100 + PREMIUM_PCT)) / 100) : b;
+}
+/** Preis-Strings wie PRICES (deletion/reset) für die Anzeige: "559" bzw. "1059" – Tausender-Punkt macht money() nicht, wie bisher "850". */
+export const profilePricesStr = (lang, premium) => { const cur = lang === "en" || lang === "ja" ? "usd" : "eur"; return { deletion: String(profilePriceFor("remove", cur, premium)), reset: String(profilePriceFor("reset", cur, premium)) }; };
 /** „ab 199" je Sprache (Preis steht erst fest, wenn Profil-Land + Branche bekannt sind). */
 const FROM_WORD = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", sv: "från", da: "fra", no: "fra" };
 export const fromPrice = (lang, priceStr) => (lang === "ja" ? `${priceStr}〜` : `${FROM_WORD[lang] || FROM_WORD.en} ${priceStr}`);

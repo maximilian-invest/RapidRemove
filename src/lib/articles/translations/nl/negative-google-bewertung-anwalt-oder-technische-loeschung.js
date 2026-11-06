@@ -70,7 +70,7 @@ const article = {
       "Alleen de eigenaar of bestuurder kan de opdracht geven. Wij verwijderen nooit profielen van concurrenten of derden.",
       "U draagt het eigendom van het bedrijfsprofiel aan ons over via de officiële functie van Google. **Wij hebben nooit uw wachtwoord nodig.** Gmail, Google Ads en uw website blijven onaangeroerd.",
       "Wij verwijderen het profiel, meestal ongeveer 24 uur na de eigendomsoverdracht. Vraagt Google eerst om verificatie, dan kan het langer duren.",
-      "U betaalt pas na geslaagde verwijdering: **vanaf € 450**, of **€ 850** voor verwijdering plus het opzetten van een nieuw profiel. Lukt de verwijdering niet, dan betaalt u niets.",
+      "U betaalt pas na geslaagde verwijdering: **vanaf € 450**, of **vanaf € 850** voor verwijdering plus het opzetten van een nieuw profiel. Lukt de verwijdering niet, dan betaalt u niets.",
     ] },
     { t: "p", text: "Daarna kunt u desgewenst een nieuw profiel starten zonder de oude reviews. Google verifieert nieuwe profielen zelf; de goedkeuring ligt dus bij Google." },
     { t: "warn", title: "De eerlijke nadelen", text: "Ook uw **goede reviews en foto's verdwijnen**. Derden kunnen later een nieuwe vermelding voor uw locatie voorstellen; optionele bescherming vanaf € 24,90 per maand dekt dat af. Kan een profiel niet verwijderd worden, dan moet u het eigendom zelf bij Google terugvragen. Wilt u maar een paar reviews kwijt en uw profiel behouden, dan passen weg 1 tot 3 beter. Meer: [hoe het verwijderen van een Google-bedrijfsprofiel werkt](/nl/magazine/google-bedrijfsprofiel-verwijderen/)." },

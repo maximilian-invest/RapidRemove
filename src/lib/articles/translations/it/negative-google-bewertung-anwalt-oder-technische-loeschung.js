@@ -70,7 +70,7 @@ const article = {
       "Solo il titolare o l'amministratore può effettuare l'ordine. Non eliminiamo mai profili di concorrenti o di terzi.",
       "Ci trasferisci la proprietà del Profilo dell'attività tramite la funzione ufficiale di Google. **Non ci serve mai la tua password.** Gmail, Google Ads e il tuo sito web restano intatti.",
       "Eliminiamo il profilo, di solito circa 24 ore dopo il trasferimento della proprietà. Se Google chiede prima una verifica, può volerci più tempo.",
-      "Paghi solo dopo l'eliminazione riuscita: **da 450 €**, oppure **850 €** per l'eliminazione più la creazione di un nuovo profilo. Se l'eliminazione non riesce, non paghi nulla.",
+      "Paghi solo dopo l'eliminazione riuscita: **da 450 €**, oppure **da 850 €** per l'eliminazione più la creazione di un nuovo profilo. Se l'eliminazione non riesce, non paghi nulla.",
     ] },
     { t: "p", text: "Dopo, se vuoi, puoi aprire un nuovo profilo senza le vecchie recensioni. Google verifica autonomamente i nuovi profili, quindi l'approvazione dipende da Google." },
     { t: "warn", title: "Gli svantaggi, onestamente", text: "Spariscono anche **le recensioni positive e le foto**. In seguito, terzi possono proporre una nuova scheda per la tua sede; la protezione opzionale da 24,90 € al mese copre questo caso. Se un profilo non può essere eliminato, dovrai recuperarne tu stesso la proprietà tramite Google. Se vuoi solo liberarti di poche recensioni e mantenere il profilo, le strade da 1 a 3 sono più adatte. Approfondisci: [come funziona l'eliminazione di un Profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/)." },

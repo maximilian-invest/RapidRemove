@@ -5,8 +5,8 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { vatNote, PRICE_V2_FRESH, fromPrice, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
-import { fetchPayDiscount, findReviewByLink, fetchFreshPrice } from "@/lib/order";
+import { vatNote, PRICE_V2_FRESH, fromPrice, profilePriceFor, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
+import { fetchPayDiscount, findReviewByLink, fetchFreshPrice, fetchPriceQuote } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
@@ -15,7 +15,7 @@ const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.
 /** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – 199 bis 4 Wochen mit Text; ältere/ohne Text seit 05.11.2026 pausiert, zählen nicht),
  *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
 /** unit = Frisch-Preis je Bewertung für dieses Profil/diesen Kunden (Land × Branche, vom Server via /price-quote), Standard 199. */
-export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none", unit = PRICE_V2_FRESH }) {
+export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none", unit = PRICE_V2_FRESH, prem = false }) {
   const usd = country === "US";
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
@@ -30,7 +30,7 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     total -= payD;
     return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit, nSw, n250, nPaused };
   }
-  const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
+  const base = profilePriceFor(service, usd ? "usd" : "eur", prem); // Premium-Branche (06.11.2026): Server bestätigt über /price-quote
   const cp = pp ? 0 : pct;
   let total = Math.round(base * (100 - cp)) / 100;
   const payD = pp ? Math.round(base * 0.1 * 100) / 100 : 0;
@@ -49,7 +49,7 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
       <div className="so-p">
         {co.service === "reviews"
           ? <><s className={co.pct ? "" : "hide"}>{fmt(PRICE_V2_FRESH, p.usd)}</s><b>{co.pct ? fmt(Math.round(PRICE_V2_FRESH * (100 - (co.pct || 0)) / 100), p.usd) : fromPrice(lang, fmt(PRICE_V2_FRESH, p.usd))}</b><span>{c.perRev} · {vatNote(lang)}</span></>
-          : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b><span>{vatNote(lang)}</span></>}
+          : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{co.pct ? fmt(p.total, p.usd) : fromPrice(lang, fmt(p.total, p.usd))}</b><span>{vatNote(lang)}</span></>}
       </div>
       <div className="so-f"><ShieldCheck />{c.after}</div>
       {ordered
@@ -101,7 +101,17 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     const t = setTimeout(() => { fetchFreshPrice({ placeId: co.placeId || "", country: co.placeCountry || "", email: emOk }).then((v) => { if (live && v) setUnit(v); }); }, emOk ? 500 : 0);
     return () => { live = false; clearTimeout(t); };
   }, [isRev, co.placeId, co.placeCountry, emOk]);
-  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref, unit });
+  // Profil-Löschung: Preis nach Branche über den eingefügten Profil-Link (Server löst ihn auf; ohne Link = Standardpreis, wie am Server).
+  const [prem, setPrem] = React.useState(false);
+  const linkOk = !isRev && /^https?:\/\/\S+$/i.test(f.profileLink.trim()) ? f.profileLink.trim() : "";
+  React.useEffect(() => {
+    if (isRev) return undefined;
+    if (!linkOk) { setPrem(false); return undefined; }
+    let live = true;
+    const t = setTimeout(() => { fetchPriceQuote({ link: linkOk, email: emOk }).then((q) => { if (live) setPrem(!!(q && q.pp)); }); }, 600);
+    return () => { live = false; clearTimeout(t); };
+  }, [isRev, linkOk, emOk]);
+  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref, unit, prem });
   const legal = (k) => pagePath(k, lang);
   const submit = async () => {
     const b = {};

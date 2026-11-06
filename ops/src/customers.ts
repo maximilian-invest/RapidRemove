@@ -20,7 +20,7 @@ import { applySwTariff } from "./swTariff";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
-import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, expressCustomerDue, EXPRESS_CUSTOMER_H, expressMet } from "./reviewsPricing";
+import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, expressCustomerDue, EXPRESS_CUSTOMER_H, expressMet, profileOneTime } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -634,7 +634,7 @@ function profileView(o: ProfileRow): OrderView {
   const protAmount = Number(o.prot_amount) || 0;
   const express = raw.express === true || raw.express === "true";
   const expressAmount = express ? Number(raw.expressAmount) || 0 : 0;
-  const oneTime = amount + expressAmount + (o.protection === "lifetime" ? protAmount : 0);
+  const oneTime = profileOneTime(amount, express, expressAmount) + (o.protection === "lifetime" ? protAmount : 0); // Altbestand: amount inkl. Express nicht doppelt
   const paid = o.pay === "paid";
   const info: ProfileInfo = {
     service: o.service || "remove", status: st, paid, open: st === "removed" && !paid ? oneTime : 0,
