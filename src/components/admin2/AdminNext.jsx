@@ -26,7 +26,7 @@ import Bill from "./Bill";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
 import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
-import { PayLinkSheet } from "./Paylink";
+import { PayLinkSheet, ChangePayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList, Redo2 } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
@@ -644,6 +644,8 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     );
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "paylinkchg" && o) {
+    body = <ChangePayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {
     body = <CheckSheet key={sheet.c.id} c={sheet.c} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "storno" && o) {

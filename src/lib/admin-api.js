@@ -36,12 +36,12 @@ export async function sendAdminEmail({ to, subject, text, orderId, label, plain 
 }
 
 /** Löst den passenden Zahlungslink für eine Bestellung auf (ohne Versand) – für die SMS-Vorlage. */
-export async function fetchPayLinkUrl({ service, protection, currency, serviceAmount, protAmount, protType, express, url }) {
+export async function fetchPayLinkUrl({ service, protection, currency, serviceAmount, protAmount, protType, express, url, orderId }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, service, protection, currency, serviceAmount, protAmount, protType, express, url: url || "" }),
+    body: JSON.stringify({ token: TOKEN, service, protection, currency, serviceAmount, protAmount, protType, express, url: url || "", orderId: orderId || "" }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
@@ -113,6 +113,7 @@ function mapOrder(r) {
     policyConsent: r.raw && r.raw.policyConsent && typeof r.raw.policyConsent === "object" ? r.raw.policyConsent : null, // Zusicherung „verstößt gegen Google-Richtlinien"
     policyConsentAdds: r.raw && Array.isArray(r.raw.policyConsentAdds) ? r.raw.policyConsentAdds : [], // Zwischenzahlung nötig (Partner pausiert)
     payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
+    payLink: r.raw && r.raw.payLink && typeof r.raw.payLink === "object" && r.raw.payLink.url ? r.raw.payLink : null, // im Admin geänderter Zahlungslink
     dunPause: r.dun_pause && typeof r.dun_pause === "object" ? r.dun_pause : null, // Auto-Mahnungen für den Kunden pausiert
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reasons: r.raw && r.raw.reasons && typeof r.raw.reasons === "object" ? r.raw.reasons : null, // Gründe je Bewertung (Dashboard): pending/ok
@@ -745,6 +746,8 @@ export const reviewsChargeRetryApi = (orderId) => adminPost("/admin/reviews/char
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */
 export const payLinkMail = (payload) => adminPost("/admin/paylink", payload);
+/** Zahlungslink eines Profil-Auftrags ändern: url = Stripe-Link (übernimmt Leistung/Schutz/Express), "" = wieder automatisch. preview:true = nur prüfen. */
+export const orderPayLinkApi = (p) => adminPost("/admin/order-paylink", p);
 export const templateMail = (payload) => adminPost("/admin/send-template", payload);
 export const reviewsMahnungMail = (payload) => adminPost("/admin/reviews-mahnung", payload);
 /** Dashboard-Aktivität eines Kunden (E-Mail des Auftrags) → { loginCount, clickCount, lastSeenAt, lastAction, events[] }. */

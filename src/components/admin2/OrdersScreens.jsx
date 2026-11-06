@@ -273,7 +273,10 @@ export function OrderDetail({ ctx, id }) {
             <span>{o.payGate.keys ? `${o.payGate.keys.length} ${o.payGate.keys.length === 1 ? "nachbestellte Bewertung startet" : "nachbestellte Bewertungen starten"} erst, wenn der Kunde im Dashboard eine Zahlungsart hinterlegt hat. Die übrigen laufen weiter.` : "Der Auftrag startet, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat."}</span></span>
         </div>
       ) : null}
-      {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
+      {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}
+        {/* Profil vor der Zahlung: Zahlungslink ändern (z. B. Upgrade auf Lebenslang) – im Zahlung-offen-Block steckt er in PayActions. */}
+        {!isRev && o.pay !== "paid" && o.status !== "storniert" && (b === "new" || b === "work") ? <button type="button" className="paylk" onClick={() => openSheet({ kind: "paylinkchg", forId: o.id })}><RefreshCw />Zahlungslink ändern{o.payLink ? " · manuell gewählt" : ""}</button> : null}
+      </div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
           <span className="di"><Layers /></span>

@@ -14,6 +14,7 @@ import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWork
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks, clearPaymentLinkCache } from "./integrations/stripe";
 import { ensureProfileLink } from "./profileLinks";
+import { registerOrderPayLinkRoute, orderPayLinkOverride } from "./orderPayLink";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale, trackSignup } from "./integrations/firstpromoter";
 import { sendPush } from "./integrations/push";
@@ -224,6 +225,7 @@ registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, custome
 }); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPriceTier(app, ADMIN_TOKEN); // Preis nach Land × Branche (/price-quote) + Branchen-Auswertung (/admin/industry-*)
+registerOrderPayLinkRoute(app, ADMIN_TOKEN); // Admin: Zahlungslink eines Profil-Auftrags ändern (Upgrade)
 registerProtectionWatch(app, ADMIN_TOKEN); // Schutz: Überwachung im Kunden-Dashboard (/cust/protection) + wöchentlicher Schutz-Bericht
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
@@ -2100,6 +2102,8 @@ async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: strin
     catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
     if (!url) return { code: 400, error: "Unbekannter oder inaktiver Zahlungslink." };
   }
+  // Im Admin geänderter Zahlungslink des Auftrags (z. B. Upgrade auf Lebenslang) gilt für alle weiteren Mails.
+  if (!url && b.orderId) url = await orderPayLinkOverride(clip(b.orderId, 40));
   // Profil-Preise nach Branche (06.11.2026): Einmalbetrag = Leistung + Express. orders.amount ist ab jetzt OHNE Express;
   // Altbestand speicherte amount INKL. Express → beides erkennen (Listenpreis ± 149), nie doppelt.
   const serviceAmount = Number(b.serviceAmount) || 0;

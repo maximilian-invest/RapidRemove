@@ -6,7 +6,7 @@
    Versand läuft über das bestehende Mahnungs-Sheet (Vorschau + „Jetzt senden"), Zahlungsziel über /admin/pay-due:
    läuft es ohne Zahlung ab, geht automatisch die Zahlungsziel-Mail raus. Weitere Mahnungen sendet ihr selbst. */
 import React from "react";
-import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard, PauseCircle, PlayCircle } from "lucide-react";
+import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard, PauseCircle, PlayCircle, RefreshCw } from "lucide-react";
 import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi, dunPauseApi, reviewsChargeRetryApi } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
@@ -188,6 +188,11 @@ export function PayActions({ o, ctx, r, pm, group = [], altHref }) {
       {group.length ? (
         <button type="button" className={"paylk" + (armed === "all" ? " cf" : "")} disabled={busy} onClick={() => paid([o, ...group])}>
           {armed === "all" ? <CheckCircle2 /> : <CircleCheck />}{armed === "all" ? `Tippen zum Bestätigen: alle ${group.length + 1} bezahlt` : `Sammelzahlung erhalten? (alle ${group.length + 1})`}
+        </button>
+      ) : null}
+      {!isRev ? (
+        <button type="button" className="paylk" disabled={busy} onClick={() => ctx.openSheet({ kind: "paylinkchg", forId: o.id })}>
+          <RefreshCw />Zahlungslink ändern{o.payLink ? " · manuell gewählt" : ""}
         </button>
       ) : null}
       {!isRev ? (
