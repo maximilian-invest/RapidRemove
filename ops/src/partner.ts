@@ -1084,6 +1084,62 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { ok: true, results: out };
   });
 
+  // Admin: Auto-Scan aus Aufträge → In Bearbeitung → Liste (06.11.2026). Exakt dieselbe strenge Prüfung und dieselben Regeln
+  // wie „Scan all reviews" im Partner-Dashboard (checkRemovalStrict + partnerApply OHNE Admin-Sonderrechte):
+  // nur „gone" → (Not started → Working →) Removed = Kunde wird automatisch belastet. Pause/Software-Sperren gelten wie beim Partner.
+  const scanDe = (d: { result: string; why: string }): string => {
+    const w = d.why || "";
+    if (d.result === "gone") return "Doppelt bestätigt: Google-Link „nicht mehr verfügbar“ + nicht mehr in der Bewertungsliste.";
+    if (d.result === "visible") return "Wird auf Google noch angezeigt.";
+    if (/kein Link/.test(w)) return "Kein Bewertungslink – automatisch nicht prüfbar.";
+    if (/kein Nachweis/.test(w)) return "Link + Liste sagen gelöscht, aber kein Nachweis, dass sie bei Bestellung online war – bitte von Hand bestätigen.";
+    if (/Liste: noch gelistet/.test(w)) return "Link sagt gelöscht, die Bewertungsliste zeigt sie noch – Google zieht meist binnen eines Tages nach. Später nochmal scannen.";
+    if (/Link: gelöscht/.test(w)) return "Link sagt gelöscht, die Bewertungsliste war gerade nicht prüfbar – nichts geändert.";
+    return "Google-Link gerade nicht eindeutig prüfbar – nichts geändert.";
+  };
+  app.post("/admin/partner/scan", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 3);
+    if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
+    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, customer, partner_id, paid_at FROM partner_tasks WHERE id = ANY($1::bigint[]) ORDER BY id`, [ids])).rows;
+    type Out = { id: number; code: string; result: string; why: string };
+    const out: Out[] = [];
+    const queue = [...rows];
+    const worker = async () => {
+      for (let x = queue.shift(); x; x = queue.shift()) {
+        const id = Number(x.id), preview = !!x.test;
+        if (x.paid_at || !["new", "working"].includes(String(x.status))) { out.push({ id, code: x.code, result: "skipped", why: x.status === "removed" ? "Schon gelöscht." : "Nicht offen." }); continue; }
+        if (scanBusy.has(id)) { out.push({ id, code: x.code, result: "skipped", why: "Wird gerade schon geprüft." }); continue; }
+        scanBusy.add(id);
+        try {
+          const d = await checkRemovalStrict(x as Parameters<typeof checkRemovalStrict>[0]);
+          const item: Out = { id, code: x.code, result: d.result, why: scanDe(d) };
+          if (d.result === "gone") {
+            let err = "";
+            if (x.status === "new") { const w = await partnerApply(id, "working", undefined, { quiet: true, preview, pid: null }); if (w.error) err = w.error; }
+            if (!err) {
+              const r = await partnerApply(id, "removed", undefined, { quiet: true, preview, verified: true, pid: null, via: "Auto-Scan Admin · Google-Link + Bewertungsliste" });
+              if (!r.row) err = r.error || "failed";
+            }
+            if (err) { item.result = "unknown"; item.why = err.includes("hold") ? "Auftrag pausiert, bis der Kunde zahlt – nichts geändert." : err.includes("software") ? "Software-Fall – wartet auf den Kunden, nichts geändert." : "Konnte nicht gespeichert werden – nichts geändert."; }
+          }
+          if (item.result !== "gone" && x.order_id) await insertEvent({ orderId: x.order_id, type: "note", title: `Auto-Scan (Admin): ${x.code} ${item.result === "visible" ? "noch sichtbar" : "nicht eindeutig – unverändert"}`, detail: d.why, auto: true }).catch(() => {});
+          out.push(item);
+        } catch (e) {
+          out.push({ id, code: x.code, result: "unknown", why: "Prüfung fehlgeschlagen – nichts geändert." });
+          app.log.error({ err: e, task: id }, "Auto-Scan (Admin) fehlgeschlagen");
+        } finally { scanBusy.delete(id); }
+      }
+    };
+    await Promise.all([worker(), worker()]);
+    const gone = out.filter((x) => x.result === "gone");
+    if (gone.length) void notifyTeam(`Auto-Scan (Admin) · ${gone.length} gelöscht ✓`, "verrechnet · " + gone.map((x) => x.code).join(", "), rvLink(gone.map((g) => ({ code: g.code, order_id: (rows.find((r) => Number(r.id) === g.id) || {}).order_id as string | null }))), { kind: "partner" });
+    out.sort((a, c) => a.id - c.id);
+    return { ok: true, results: out };
+  });
+
   // Aktueller Screenshot einer Prüfung (für „Still visible on Google").
   app.post("/partner/removal-shot", async (req, reply) => {
     const q = (req.body || {}) as Record<string, unknown>;

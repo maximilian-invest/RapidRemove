@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, List as ListIcon, ClipboardList, Image as ImageIcon, Download, KeyRound,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
@@ -12,6 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
+import { flatRows, SORTS, SCANNABLE, useReviewScan, ScanCard, FlatRow } from "./OpenReviews";
 import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
@@ -78,6 +79,20 @@ export function OrdersList({ ctx }) {
   const hr = new Date().getHours();
   const st = staffOf(f.staff);
   const [limit, setLimit] = React.useState(80);
+  // „In Bearbeitung": Umschalter Kunden (nach Auftrag, wie bisher – Standard) ↔ Liste (jede Bewertung / jeder Profil-Auftrag einzeln,
+  // neueste Bestellung zuerst). Getrennt gemerkt für Alle / Bewertungen / Profile.
+  const [views, setViews] = React.useState(() => { try { return JSON.parse(localStorage.getItem("rr_admin_workview") || "{}") || {}; } catch (e) { return {}; } });
+  const isWork = f.tile === "work";
+  const flat = isWork && views[f.type] === "list";
+  const setView = (v) => setViews((m) => { const n = { ...m, [f.type]: v }; try { localStorage.setItem("rr_admin_workview", JSON.stringify(n)); } catch (e) { /* */ } return n; });
+  const sc = useReviewScan(ctx.loadPtasks);
+  const snap = React.useRef({});
+  const rows = React.useMemo(() => (flat ? flatRows(list.map((x) => x.o), ptasks || {}, now) : []), [flat, list, ptasks, now]);
+  rows.forEach((r) => { snap.current[r.k] = r; });
+  // Gerade als gelöscht übernommene Bewertungen bleiben bis zum Verlassen sichtbar (grünes Ergebnis), auch wenn sie nicht mehr offen sind.
+  const keptRows = Object.keys(sc.res).filter((id) => sc.res[id].result === "gone" && !rows.some((r) => r.k === "t" + id)).map((id) => snap.current["t" + id]).filter(Boolean);
+  const shown = flat ? [...rows, ...keptRows].sort(SORTS.ordered) : [];
+  const scanIds = shown.filter((r) => r.kind === "review" && SCANNABLE(r.t) && !(sc.res[r.t.id] && sc.res[r.t.id].result === "gone")).map((r) => r.t.id);
   return (
     <>
       <div className="hd"><div><span>{hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend"}</span><h1>Aufträge</h1></div>
@@ -109,6 +124,21 @@ export function OrdersList({ ctx }) {
         <button type="button" className="bt" onClick={() => openSheet({ kind: "staff" })}>{st ? <><img src={st.src} alt="" />{st.name}</> : f.staff === "none" ? <><UserX />Ohne</> : <><Users />Betreuer</>}</button></div>
       <div className="sec3"><h2>{f.tile ? ST[f.tile].l : "Alle Aufträge"}</h2>
         <div className="seg2">{[["all", "Alle"], ["reviews", "Bewertungen"], ["profile", "Profile"]].map(([k, l]) => <button key={k} type="button" className={f.type === k ? "on" : ""} onClick={() => setF({ type: k })}>{l}</button>)}</div></div>
+      {isWork ? (
+        <div className="vbar">
+          <div className="seg2 vtog">{[["user", "Kunden", Users], ["list", "Liste", ListIcon]].map(([k, l, I]) => <button key={k} type="button" className={(k === "list" ? flat : !flat) ? "on" : ""} onClick={() => setView(k)}><I />{l}</button>)}</div>
+        </div>
+      ) : null}
+      {flat && (scanIds.length || sc.scan) ? <ScanCard sc={sc} n={scanIds.length} ids={scanIds} /> : null}
+      {flat ? (
+        <>
+          <div className="card ls orv">
+            {shown.map((r, j) => <FlatRow key={r.k} r={r} j={j} now={now} sc={sc} openOrder={openOrder} Avatar={Avatar} RStars={RStars} />)}
+            {loaded && !shown.length ? <div className="aempty"><b>Alles erledigt</b>Nichts in Bearbeitung.</div> : null}
+            {!loaded ? <div className="aempty"><b>Lädt …</b></div> : null}
+          </div>
+        </>
+      ) : (
       <div className="card ls">
         {list.slice(0, limit).map(({ o, r, bs, b, m }, j) => {
           // In „Zahlung offen"/„Inkasso" zählt, was jetzt fällig ist – nicht der ganze Bestellwert.
@@ -127,6 +157,7 @@ export function OrdersList({ ctx }) {
         {loaded && !list.length ? <div className="aempty"><b>Alles erledigt</b>Keine Aufträge hier.</div> : null}
         {!loaded ? <div className="aempty"><b>Lädt …</b></div> : null}
       </div>
+      )}
     </>
   );
 }

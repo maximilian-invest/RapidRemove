@@ -650,6 +650,8 @@ async function partnerPost(path, body) {
 export const partnerSend = (orderId, items, customer) => partnerPost("send", { orderId, items, customer: customer || "" });
 export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderId } : {});
 /** Admin: Bewertung als gelöscht bestätigen (übersteuert Lenas Prüfung). */
+/** Admin: Auto-Scan (wie Partner-Dashboard „Scan all reviews“) – je Aufruf max. 3 Aufgaben; „gone“ = als gelöscht übernommen + verrechnet. */
+export const partnerScan = (ids, last) => partnerPost("scan", { ids, last: !!last });
 export const partnerConfirmRemoved = (id) => partnerPost("confirm-removed", { id });
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
 /** Dem Partner entziehen: { ids } (einzelne Aufgaben) oder { orderId } (alle offenen des Auftrags), optional { note }.
