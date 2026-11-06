@@ -41,7 +41,7 @@ async function init(): Promise<void> {
     progress integer NOT NULL DEFAULT 0, step text, score integer, result jsonb, error text,
     created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS rep_scans_loc ON rep_scans (location_id, created_at DESC)`);
-  await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz`);
+  await pool.query(`ALTER TABLE rep_locations ADD COLUMN IF NOT EXISTS profile jsonb, ADD COLUMN IF NOT EXISTS profile_at timestamptz, ADD COLUMN IF NOT EXISTS archived_at timestamptz`);
   // Wöchentlicher Recherche-Cache je Standort: Suchtreffer, Suchbegriffe, KI-Antworten + Einordnung
   await pool.query(`CREATE TABLE IF NOT EXISTS rep_cache (location_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
   // Abgebrochene Scans (Neustart des Servers) nicht ewig „läuft“ anzeigen
@@ -1227,7 +1227,7 @@ export function registerRepScore(app: FastifyInstance): void {
     return { email: s.email, imp: s.imp, off: false };
   };
   const locsOf = async (email: string) => {
-    const r = await pool!.query(`SELECT * FROM rep_locations WHERE email=$1 ORDER BY created_at`, [email]);
+    const r = await pool!.query(`SELECT * FROM rep_locations WHERE email=$1 AND archived_at IS NULL ORDER BY created_at`, [email]);
     const out: J[] = [];
     for (const l of r.rows) {
       const s = await pool!.query(`SELECT id, status, progress, step, score, result, error, created_at, finished_at FROM rep_scans WHERE location_id=$1 ORDER BY created_at DESC LIMIT 24`, [l.id]);
@@ -1277,7 +1277,7 @@ export function registerRepScore(app: FastifyInstance): void {
     if (b.locationId) loc = (await pool!.query(`SELECT * FROM rep_locations WHERE id=$1 AND email=$2`, [String(b.locationId), a.email])).rows[0] || null;
     else if (b.placeId) {
       const ex = (await pool!.query(`SELECT * FROM rep_locations WHERE email=$1 AND place_id=$2`, [a.email, String(b.placeId)])).rows[0];
-      if (ex) loc = ex;
+      if (ex) { loc = ex; if (ex.archived_at) await pool!.query(`UPDATE rep_locations SET archived_at=NULL WHERE id=$1`, [ex.id]); }
       else {
         const p = placeView(await placeDetails(String(b.placeId)).catch(() => ({})));
         if (!p.placeId) return reply.code(400).send({ ok: false, error: "place" });
@@ -1294,6 +1294,18 @@ export function registerRepScore(app: FastifyInstance): void {
     await pool!.query(`INSERT INTO rep_scans (id, location_id, email, status, progress, step) VALUES ($1,$2,$3,'running',1,'Start')`, [sid, loc.id, a.email]);
     void runScan(sid, loc);
     return { ok: true, locationId: loc.id, scanId: sid };
+  });
+
+  /* Standort entfernen = archivieren: verschwindet aus dem Portal, Verlauf bleibt (beim erneuten Hinzufügen wieder da) */
+  app.post("/cust/rep/archive", async (req, reply) => {
+    const b = (req.body || {}) as J;
+    const a = await auth(b);
+    if (!a) return reply.code(401).send({ ok: false, error: "session" });
+    if (a.off) return reply.code(403).send({ ok: false, error: "off" });
+    if (a.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    const r = await pool!.query(`UPDATE rep_locations SET archived_at=now() WHERE id=$1 AND email=$2 AND archived_at IS NULL`, [String(b.locationId || ""), a.email]);
+    if (!r.rowCount) return reply.code(404).send({ ok: false, error: "location" });
+    return { ok: true };
   });
 
   app.post("/cust/rep/request", async (req, reply) => {
