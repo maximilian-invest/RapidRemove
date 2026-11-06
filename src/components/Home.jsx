@@ -55,6 +55,30 @@ const HERO_PAY_AFTER = { de: "Zahlung erst nach Erfolg", en: "pay only after suc
 /* Außerhalb DACH (alle Sprachen außer DE): Hero verkauft beide Produkte —
    Einzelbewertungen + ganzes Profil. Preiszeile nennt beide Einstiegspreise
    (ohne USt-Hinweis, einzeilig). DE bleibt reines Profil-Produkt (Bewertungen dort nicht verfügbar). */
+/* Besucher aus den Google-Ads-Kampagnen (alle RapidRemove-Kampagnen sind Profil-Löschung, Landingpage /en?utm_source=google-ads):
+   Hero zeigt dann die Profil-Löschung zuerst statt „Bewertungen + Profil“ (Anzeige ↔ Seite passen zusammen).
+   Nur Client-seitig (nach dem Laden), Google sieht weiter die normale Seite. Abschalten: ?focus=reviews. */
+const HERO_ADS_PROFILE = {
+  en: {
+    h1a: "Delete your Google Business Profile –",
+    h1b: "listing and every review, for good.",
+    lead: "Google won't let you delete your own Business Profile – \u201cpermanently closed\u201d keeps it and all reviews online. We remove it completely from Google Search and Maps, usually within about 24 hours after you transfer ownership. No passwords needed.",
+  },
+};
+function useAdsProfileHero(lang) {
+  const [on, setOn] = React.useState(false);
+  React.useEffect(() => {
+    if (!HERO_ADS_PROFILE[lang]) return;
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("focus") === "reviews") return;
+      const ads = q.get("utm_source") === "google-ads" || q.has("gclid") || q.has("gbraid") || q.has("wbraid") || q.get("focus") === "profile";
+      if (ads) { setOn(true); try { sessionStorage.setItem("rr_ads_profile", "1"); } catch (e) {} }
+      else { try { if (sessionStorage.getItem("rr_ads_profile") === "1") setOn(true); } catch (e) {} }
+    } catch (e) {}
+  }, [lang]);
+  return on ? HERO_ADS_PROFILE[lang] : null;
+}
 const HERO_DUAL = {
   en: { rev: "Reviews from", prof: "Profiles from" },
   es: { rev: "Reseñas desde", prof: "Perfiles desde" },
@@ -178,14 +202,15 @@ function Hero({ onStart }) {
   React.useEffect(() => { setResume(getResumeProfile()); }, []);
   const showResume = !!(resume && resume.placeId && !name.trim());
   const goResume = () => { window.location.href = asset(pagePath("wizard", lang)) + "?resume=1"; };
-  const dual = lang !== "de" ? HERO_DUAL[lang] : null;
+  const adsHero = useAdsProfileHero(lang);
+  const dual = lang !== "de" && !adsHero ? HERO_DUAL[lang] : null;
   return (
     <section className="hero">
       <div className="hero-glow"></div>
       <div className="hero-mesh"></div>
       <div className="container hero-grid">
         <div>
-          <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
+          <h1 className="hs hs2">{(adsHero || t.hero).h1a} <span className="hl">{(adsHero || t.hero).h1b}</span></h1>
           <div className={"hero-pricetag hs hs3" + (dual ? " one-line" : "")}>
             <Icon.shieldCheck size={15} />
             <span>
@@ -197,7 +222,7 @@ function Hero({ onStart }) {
               <span className="pay-after"><span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}</span>
             </span>
           </div>
-          <p className="lead hs hs3">{fillDur(t.hero.lead, lang, dur)}</p>
+          <p className="lead hs hs3">{adsHero ? adsHero.lead : fillDur(t.hero.lead, lang, dur)}</p>
 
           <div className="hero-proof hs hs5">
             <div style={{ width: "100%" }}>
