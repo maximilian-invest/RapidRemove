@@ -206,7 +206,7 @@ min-height:100vh;background:#fff;color:var(--ink);font-family:var(--font-body);f
 .rra .pm .ok{margin-left:auto;color:var(--success);width:20px;height:20px}
 .rra .secure{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--g3);margin-top:14px;justify-content:center;text-align:center;flex-wrap:wrap}
 .rra .secure svg{width:15px;height:15px}
-.rra .pg-hold{font-size:12px;line-height:1.45;color:var(--g3);margin:8px auto 0;max-width:440px;text-align:center}
+.rra .pg-hold,.rra .fl-body p.pg-hold{font-size:12.5px;line-height:1.45;color:var(--g3);margin:6px auto 0;max-width:420px;text-align:center}
 .rra span.pg-hold{display:block;text-align:left;margin:4px 0 0;max-width:none}
 .rra .fl-foot{padding:12px 20px calc(34px + env(safe-area-inset-bottom) / 2);display:flex;gap:10px}
 .rra .fl-foot .bk{width:56px;height:56px;border-radius:16px;background:var(--g1);display:grid;place-items:center;flex:none}
