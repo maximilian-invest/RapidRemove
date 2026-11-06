@@ -21,6 +21,7 @@ import n1 from "@/lib/articles/translations/en/google-bewertung-loeschen-kosten"
 import n2 from "@/lib/articles/translations/en/google-bewertung-loeschen-dauer";
 import n3 from "@/lib/articles/translations/en/kann-man-google-bewertungen-loeschen";
 import n4 from "@/lib/articles/translations/en/google-bewertung-erpressung";
+import n5 from "@/lib/articles/translations/en/profil-loeschen-service";
 export default {
   "google-bewertung-loeschen-lassen": a1,
   "fake-google-bewertung-melden-loeschen": a2,
@@ -43,4 +44,5 @@ export default {
   "google-bewertung-loeschen-dauer": n2,
   "kann-man-google-bewertungen-loeschen": n3,
   "google-bewertung-erpressung": n4,
+  "profil-loeschen-service": n5,
 };

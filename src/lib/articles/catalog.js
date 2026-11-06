@@ -66,6 +66,7 @@ const PUBLISH_DATES = {
   "google-bewertung-loeschen-dauer": "2026-10-05",
   "kann-man-google-bewertungen-loeschen": "2026-10-05",
   "google-bewertung-erpressung": "2026-10-05",
+  "profil-loeschen-service": "2026-11-06",
 };
 export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
 

@@ -59,6 +59,9 @@ export const TRANSLATION_ONLY = {
   "google-bewertung-loeschen-dauer": { cat: "Anleitung", thm: "thm-blue", icon: "search", read: 8 },
   "kann-man-google-bewertungen-loeschen": { cat: "Anleitung", thm: "thm-teal", icon: "edit", read: 8 },
   "google-bewertung-erpressung": { cat: "Recht", thm: "thm-plum", icon: "gavel", read: 8 },
+  // Nur Englisch (US-Kaufintention „Google Business Profile removal service"); andere Sprachen
+  // haben keinen Eintrag → catalog.js überspringt den Key dort (tFor() === undefined).
+  "profil-loeschen-service": { cat: "Google-Policy", thm: "thm-orange", icon: "trash", read: 10 },
 };
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
