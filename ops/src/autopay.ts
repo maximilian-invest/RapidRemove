@@ -680,6 +680,55 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
   } finally { busy.delete(email); }
 }
 
+/* ---- Deckungsprüfung beim Hinterlegen (Maximilian 06.11.2026: „unbedingt, in Auftragshöhe") ----
+ * Neue Zahlungsart → Autorisierung (manual capture) über den offenen Auftragswert, sofort wieder storniert (nichts abgebucht).
+ * Abgelehnt → Zahlungsart wird NICHT gespeichert, Kunde muss eine andere nehmen. Nicht prüfbar (3-D-Secure nötig, Zahlungsart
+ * kann keine Reservierung, Stripe-Fehler) → durchlassen, Vermerk im Verlauf. Abschalten: AUTOPAY_COVERAGE=off. */
+type Coverage = { result: "ok" | "declined" | "skipped"; amount: number; cur: string; why?: string };
+/** Offener Auftragswert (netto) je Währung: unbezahlte, nicht stornierte/abgelehnte Bewertungen + unbezahlte Profil-Aufträge mit Autopay. */
+async function openOrderValue(email: string): Promise<{ amount: number; cur: string; orderIds: string[] }> {
+  const { orders } = await loadCustomerOrders(email);
+  const by = new Map<string, { amount: number; ids: Set<string> }>();
+  const addTo = (cur: string, v: number, id: string) => { if (!(v > 0)) return; const x = by.get(cur) || { amount: 0, ids: new Set<string>() }; x.amount += v; x.ids.add(id); by.set(cur, x); };
+  for (const o of orders as (typeof orders[number] & { kind?: string; autoPay?: boolean; profileOrder?: { paid?: boolean; amount?: number; status?: string } })[]) {
+    if (o.cancelled) continue;
+    if (o.kind === "profile") { const p = o.profileOrder; if (o.autoPay && p && !p.paid && p.status !== "cancelled") addTo(String(o.cur), Number(p.amount) || 0, o.id); continue; }
+    const v = (o.items || []).filter((it) => !it.paid && !["cancelled", "sw_declined", "notpossible"].includes(String(it.status)) && !(it as { waived?: boolean }).waived)
+      .reduce((s, it) => s + (Number((it as { price?: number }).price) || 0) + ((it as { x?: boolean; xFee?: number }).x ? Number((it as { xFee?: number }).xFee) || 0 : 0), 0);
+    addTo(String(o.cur), v, o.id);
+  }
+  let best = { amount: 0, cur: "eur", orderIds: [] as string[] };
+  for (const [cur, x] of by) if (x.amount > best.amount) best = { amount: Math.round(x.amount * 100) / 100, cur, orderIds: [...x.ids] };
+  return best;
+}
+export async function coverageCheck(email: string, k: { key: string; mode: Mode }, customer: string, pm: any): Promise<Coverage> {
+  const { amount, cur } = await openOrderValue(email).catch(() => ({ amount: 0, cur: "eur", orderIds: [] as string[] }));
+  if (String(process.env.AUTOPAY_COVERAGE || "").toLowerCase() === "off") return { result: "skipped", amount, cur, why: "abgeschaltet" };
+  if (!(amount > 0)) return { result: "skipped", amount, cur, why: "kein offener Auftragswert" };
+  const cents = Math.round(amount * 100);
+  let pi: any = null;
+  try {
+    pi = await sx(k.key, "POST", "payment_intents", {
+      amount: cents, currency: cur, customer, payment_method: pm.id, payment_method_types: [pm.type], capture_method: "manual",
+      confirm: true, off_session: true, description: "Deckungsprüfung – wird sofort freigegeben, nichts abgebucht",
+      metadata: { rr_check: "coverage", rr_email: email },
+    }, `rr-cov-${pm.id}-${cents}`);
+  } catch (e) {
+    const err = e as StripeErr;
+    const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 200);
+    if (err.code === "authentication_required" || err.decline === "authentication_required") return { result: "skipped", amount, cur, why: "3-D-Secure nötig – nicht prüfbar" };
+    if (err.code === "card_declined" || err.code === "payment_method_provider_decline" || err.code === "expired_card" || err.code === "insufficient_funds" || err.decline) return { result: "declined", amount, cur, why: msg };
+    return { result: "skipped", amount, cur, why: `nicht prüfbar: ${msg}` };
+  }
+  if (pi?.id && pi.status !== "succeeded") await sx(k.key, "POST", `payment_intents/${pi.id}/cancel`, {}).catch(() => {}); // Reservierung sofort freigeben
+  if (pi?.status === "requires_capture") return { result: "ok", amount, cur };
+  if (pi?.status === "succeeded") { // darf bei manual capture nicht passieren – sicherheitshalber sofort erstatten
+    await sx(k.key, "POST", "refunds", { payment_intent: pi.id }).catch(() => {});
+    return { result: "ok", amount, cur, why: "sofort erstattet" };
+  }
+  return { result: "skipped", amount, cur, why: `Status ${pi?.status || "?"}` };
+}
+
 /** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */
 const NO_CHARGE: Record<string, string> = {
   de: "Jetzt: {z} – abgebucht wird erst bei Löschung. Sie hinterlegen nur Ihre Zahlungsart; bezahlt wird nur für Bewertungen, die tatsächlich gelöscht sind.",
@@ -782,6 +831,20 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
         void sx(k.key, "POST", `payment_methods/${pm.id}/detach`, {}).catch(() => {});
         void logCustEvent(si.email, "autopay_rejected", "Prepaid-Karte abgelehnt", { mode: k.mode });
         return reply.code(400).send({ ok: false, error: "prepaid" });
+      }
+      // Deckungsprüfung über den offenen Auftragswert (nur bei neuer Zahlungsart).
+      if (row.pm !== pm.id) {
+        const cov = await coverageCheck(si.email, k, row.customer, pm).catch((e) => ({ result: "skipped", amount: 0, cur: "eur", why: String((e as Error)?.message || e).slice(0, 120) }) as Coverage);
+        const covMoney = fmtReviewMoney(cov.amount, cov.cur);
+        const firstOrder = (await loadCustomerOrders(si.email)).orders.find((x) => !x.cancelled);
+        if (cov.result === "declined") {
+          void sx(k.key, "POST", `payment_methods/${pm.id}/detach`, {}).catch(() => {});
+          void logCustEvent(si.email, "autopay_rejected", `Deckungsprüfung abgelehnt · ${covMoney}`, { mode: k.mode, amount: cov.amount, cur: cov.cur });
+          if (firstOrder) await insertEvent({ orderId: firstOrder.id, email: si.email, type: "note", title: `Deckungsprüfung abgelehnt (${covMoney}) – Zahlungsart nicht gespeichert`, detail: `${pmLabel(pm)} · ${cov.why || ""}`, auto: true }).catch(() => {});
+          void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Deckungsprüfung abgelehnt`, `${si.email} · ${pmLabel(pm)} · ${covMoney} · Kunde muss andere Zahlungsart nehmen`, `${SITE_URL}/admin`, { kind: "customer" });
+          return reply.code(400).send({ ok: false, error: "coverage", amount: cov.amount, cur: cov.cur });
+        }
+        if (firstOrder) await insertEvent({ orderId: firstOrder.id, email: si.email, type: "note", title: cov.result === "ok" ? `Deckungsprüfung bestanden (${covMoney} reserviert und sofort freigegeben)` : `Deckungsprüfung übersprungen${cov.amount > 0 ? ` (${covMoney})` : ""}`, detail: `${pmLabel(pm)}${cov.why ? " · " + cov.why : ""}`, auto: true }).catch(() => {});
       }
       const label = pmLabel(pm);
       if (row.pm === pm.id) { await releasePayGates(si.email, label).catch(() => 0); return { ok: true, label, charged: null }; } // schon gespeichert (Neuladen)

@@ -55,7 +55,7 @@ const IMG = { wallet: "/assets/app/wallet.webp", shield: "/assets/app/shield.web
 async function call(path, body) {
   const res = await fetch(OPS + "/cust/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
   const j = await res.json().catch(() => ({}));
-  if (!res.ok || !j.ok) { const e = new Error(j.error || "HTTP " + res.status); e.code = j.error; throw e; }
+  if (!res.ok || !j.ok) { const e = new Error(j.error || "HTTP " + res.status); e.code = j.error; e.data = j; throw e; }
   return j;
 }
 const store = {
@@ -1467,7 +1467,7 @@ export default function CustomerDashboard() {
         // Großer Moment: Karte fliegt rein, Häkchen, Konfetti, Ton (Celebrate kind „card").
         setCele({ id: Date.now(), kind: "card", label: r.label || "", title: T("ceCardT"), sub: r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : r.started ? T("ceCardS") : T("ceCardS2") });
       })
-      .catch((e) => showToast(T(e && e.code === "prepaid" ? "apPrepaid" : "genericErr"), true))
+      .catch((e) => showToast(e && e.code === "coverage" ? T("apNoFunds", { amount: money(e.data && e.data.amount, e.data && e.data.cur) }) : T(e && e.code === "prepaid" ? "apPrepaid" : "genericErr"), true))
       .finally(() => { setBusy(""); prev.current = null; load(token); }); // kein zweiter „Bezahlt"-Toast aus dem Vergleich
   }, [token, load, showToast]);
   React.useEffect(() => { if (!data || !intro || gate) return undefined; const t = setTimeout(() => setIntro(false), 1600); return () => clearTimeout(t); }, [data, intro, gate]);
