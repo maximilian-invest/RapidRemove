@@ -389,6 +389,10 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
         <div><h1>Reputation</h1><p>{loc.name}{loc.city ? " · " + loc.city : ""}</p></div>
         {onAdd ? <button type="button" className="rp-add" onClick={onAdd}><Plus />Standort</button> : null}
       </div>
+      <div className="rp-foot top">
+        <span>Scan vom {dateOf(r.scannedAt || r.at)} · {r.sources} Quellen geprüft</span>
+        <button type="button" onClick={rescan} disabled={running}>{running ? <Loader className="spin" /> : <RefreshCw />}Neu scannen</button>
+      </div>
       {running ? <RepRunning loc={loc} /> : loc.scan && loc.scan.status === "error" && (!loc.latest || new Date(loc.scan.at) > new Date(loc.latest.scannedAt || 0)) ? <RepFailed loc={loc} rep={rep} showToast={showToast} /> : null}
       <div className="rp-kpis">
         <div className="rp-kpi dark">
@@ -487,10 +491,6 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
             </section>
           ) : null}
         </aside>
-      </div>
-      <div className="rp-foot">
-        <span>Scan vom {dateOf(r.scannedAt || r.at)} · {r.sources} Quellen geprüft</span>
-        <button type="button" onClick={rescan} disabled={running}>{running ? <Loader className="spin" /> : <RefreshCw />}Neu scannen</button>
       </div>
       <RemoveLoc loc={loc} rep={rep} showToast={showToast} imp={imp} onDone={onBack} />
     </div>
