@@ -1053,8 +1053,6 @@ function RepMeasures({ loc, rep, onBack, showToast, imp }) {
         <div className="rp-cue-t">
           <span className="rp-cue-k">BEI ERFOLG</span>
           <p className="rp-cue-h">Ihr Weg von {base} auf <b className="rp-shim">{target}</b> Punkte</p>
-          <div className="rp-m-leg"><span><i style={{ background: "#ff6a00" }} />Heute <b>{base}</b></span>{workScore > base ? <span><i style={{ background: "#fbbf24" }} />In Arbeit <b>+{workScore - base}</b></span> : null}<span><i style={{ background: "#4ade80" }} />Auswahl <b>+{Math.max(0, target - workScore)}</b></span></div>
-          {m.alert ? <span className="rp-m-alert"><i className="rp-pdot" />{m.alert}</span> : null}
         </div>
       </section>
       <section className="rp-m-list">
