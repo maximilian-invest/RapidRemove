@@ -13,6 +13,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, bumpChange } from "./db";
 import { checkRemoval, removalShot } from "./removalCheck";
 import { checkRemovalStrict } from "./removalScan";
+import { itemCheckId, loadScanItem, markRemovedAndCharge } from "./scanBill";
 import { probeReviewLink } from "./linkProbe";
 import { expandShortLink } from "./monitor";
 import { applySwTariff } from "./swTariff";
@@ -1102,9 +1103,12 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 3);
-    if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
-    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, customer, partner_id, paid_at FROM partner_tasks WHERE id = ANY($1::bigint[]) ORDER BY id`, [ids])).rows;
-    type Out = { id: number; code: string; result: string; why: string };
+    // Bewertungen OHNE Partner-Aufgabe (Weiterleitung an den Partner abgedreht): { orderId, idx } → gleiche Prüfung,
+    // bei „gelöscht" wie „Gelöschte abrechnen" (vermerken + von der hinterlegten Zahlungsart abbuchen).
+    const itemsIn = (Array.isArray(b.items) ? b.items : []).slice(0, 3 - ids.length).map((x) => ({ orderId: clip((x as Record<string, unknown>)?.orderId, 40), idx: Number((x as Record<string, unknown>)?.idx) })).filter((x) => x.orderId && Number.isInteger(x.idx) && x.idx >= 0);
+    if (!ids.length && !itemsIn.length) return reply.code(400).send({ ok: false, error: "no tasks" });
+    const rows = ids.length ? (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, customer, partner_id, paid_at FROM partner_tasks WHERE id = ANY($1::bigint[]) ORDER BY id`, [ids])).rows : [];
+    type Out = { id?: number; orderId?: string; idx?: number; code: string; result: string; why: string };
     const out: Out[] = [];
     const queue = [...rows];
     const worker = async () => {
@@ -1133,10 +1137,36 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
         } finally { scanBusy.delete(id); }
       }
     };
-    await Promise.all([worker(), worker()]);
+    const itemWorker = async () => {
+      for (let x = itemsIn.shift(); x; x = itemsIn.shift()) {
+        const base = { orderId: x.orderId, idx: x.idx, code: "" };
+        const L = await loadScanItem(x.orderId, x.idx).catch(() => null);
+        if (!L) { out.push({ ...base, result: "skipped", why: "Bewertung nicht gefunden." }); continue; }
+        if (L.taskId) { out.push({ ...base, result: "skipped", why: "Liegt beim Partner – bitte neu laden und erneut scannen." }); continue; }
+        const cid = itemCheckId(x.orderId, L.key);
+        if (scanBusy.has(cid)) { out.push({ ...base, result: "skipped", why: "Wird gerade schon geprüft." }); continue; }
+        scanBusy.add(cid);
+        try {
+          // Auftrag „In Bearbeitung" zählt wie Partner-Status „Working" (Nachweis „war online", Entscheidung 06.11.2026).
+          const d = await checkRemovalStrict({ id: cid, order_id: x.orderId, url: L.it.url || null, name: L.it.name || null, text: L.it.text || null, rating: L.it.rating ?? null, status: L.order.status === "progress" ? "working" : "new" });
+          const item: Out = { ...base, result: d.result, why: scanDe(d) };
+          if (d.result === "gone") {
+            const m = await markRemovedAndCharge(x.orderId, L.key, "Auto-Scan Admin · Google-Link + Bewertungsliste");
+            if (m.mode === "nopm") { item.result = "gone_manual"; item.why = "Doppelt bestätigt gelöscht – keine Zahlungsart hinterlegt, bitte über „Gelöschte abrechnen“ verrechnen."; }
+            else if (m.mode === "already") { item.result = "skipped"; item.why = "Schon abgerechnet."; }
+            else if (m.mode === "error") { item.result = "unknown"; item.why = "Konnte nicht gespeichert werden – nichts geändert."; }
+          }
+          if (item.result !== "gone") await insertEvent({ orderId: x.orderId, type: "note", title: `Auto-Scan (Admin): ${L.it.name || "Bewertung"} ${item.result === "visible" ? "noch sichtbar" : item.result === "gone_manual" ? "gelöscht – manuell abrechnen" : "nicht eindeutig – unverändert"}`, detail: d.why, auto: true }).catch(() => {});
+          out.push(item);
+        } catch (e) {
+          out.push({ ...base, result: "unknown", why: "Prüfung fehlgeschlagen – nichts geändert." });
+          app.log.error({ err: e, order: x.orderId, idx: x.idx }, "Auto-Scan (Admin, ohne Partner) fehlgeschlagen");
+        } finally { scanBusy.delete(cid); }
+      }
+    };
+    await Promise.all([worker(), worker(), itemWorker()]);
     const gone = out.filter((x) => x.result === "gone");
-    if (gone.length) void notifyTeam(`Auto-Scan (Admin) · ${gone.length} gelöscht ✓`, "verrechnet · " + gone.map((x) => x.code).join(", "), rvLink(gone.map((g) => ({ code: g.code, order_id: (rows.find((r) => Number(r.id) === g.id) || {}).order_id as string | null }))), { kind: "partner" });
-    out.sort((a, c) => a.id - c.id);
+    if (gone.length) void notifyTeam(`Auto-Scan (Admin) · ${gone.length} gelöscht ✓`, "verrechnet · " + gone.map((x) => x.code || x.orderId).join(", "), rvLink(gone.map((g) => ({ code: g.code || null, order_id: g.orderId || ((rows.find((r) => Number(r.id) === g.id) || {}).order_id as string | null) }))), { kind: "partner" });
     return { ok: true, results: out };
   });
 

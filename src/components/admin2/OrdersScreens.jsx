@@ -12,7 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { flatRows, SORTS, SCANNABLE, useReviewScan, ScanCard, FlatRow } from "./OpenReviews";
+import { flatRows, reviewRowsOf, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews } from "./OpenReviews";
 import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
@@ -85,14 +85,18 @@ export function OrdersList({ ctx }) {
   const isWork = f.tile === "work";
   const flat = isWork && views[f.type] === "list";
   const setView = (v) => setViews((m) => { const n = { ...m, [f.type]: v }; try { localStorage.setItem("rr_admin_workview", JSON.stringify(n)); } catch (e) { /* */ } return n; });
-  const sc = useReviewScan(ctx.loadPtasks);
+  const sc = useReviewScan(() => { if (ctx.loadPtasks) ctx.loadPtasks(); if (ctx.reload) ctx.reload(true); });
   const snap = React.useRef({});
-  const rows = React.useMemo(() => (flat ? flatRows(list.map((x) => x.o), ptasks || {}, now) : []), [flat, list, ptasks, now]);
+  // Alle offenen Bewertungen (+ Profil-Aufträge) der gefilterten Aufträge – Basis für Liste, Kunden-Unterlisten und Scan.
+  const rows = React.useMemo(() => (isWork ? flatRows(list.map((x) => x.o), ptasks || {}, now) : []), [isWork, list, ptasks, now]);
   rows.forEach((r) => { snap.current[r.k] = r; });
   // Gerade als gelöscht übernommene Bewertungen bleiben bis zum Verlassen sichtbar (grünes Ergebnis), auch wenn sie nicht mehr offen sind.
-  const keptRows = Object.keys(sc.res).filter((id) => sc.res[id].result === "gone" && !rows.some((r) => r.k === "t" + id)).map((id) => snap.current["t" + id]).filter(Boolean);
-  const shown = flat ? [...rows, ...keptRows].sort(SORTS.ordered) : [];
-  const scanIds = shown.filter((r) => r.kind === "review" && SCANNABLE(r.t) && !(sc.res[r.t.id] && sc.res[r.t.id].result === "gone")).map((r) => r.t.id);
+  const keptRows = Object.keys(sc.res).filter((k) => /^gone/.test(sc.res[k].result) && !rows.some((r) => r.k === k)).map((k) => snap.current[k]).filter(Boolean);
+  const allRows = isWork ? [...rows, ...keptRows].sort(SORTS.ordered) : [];
+  const shown = flat ? allRows : [];
+  const rowsByOrder = {}; for (const r of allRows) if (r.kind === "review") (rowsByOrder[r.o.id] = rowsByOrder[r.o.id] || []).push(r);
+  const scanRows = allRows.filter((r) => scannable(r) && !(sc.res[r.k] && /^gone/.test(sc.res[r.k].result)));
+  const [closed, setClosed] = React.useState({}); // Kunden-Ansicht: zugeklappte Aufträge
   return (
     <>
       <div className="hd"><div><span>{hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend"}</span><h1>Aufträge</h1></div>
@@ -129,11 +133,11 @@ export function OrdersList({ ctx }) {
           <div className="seg2 vtog">{[["user", "Kunden", Users], ["list", "Liste", ListIcon]].map(([k, l, I]) => <button key={k} type="button" className={(k === "list" ? flat : !flat) ? "on" : ""} onClick={() => setView(k)}><I />{l}</button>)}</div>
         </div>
       ) : null}
-      {flat && (scanIds.length || sc.scan) ? <ScanCard sc={sc} n={scanIds.length} ids={scanIds} /> : null}
+      {isWork && (scanRows.length || sc.scan) ? <ScanCard sc={sc} rows={scanRows} /> : null}
       {flat ? (
         <>
           <div className="card ls orv">
-            {shown.map((r, j) => <FlatRow key={r.k} r={r} j={j} now={now} sc={sc} openOrder={openOrder} Avatar={Avatar} RStars={RStars} />)}
+            {shown.map((r, j) => <FlatRow key={r.k} r={r} j={j} now={now} sc={sc} openOrder={openOrder} Avatar={Avatar} RStars={RStars} toast={ctx.toast} />)}
             {loaded && !shown.length ? <div className="aempty"><b>Alles erledigt</b>Nichts in Bearbeitung.</div> : null}
             {!loaded ? <div className="aempty"><b>Lädt …</b></div> : null}
           </div>
@@ -144,13 +148,16 @@ export function OrdersList({ ctx }) {
           // In „Zahlung offen"/„Inkasso" zählt, was jetzt fällig ist – nicht der ganze Bestellwert.
           const dueView = r && r.unpaidN && (f.tile === "pay" || f.tile === "inkasso");
           return (
-          <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
+          <React.Fragment key={o.id}>
+          <button type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
               <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)}{bs.includes("nopm") ? <small className="pwhy"> ({pendingWhy(o).join(", ")})</small> : null} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span>
               {o.addr ? <span className="l3">{profLoc(o)}</span> : null}</span>
           </button>
+          {isWork && rowsByOrder[o.id] ? <OrderReviews rows={rowsByOrder[o.id]} open={!closed[o.id]} toggle={() => setClosed((c) => ({ ...c, [o.id]: !c[o.id] }))} sc={sc} now={now} Avatar={Avatar} RStars={RStars} openOrder={openOrder} toast={ctx.toast} /> : null}
+          </React.Fragment>
           );
         })}
         {list.length > limit ? <button type="button" className="more-b" onClick={() => setLimit((x) => x + 100)}>Weitere {list.length - limit} anzeigen</button> : null}
@@ -220,6 +227,7 @@ export function OrderDetail({ ctx, id }) {
           <div className="rvst">
             <span><b>{r.removed}/{r.total}</b> gelöscht</span>
             {r.open ? <span><b>{r.open}</b> beim Partner{r.working !== r.open ? ` (${r.working} in Arbeit)` : ""}</span> : null}
+            {r.free ? <span><b>{r.free}</b> offen · nicht beim Partner</span> : null}
             {r.software ? <span><b>{r.software}</b> Software · wartet auf Kunde</span> : null}
             {o.payHold ? <span className="due"><b>Pausiert</b> · Zwischenzahlung offen</span> : null}
             {r.notPossible ? <span><b>{r.notPossible}</b> nicht möglich</span> : null}

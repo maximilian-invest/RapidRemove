@@ -83,7 +83,8 @@ export function revState(o, tasks) {
   const payPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : 0;
   const chatPct = payPct ? 0 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
   const pct = Math.max(reviewDiscountPct(items.length), chatPct);
-  const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0 };
+  const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0, free: 0 };
+  const accKeys = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(rvKey)) : null;
   const unpaid = [];
   let started = o.status !== "new";
   for (const it of items) {
@@ -100,6 +101,8 @@ export function revState(o, tasks) {
     else if (s === "new") { c.open++; c.waiting++; }
     else if (s === "software") c.software++;
     else if (s === "not_possible") c.notPossible++;
+    // 06.11.2026: Weiterleitung an den Partner abgedreht → Bewertung ohne (aktive) Partner-Aufgabe, nicht abgerechnet = noch offen.
+    else if (!s && (!accKeys || accKeys.has(k))) c.free++;
   }
   // Rechnung wie im Backend (quoteReviews „rest"): Mengenrabatt nach Gesamtanzahl, Spezialverfahren voll (rabattiert).
   // Individueller Preis (cp) zählt fest, ohne Rabatt.
@@ -114,7 +117,7 @@ export function revState(o, tasks) {
   return {
     // Nenner für „x/y gelöscht": was beim Partner liegt (bzw. abgerechnet wurde) – nicht reviewsAccepted,
     // das kann bei später nachgereichten Bewertungen kleiner sein als die tatsächlich bearbeiteten.
-    total: Math.max(pt.length, c.removed) || items.length,
+    total: (Math.max(pt.length, c.removed) + c.free) || items.length,
     ...c, started, pct,
     unpaidN: unpaid.length, unpaidAmt, unbilledN: unpaid.filter((u) => !u.billed).length, unpaidKeys: unpaid.map((u) => u.k),
     unpaidSince: ats.length ? Math.min(...ats) : null,
@@ -150,7 +153,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];
   const out = [];
-  if (r.open || r.software) out.push("work");
+  if (r.open || r.software || (r.free && o.status !== "storniert")) out.push("work");
   if (r.unpaidN) out.push(o.pay === "inkasso" || (r.unpaidSince && now - r.unpaidSince > INKASSO_MS) ? "inkasso" : "pay");
   if (out.length) return out;
   if (r.removed) return ["deleted"]; // alles gelöscht und bezahlt
