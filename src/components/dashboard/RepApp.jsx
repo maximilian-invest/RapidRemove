@@ -103,7 +103,7 @@ function GoalRing({ now, work, sel, n, plus, size }) {
 function PotentialCue({ loc, onOpen }) {
   const r = loc.latest, m = r.measures;
   const target = m ? scoreOfSel(m, { ...workSel(m, loc.inWork), ...defaultSel(m, loc.inWork) }) : r.score;
-  const n = useCount(target, r.score, true);
+  const n = useCount(target, r.score, false);
   if (!m || target <= r.score) return null;
   return (
     <section className="rp-cue">
