@@ -585,6 +585,8 @@ export function ReviewsScreen({ ctx, id, focus }) {
       {isRev ? (
         <>
           <div className="rsum"><div><b>{acc ? accN : items.length}</b><span>{acc ? "Angenommen" : "Eingereicht"}</span></div><div><b>{working}</b><span>In Arbeit</span></div><div><b>{removed}</b><span>Gelöscht</span></div></div>
+          {/* Fix unter den Zahlen statt schwebend über der Liste (06.11.2026) */}
+          {o.status !== "storniert" ? <div className="ctas" style={{ margin: "0 0 14px" }}><button type="button" className="cta or" onClick={() => ctx.pushSub("bill", o.id)}><Receipt />{removed ? `Rechnung senden · ${removed} gelöscht` : "Gelöschte abrechnen"}</button></div> : null}
           {acc ? <div className="achips">{[["all", "Alle"], ["open", "Offen"], ["acc", "Angenommen"], ["rej", "Abgelehnt"]].map(([k, l]) => <button key={k} type="button" className={"achip" + (rf === k ? " on" : "")} onClick={() => setRf(k)}>{l}<span className="n">{rows.filter(F2[k]).length}</span></button>)}</div> : null}
         </>
       ) : null}
@@ -603,7 +605,6 @@ export function ReviewsScreen({ ctx, id, focus }) {
         })}
         {isRev && !items.length ? <div className="aempty"><b>Keine Bewertungen</b>Am Auftrag ist nichts gespeichert.</div> : null}
       </div>
-      {isRev && o.status !== "storniert" ? <div className="stick"><button type="button" className="cta or" onClick={() => ctx.pushSub("bill", o.id)}><Receipt />{removed ? `Rechnung senden · ${removed} gelöscht` : "Gelöschte abrechnen"}</button></div> : null}
     </>
   );
 }
