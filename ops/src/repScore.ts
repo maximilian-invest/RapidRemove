@@ -597,7 +597,7 @@ type Social = { net: string; url: string; followers?: string; inGoogle?: boolean
 type Item = { senti?: string; i: number; src: "google" | "bing" | "news" | "mention" | "link" | "web"; pos: number; title: string; snippet: string; link: string; date?: string; rating?: number | null; votes?: number | null; about?: string; sent?: string; type?: string; note?: string };
 export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
-  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number };
+  ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number; neg?: number };
   kiWhy?: Record<string, string>; kws?: Kw[]; backlinks?: { rank: number; domains: number; links: number } | null;
   web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
@@ -696,12 +696,33 @@ const total = (a: Record<AreaKey, number>) => Math.round((Object.keys(W) as Area
 const tier = (s: number) => (s < 40 ? "Kritisch" : s < 60 ? "Ausbaufähig" : s < 70 ? "Gut" : s < 85 ? "Sehr gut" : "Exzellent");
 const status10 = (v: number) => (v >= 8 ? "Gut" : v >= 5 ? "Mittel" : "Achtung");
 
+/* Rote Flaggen: alles, was ein Kunde sofort negativ wahrnimmt */
+const shortT = (t: string) => (String(t || "").length > 60 ? String(t).slice(0, 58) + "…" : String(t || ""));
+function redFlags(c: Ctx): { t: string; area: AreaKey }[] {
+  const f: { t: string; area: AreaKey }[] = [];
+  const self = c.items.filter((x) => x.about !== "other");
+  for (const x of self.filter((y) => y.src === "google" && y.pos <= 10 && y.sent === "neg")) f.push({ t: `Negativer Treffer auf Google Seite 1: ${shortT(x.title)}`, area: "search" });
+  for (const sg of c.suggestions.filter((y) => y.neg)) f.push({ t: `„${sg.q}“ in den Google-Vorschlägen`, area: "search" });
+  const r = Number(c.loc.rating) || 0, n = Number(c.loc.reviews) || 0;
+  if (r && n >= 3 && r < 3.8) f.push({ t: `Nur ${String(r).replace(".", ",")} Sterne auf Google (${n} Bewertungen)`, area: "reviews" });
+  if ((c.reviews.neg || 0) >= 3) f.push({ t: `${c.reviews.neg} von ${c.reviews.total} neuesten Google-Bewertungen kritisch`, area: "reviews" });
+  else if (c.reviews.negUnanswered > 0) f.push({ t: `${c.reviews.negUnanswered} kritische Bewertung${c.reviews.negUnanswered > 1 ? "en" : ""} ohne Antwort`, area: "reviews" });
+  const seenP = new Set<string>();
+  for (const x of self.filter((y) => y.type === "review" && typeof y.rating === "number" && (y.rating as number) > 0 && (y.rating as number) < 3.5)) { const h = host(x.link); if (seenP.has(h)) continue; seenP.add(h); f.push({ t: `${String(x.rating).replace(".", ",")} Sterne auf ${h}`, area: "reviews" }); }
+  for (const x of self.filter((y) => y.sent === "neg" && y.src !== "google" && (y.type === "press" || y.type === "forum")).slice(0, 3)) f.push({ t: `Kritischer ${x.type === "press" ? "Artikel" : "Forenbeitrag"}: ${shortT(x.title)}`, area: "press" });
+  for (const d of buildDims(c.ki as unknown as J[], undefined)) if (["kritik", "erfahrungen", "serioes"].includes(String(d.key)) && Number(d.score) <= 3) f.push({ t: `KI-Systeme: ${d.name} nur ${d.score}/10`, area: "ki" });
+  if (c.aiOverviewSent === "neg") f.push({ t: "Google KI-Übersicht äußert sich negativ", area: "ki" });
+  return f;
+}
 export function evaluate(c: Ctx): J {
   const a = areaScores(c);
-  const score = total(a);
+  const flagList = redFlags(c);
+  // schwächster Kernbereich und Anzahl roter Flaggen deckeln den Gesamtscore
+  const capOf = (ar: Record<AreaKey, number>, nf: number) => Math.min(ar.reviews <= 2 || ar.search <= 2 ? 45 : ar.reviews <= 4 || ar.search <= 4 ? 60 : 100, nf >= 4 ? 50 : nf >= 2 ? 65 : 100);
+  const score = Math.min(total(a), capOf(a, flagList.length));
   const self = c.items.filter((x) => x.about !== "other");
   const negP1 = self.filter((x) => x.src === "google" && x.pos <= 10 && x.sent === "neg");
-  const gain = (f: Fix) => total(areaScores(c, f)) - score;
+  const gain = (f: Fix) => { const a2 = areaScores(c, f); return Math.max(0, Math.min(total(a2), capOf(a2, flagList.length)) - score); };
   const todos: J[] = [];
   if (negP1.length) {
     const t = negP1[0].type === "forum" ? "Forenbeitrag" : negP1[0].type === "press" ? "Artikel" : "Eintrag";
@@ -789,9 +810,10 @@ export function evaluate(c: Ctx): J {
     .sort((p, q) => p.score10 - q.score10);
   const g1 = c.items.filter((x) => x.src === "google" && x.pos <= 10).sort((p, q) => p.pos - q.pos);
   const serp1 = g1.map((x) => ({ pos: x.pos, sent: x.about === "other" ? "other" : x.sent || "neu", title: x.title, link: x.link, host: host(x.link) }));
-  const flags = negP1.length + negSug.length + (c.aiOverviewSent === "neg" ? 1 : 0);
+  const flags = flagList.length;
   return {
     score, tier: tier(score), potential, areas, todos: top, serp1,
+    flagList,
     kpis: { flags, rating: c.loc.rating, reviews: c.loc.reviews, page1Pos: serp1.filter((x) => x.sent === "pos").length, page1Total: serp1.length },
     kiSummary: c.kiSummary || "",
     ki: [...c.ki, ...(c.aiOverview && !c.ki.some((k) => k.name === "Google KI-Übersicht") ? [{ name: "Google KI-Übersicht", known: true, sent: c.aiOverviewSent || "neu", quote: "", sum: c.aiOverviewSum || "" }] : [])],
@@ -954,12 +976,12 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     // alle Treffer der Namenssuche/Erwähnungen/News lesen (läuft parallel zu den KI-Fragen)
     const hitsP = Promise.all(items.filter((x) => x.src !== "bing" || x.pos <= 10).slice(0, 160).map(async (x) => { (x as J).hit = await checker.check(x.link); }));
     await say(64, `${items.filter((x) => x.src === "mention" || x.src === "news").length} Erwähnungen gefunden · lese jetzt die neuesten Google-Bewertungen`);
-    const reviews = { total: 0, unanswered: 0, negUnanswered: 0 };
+    const reviews = { total: 0, unanswered: 0, negUnanswered: 0, neg: 0 };
     if (loc.place_id) {
       const rj = await serp({ engine: "google_maps_reviews", place_id: loc.place_id, hl: "de", sort_by: "newestFirst" }).catch(() => ({} as J));
       const list = Array.isArray(rj.reviews) ? rj.reviews.slice(0, 10) : [];
       reviews.total = list.length;
-      for (const r of list) { const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
+      for (const r of list) { if (Number(r.rating) <= 2) reviews.neg++; const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
     }
     if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
     await say(70, site ? ((process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY) ? `Messe die Ladezeit von ${host(site)} mit Google PageSpeed (Handy)` : `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit`) : "Kein Website-Link im Google-Profil – überspringe Website-Check");

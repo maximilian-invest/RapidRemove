@@ -270,7 +270,8 @@ function RemoveLoc({ loc, rep, showToast, imp, onDone }) {
 export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
   const r = loc.latest;
   const [area, setArea] = React.useState(null);
-  React.useEffect(() => { setArea(null); }, [loc.id]);
+  const [flags, setFlags] = React.useState(false);
+  React.useEffect(() => { setArea(null); setFlags(false); }, [loc.id]);
   const running = loc.scan && loc.scan.status === "running";
   const ask = async (action) => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
@@ -299,10 +300,17 @@ export function RepDetail({ loc, rep, multi, onBack, showToast, imp, onAdd }) {
           <b className="rp-kpi-v">{r.score}<small> /100</small></b>
           <span className="rp-kpi-s"><Delta now={r.score} prev={loc.prevScore} prevAt={loc.prevAt} light /></span>
         </div>
-        <div className="rp-kpi"><span className="rp-kpi-l">Rote Flaggen</span><b className="rp-kpi-v" style={{ color: k.flags ? "#e23b3b" : "#16a34a" }}>{k.flags || 0}</b><span className="rp-kpi-s">{k.flags ? "bitte ansehen" : "alles sauber"}</span></div>
+        <button type="button" className="rp-kpi rp-kpi-btn" onClick={() => (r.flagList || []).length && setFlags(!flags)}><span className="rp-kpi-l">Rote Flaggen</span><b className="rp-kpi-v" style={{ color: k.flags ? "#e23b3b" : "#16a34a" }}>{k.flags || 0}</b><span className="rp-kpi-s">{k.flags ? "bitte ansehen" : "alles sauber"}</span></button>
         <div className="rp-kpi"><span className="rp-kpi-l">Google-Sterne</span><b className="rp-kpi-v">{k.rating ? String(k.rating).replace(".", ",") : "–"}</b><span className="rp-kpi-s">{k.reviews || 0} Bewertungen</span></div>
         <div className="rp-kpi"><span className="rp-kpi-l">Seite 1 positiv</span><b className="rp-kpi-v">{k.page1Pos || 0}/{k.page1Total || 10}</b><span className="rp-kpi-s">Google-Treffer</span></div>
       </div>
+      {flags && (r.flagList || []).length ? (
+        <section className="rp-flags">
+          {r.flagList.map((f, i) => (
+            <button key={i} type="button" className="rp-flag" onClick={() => setArea(f.area)}><Flag /><span>{f.t}</span><ChevronRight /></button>
+          ))}
+        </section>
+      ) : null}
       {r.profile ? <ProfileBox p={r.profile} /> : null}
       <div className="rp-grid">
         <div className="rp-main">

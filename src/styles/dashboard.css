@@ -1496,3 +1496,10 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rp-rm-yes{background:#b91c1c;color:#fff}
 .rra .rp-rm-yes svg{width:14px;height:14px}
 .rra .rp-loc .rp-rm{margin:0 0 0 auto}
+
+/* Reputation: rote Flaggen */
+.rra .rp-kpi-btn{border:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rra .rp-flags{display:flex;flex-direction:column;gap:6px;margin:0 0 18px}
+.rra .rp-flag{display:flex;align-items:center;gap:10px;width:100%;background:#fdecec;border:0;border-radius:14px;padding:12px 14px;text-align:left;font:inherit;font-size:14px;font-weight:600;color:#7f1d1d;cursor:pointer}
+.rra .rp-flag svg{width:16px;height:16px;flex:none}
+.rra .rp-flag span{flex:1}
