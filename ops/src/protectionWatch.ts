@@ -8,6 +8,7 @@
  *
  * Aktiver Schutz = lebenslang ODER laufendes Stripe-Abo (aktiv/Zahlung offen) ODER Schutz per PayPal/Wise
  * in den letzten 12 Monaten bezahlt. Daten der Überwachung: monitor_profiles / monitor_checks (monitor.ts, Scan täglich 05:00).
+ * Nur Aufträge ab 06.11.2026 (PROTECTION_REPORT_SINCE) – ältere Kunden bekommen weder Bericht noch Dashboard-Karte.
  * Abschalten: Umgebungsvariable PROTECTION_REPORT=off.
  */
 import * as React from "react";
@@ -49,6 +50,10 @@ async function prepaidEmails(): Promise<Set<string>> {
   return out;
 }
 
+/** Schutz-Bericht + Überwachung im Dashboard gibt es nur für Aufträge AB HEUTE (Maximilian 06.11.2026: „vorher bekommt das keiner“).
+ *  Maßgeblich: Bestelldatum des Auftrags (orders.created_at). Profile ohne Auftrag (manuell im Monitor) sind ausgenommen. */
+export const PROTECTION_REPORT_SINCE = process.env.PROTECTION_REPORT_SINCE || "2026-11-06T10:00:00Z";
+
 type Row = { id: number; order_id: string | null; business_name: string; cust_email: string | null; lang: string | null; type: string; status: string; since: string; last_check_at: string | null; checks7: number; last_ok: string | null };
 async function profilesFor(email?: string): Promise<Row[]> {
   if (!pool) return [];
@@ -57,9 +62,10 @@ async function profilesFor(email?: string): Promise<Row[]> {
             (SELECT count(*)::int FROM monitor_checks c WHERE c.profile_id=p.id AND c.checked_at > now() - interval '7 days') AS checks7,
             (SELECT max(c.checked_at) FROM monitor_checks c WHERE c.profile_id=p.id AND c.result IN ('ok','re')) AS last_ok
        FROM monitor_profiles p
+       JOIN orders o ON o.id = p.order_id AND o.created_at >= $1::timestamptz
       WHERE p.source NOT IN ('deleted','archived') AND p.status NOT IN ('paused','exp') AND p.cust_email IS NOT NULL
-        ${email ? "AND lower(trim(p.cust_email))=$1" : ""}
-      ORDER BY p.since`, email ? [email] : []).catch(() => ({ rows: [] as Row[] }));
+        ${email ? "AND lower(trim(p.cust_email))=$2" : ""}
+      ORDER BY p.since`, email ? [PROTECTION_REPORT_SINCE, email] : [PROTECTION_REPORT_SINCE]).catch(() => ({ rows: [] as Row[] }));
   return r.rows as Row[];
 }
 
