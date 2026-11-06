@@ -113,11 +113,12 @@ export function registerPriceTier(app: FastifyInstance, adminToken: string) {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!auth(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool || !dbReady()) return reply.code(503).send({ ok: false, error: "keine DB" });
+    const days = Math.max(0, Math.min(3650, Math.round(Number(b.days) || 0))); // 0 = alle Aufträge
     const r = await pool.query(
       `SELECT id, created_at, email, service, status, pay, amount, country, category, raw->>'ind' AS ind, raw->>'ptype' AS ptype,
               COALESCE(jsonb_array_length(CASE WHEN jsonb_typeof(raw->'reviewItems')='array' THEN raw->'reviewItems' END),0) AS n_rev,
               COALESCE(jsonb_array_length(CASE WHEN jsonb_typeof(raw->'reviewsRemoved')='array' THEN raw->'reviewsRemoved' END),0) AS n_removed
-         FROM orders`);
+         FROM orders ${days ? `WHERE created_at > now() - ($1::int * interval '1 day')` : ""}`, days ? [days] : []);
     type Row = { id: string; created_at: string; email: string; service: string; status: string; pay: string; amount: string; country: string; category: string; ind: string | null; ptype: string | null; n_rev: number; n_removed: number };
     type Agg = { ind: string; label: string; orders: number; profile: number; reviews: number; press: number; done: number; storno: number; paid: number; revenue: number; reviewsOrdered: number; reviewsRemoved: number; countries: Record<string, number>; ptypes: Record<string, number> };
     const by = new Map<string, Agg>();

@@ -9,7 +9,7 @@ import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket, SERV
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
-import { monitorShotUrl, testPurgeApi, expressStatus, expressSet, durationsSet } from "@/lib/admin-api";
+import { monitorShotUrl, testPurgeApi, expressStatus, expressSet, durationsSet, industryStatsApi } from "@/lib/admin-api";
 import { normDur, normTier, fmtTier, fillDur, durKey, DUR_DEFAULT, DUR_MAX } from "@/lib/durations";
 import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
@@ -69,6 +69,7 @@ export function Overview({ ctx }) {
         <div className="kc"><span className="kl">In Bearbeitung</span><b>{nWork}</b><span className="ks">{workAvgH != null ? `Ø ${workAvgH} Std. Laufzeit` : "—"}</span></div>
       </div>
       <RemovalRates ptAll={ctx.ptAll} />
+      <IndustryStats />
       <div className="sec3"><h2>Pipeline heute</h2></div>
       <div className="card pipe">{pipe.map(([l, n, c]) => <div key={l} className="pr"><div className="t"><span>{l}</span><b>{n}</b></div><span className="bar"><i style={{ "--w": (n / pm) * 100 + "%", background: c }} /></span></div>)}</div>
       <div className="sec3"><h2>Neueste Aufträge</h2><button type="button" className="lk" onClick={() => goOrders(null)}>Alle<ChevronRight /></button></div>
@@ -117,6 +118,46 @@ function RemovalRates({ ptAll }) {
         )) : null}
       </div>
       <p className="sh rqn">Quote = gelöscht ÷ entschieden (gelöscht, nicht möglich, nur per Software). Offene Bewertungen beim Partner zählen erst, wenn sie entschieden sind.</p>
+    </>
+  );
+}
+
+/* Branchen (06.11.2026): welche Branchen bestellen, zahlen, stornieren. Branche = Google-Kategorie des Profils (raw.ind),
+   Altaufträge über den Kategorie-Namen nachgetragen. P = Premium-Branche (+25 % Preis). Ohne Testaufträge. */
+function IndustryStats() {
+  const [days, setDays] = React.useState(0);
+  const [st, setSt] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  React.useEffect(() => {
+    let live = true; setErr("");
+    industryStatsApi(days).then((j) => { if (live) setSt(j); }).catch((e) => { if (live) setErr(e.message || "Fehler"); });
+    return () => { live = false; };
+  }, [days]);
+  const rows = (st && st.rows) || [];
+  const mx = Math.max(1, ...rows.map((r) => r.orders));
+  const prem = rows.filter((r) => r.premium).reduce((a, r) => a + r.orders, 0);
+  const col = (r) => { const q = r.orders ? r.storno / r.orders : 0; return q >= 0.5 ? "var(--danger)" : q >= 0.3 ? "var(--warning)" : "var(--success)"; };
+  const eur = (v) => Math.round(v || 0).toLocaleString("de-DE") + " €";
+  return (
+    <>
+      <div className="sec3"><h2>Branchen</h2>
+        <span className="indsw">{[[0, "Gesamt"], [30, "30 Tage"], [90, "90 Tage"]].map(([d, l]) => <button key={d} type="button" className={days === d ? "on" : ""} onClick={() => setDays(d)}>{l}</button>)}</span></div>
+      <div className="card rrq">
+        {err ? <div className="rq"><span className="s">Konnte nicht laden: {err}</span></div> : !st ? <div className="rq"><span className="s">Lädt …</span></div> : (
+          <>
+            <div className="rq tot"><div className="t"><span>{st.total} Aufträge</span><b>{st.total ? Math.round((prem / st.total) * 100) : 0} % Premium</b></div>
+              <span className="s">Balken = Anzahl Aufträge · Farbe = Storno-Quote (grün &lt; 30 %, gelb &lt; 50 %, rot ab 50 %)</span></div>
+            {rows.map((r) => (
+              <div key={r.ind} className="rq">
+                <div className="t"><span>{r.label}{r.premium ? <em className="indp">Premium</em> : null}</span><b>{r.orders}</b></div>
+                <span className="bar"><i style={{ "--w": (r.orders / mx) * 100 + "%", background: col(r) }} /></span>
+                <span className="s">{[r.profile ? r.profile + " Profil" : "", r.reviews ? r.reviews + " Bewertungen" : "", r.paid + " bezahlt · " + eur(r.revenue), r.storno ? r.storno + " storniert (" + Math.round((r.storno / r.orders) * 100) + " %)" : ""].filter(Boolean).join(" · ")}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      <p className="sh rqn">Branche aus der Google-Kategorie des Profils. Ältere Aufträge ohne Google-Daten über den Kategorie-Namen zugeordnet; „Unbekannt“ = kein Profil erkannt. Umsatz = bezahlte Aufträge (Leistung).</p>
     </>
   );
 }

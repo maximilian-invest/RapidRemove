@@ -703,6 +703,8 @@ async function adminPost(path, body) {
   return j;
 }
 export const partnersList = () => adminPost("/admin/partners");
+/** Branchen-Auswertung (Übersicht): days = 0 → alle Aufträge, sonst die letzten n Tage. */
+export const industryStatsApi = (days = 0) => adminPost("/admin/industry-stats", { days });
 /** Geplante automatische Mails eines Auftrags (Mail-Verlauf „Als Nächstes"). */
 export const nextMailsApi = (orderId) => adminPost("/admin/next-mails", { orderId });
 /** Auto-Mahnungen pro Kunde pausieren ({ days: 0 = bis auf Weiteres, reason }) bzw. wieder aktivieren ({ resume: true }). */

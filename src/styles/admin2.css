@@ -583,6 +583,10 @@
 .an .rq.tot .t span{font-weight:600}
 .an .rq.tot .t b{font-size:22px;letter-spacing:-.5px}
 .an .rq .s{display:block;margin-top:7px;font-size:12px;color:var(--g3)}
+.an .indp{font-style:normal;font-size:10.5px;font-weight:600;color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent);border-radius:6px;padding:2px 6px;margin-left:8px;vertical-align:2px}
+.an .indsw{display:inline-flex;gap:4px;margin-left:auto}
+.an .indsw button{font:inherit;font-size:12px;border:1px solid var(--g2,#e4e4e7);background:transparent;color:var(--g3);border-radius:999px;padding:4px 10px;cursor:pointer}
+.an .indsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .an .rqn{margin:2px 4px 26px;font-size:12px}
 
 .an .cact .dsh{background:none;color:var(--ink)}
