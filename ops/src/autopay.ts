@@ -523,7 +523,7 @@ async function sendFailMail(email: string, inv: any, amount: number, cur: string
   const html = await render(React.createElement(ZahlungFehlgeschlagenReviews, props));
   const subject = zahlungFehlgeschlagenSubject(props);
   await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-  for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "mail", title: "Mail „Zahlung fehlgeschlagen – Zahlungsart aktualisieren“ gesendet (automatisch)", detail: `${props.amount} · ${label} · neue Versuche nach ${RETRY_DAYS.join("/")} Tagen`, html, subject, auto: true }).catch(() => {});
+  for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "mail", title: "Zahlungsaufforderung „Abbuchung nicht durchgegangen – Zahlungsart aktualisieren“ gesendet (automatisch)", detail: `${props.amount} · ${label} · neue Versuche nach ${RETRY_DAYS.join("/")} Tagen`, html, subject, auto: true }).catch(() => {});
 }
 
 /** Offene Fehlschlag-Rechnung prüfen und ggf. erneut belasten. state "open" = steht noch offen → KEINE neue Rechnung anlegen. */
@@ -700,6 +700,8 @@ let lastErr: { at: string; where: string; msg: string } | null = null; // letzte
 export function registerAutopayRoutes(app: FastifyInstance): void {
   autopayHooks.charge = (email) => chargeDue(email).catch((e) => { app.log.error({ err: e }, "Automatisch bezahlen: Abbuchung fehlgeschlagen"); return null; });
   autopayHooks.openInvoice = (email, cur) => openFailedInvoice(email, cur).catch(() => null);
+  // Stripe-Webhook invoice.paid (eigene Abbuchungs-Rechnung): offene Fehlschlag-Rechnung sofort verbuchen statt erst beim nächsten Tick.
+  autopayHooks.settle = (email) => chargeDue(email, "Wiederholung (Plan)").then(() => undefined).catch((e) => { app.log.error({ err: e }, "Offene Rechnung verbuchen fehlgeschlagen"); });
   autopayHooks.info = info;
   autopayHooks.saved = (email) => hasSavedMethod(String(email || "").toLowerCase());
   void init().catch((e) => app.log.error({ err: e }, "cust_autopay anlegen fehlgeschlagen"));

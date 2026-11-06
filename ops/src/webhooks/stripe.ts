@@ -18,7 +18,7 @@
  *
  * Signaturprüfung über STRIPE_WEBHOOK_SECRET gegen den RAW-Body.
  */
-import { markReviewPaymentPaid } from "../customers";
+import { markReviewPaymentPaid, autopayHooks } from "../customers";
 import { scheduleProtectionUpsell } from "../upsell";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import * as React from "react";
@@ -182,6 +182,8 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
   const payKey: string = invoiceId || String(obj?.payment_intent || obj?.id || "");
   if (meta.rr_pay || meta.rr_orders || /^rr_/.test(String(obj?.client_reference_id || ""))) {
     if (payKey) await claimPayment(payKey).catch(() => false); // auch der Reconciler soll sie nicht mehr anfassen
+    // Automatische Abbuchung, die erst fehlschlug und jetzt bezahlt ist (neuer Versuch / Kunde über Rechnungslink) → sofort verbuchen.
+    if (obj?.object === "invoice" && meta.rr_pay && meta.rr_email && autopayHooks.settle) void autopayHooks.settle(String(meta.rr_email));
     app.log.info(`Webhook: eigene Zahlung (${meta.rr_orders || obj?.client_reference_id || payKey}) – keine E-Mail-Zuordnung (${source})`);
     return;
   }
