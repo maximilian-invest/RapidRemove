@@ -646,7 +646,7 @@ function WebArea({ r }) {
             </>
           ), "S", ok.some((c) => !c.ok) ? "#d97706" : "#16a34a")}
         </div>
-      ) : <div className="rp-empty">Im Google-Profil ist keine Website hinterlegt.</div>}
+      ) : null}
     </section>
   );
 }

@@ -599,7 +599,7 @@ export type Ctx = {
   loc: J; items: Item[]; suggestions: { q: string; neg: boolean }[]; aiOverview: string | null; aiOverviewSent: string | null; aiOverviewSum?: string;
   ki: { name: string; known: boolean; sent: string; quote: string; sum?: string; answers?: { key: string; q: string; text: string; sent: string; known: boolean; quote: string; sum?: string; src?: Src[] }[] }[]; kiSummary?: string; reviews: { total: number; unanswered: number; negUnanswered: number; neg?: number };
   kiWhy?: Record<string, string>; kws?: Kw[]; backlinks?: { rank: number; domains: number; links: number } | null;
-  web: { url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
+  web: { fromGbp?: boolean; via?: string; url: string; perf: number | null; seo: number | null; https: boolean; title: string; desc: string; ok: boolean; metrics?: Audit["metrics"]; checks?: Check[] }; social: Social[]; kgSeen?: boolean; kiTried?: string[];
   summary: string;
 };
 const clamp = (v: number) => Math.max(0, Math.min(10, v));
@@ -682,6 +682,7 @@ function areaScores(c: Ctx, fix: Fix = {}): Record<AreaKey, number> {
     if (!c.web.https) web -= 1;
     if (!c.web.ok) web -= 3;
     if (!own || own.pos > 10) web -= 2;
+    if (c.web.fromGbp === false && !fix.web) web -= 1.5;
   }
   // Ranking bei Suchbegriffen ohne Firmennamen zählt am meisten
   const kOk = (c.kws || []).filter(kwOk);
@@ -742,7 +743,8 @@ export function evaluate(c: Ctx): J {
   const kChecked = (c.kws || []).filter(kwOk);
   const weak = kChecked.filter((k) => kwVal(k) < 6);
   if (weak.length) todos.push({ key: "rank", title: `Bei ${weak.length} von ${kChecked.length} Suchbegriffen kaum gefunden`, who: "wir", action: "ranking", points: gain({ rank: true }), area: "web" });
-  if (!c.web.url) todos.push({ key: "web", title: "Keine Website im Google-Profil", who: "selbst", action: "website", points: 3, area: "web" });
+  if (!c.web.url) todos.push({ key: "web", title: "Keine eigene Website gefunden", who: "selbst", action: "website", points: 3, area: "web" });
+  else if (c.web.fromGbp === false) todos.push({ key: "weblink", title: `Website ${host(c.web.url)} im Google-Profil eintragen`, who: "selbst", action: "website", points: gain({ web: true }) || 2, area: "web" });
   const top = todos.filter((t) => t.points > 0).sort((x, y) => y.points - x.points).slice(0, 3);
   const potential = Math.min(100, score + top.reduce((s, t) => s + t.points, 0));
   const pick = (f: (x: Item) => boolean) => [...new Map(self.filter(f).map((x) => [x.link.replace(/[?#].*$/, "").replace(/\/$/, ""), x])).values()].sort((p, q) => (p.src === "google" ? 0 : 1) - (q.src === "google" ? 0 : 1) || p.pos - q.pos).slice(0, 12).map((x) => ({ title: x.title, link: x.link, src: x.src, pos: x.pos, sent: x.sent || "neu", type: x.type || "other", note: x.note || "", date: x.date || "", host: host(x.link), read: ((x as J).hit as Hit | undefined)?.k, rating: x.rating || null, votes: x.votes || null, snippet: x.snippet ? x.snippet.slice(0, 200) : "" }));
@@ -793,9 +795,16 @@ export function evaluate(c: Ctx): J {
       { label: "Im Google-Profil", value: !c.kgSeen ? "nicht feststellbar" : c.social.length ? `${c.social.filter((x) => x.inGoogle).length} von ${c.social.length} sichtbar` : "–" },
     ],
     web: (() => {
+      const base = [
+        { label: "Geprüft", value: "Google-Profil, Google-Firmenkasten und Google-Suche nach dem Namen (Seite 1–5)" },
+        { label: "Website im Google-Profil", value: c.web.fromGbp === false || !c.web.url ? "nicht hinterlegt" : "hinterlegt", tone: c.web.fromGbp === false || !c.web.url ? "bad" as const : "good" as const },
+        { label: "Eigene Website", value: c.web.url ? host(c.web.url) + (c.web.via === "kg" ? " (aus dem Google-Firmenkasten)" : c.web.via === "google" ? " (über die Google-Suche gefunden)" : "") : "keine gefunden", tone: c.web.url ? "good" as const : "bad" as const },
+        ...(c.web.url && c.web.perf != null ? [{ label: "Ladezeit am Handy (Google PageSpeed)", value: `${c.web.perf}/100`, tone: c.web.perf >= 70 ? "good" as const : "bad" as const }] : []),
+      ];
       const ks = (c.kws || []).filter(kwOk);
-      if (!ks.length) return [];
+      if (!ks.length) return base;
       const p1 = ks.filter((k) => k.g != null && k.g <= 10).length;
+      void base;
       const mineN = ks.reduce((a2, k) => a2 + (k.mine ? k.mine.length : 0), 0), topN = ks.reduce((a2, k) => a2 + (k.top || 0), 0);
       return [
         ...(ks.some((k) => k.vol != null) ? [{ label: "Suchen pro Monat (alle Begriffe)", value: `≈ ${ks.reduce((a2, k) => a2 + (k.vol || 0), 0).toLocaleString("de-AT")}` }] : []),
@@ -863,8 +872,10 @@ async function runScan(scanId: string, loc: J): Promise<void> {
         await pool!.query(`UPDATE rep_locations SET rating=$2, reviews=$3, website=COALESCE(NULLIF(website,''),$4) WHERE id=$1`, [loc.id, p.rating, p.reviews, p.website]);
       }
     }
-    const site = String(loc.website || "");
-    const hp0 = site ? await homepage(site) : { https: false, title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
+    let site = String(loc.website || "");
+    const siteFromGbp = !!site;
+    let siteVia = siteFromGbp ? "gbp" : "";
+    let hp0 = site ? await homepage(site) : { https: false, title: "", desc: "", social: [] as { net: string; url: string }[], ok: false };
     let profile: Profile | null = loc.profile && Number(loc.profile.pv) === PROFILE_V && loc.profile_at && Date.now() - new Date(loc.profile_at).getTime() < 7 * 86400_000 && Number(process.env.REP_CACHE_DAYS ?? 7) > 0 ? (loc.profile as Profile) : null;
     if (!profile) {
       await say(6, site ? `Lese die Website ${host(site)}: Leistungen, Preise, Über uns` : "Erstelle den Steckbrief aus dem Google-Profil");
@@ -984,6 +995,16 @@ async function runScan(scanId: string, loc: J): Promise<void> {
       for (const r of list) { if (Number(r.rating) <= 2) reviews.neg++; const ans = !!(r.response && (r.response.snippet || r.response.extracted_snippet)); if (!ans) { reviews.unanswered++; if (Number(r.rating) <= 2) reviews.negUnanswered++; } }
     }
     if (reviews.total) await say(67, `${reviews.total} neueste Bewertungen gelesen · ${reviews.unanswered} davon ohne Antwort`);
+    if (!site) {
+      const PLATF = /(facebook|instagram|linkedin|youtube|tiktok|twitter|x\.com|pinterest|google|bing|apple\.com|herold|firmenabc|wko|gelbeseiten|11880|tripadvisor|yelp|falstaff|wikipedia|meinbezirk|kununu|trustpilot|provenexpert|localitybiz|cylex|infobel|firmeninfo|northdata|moneyhouse|dasoertliche|branchenbuch|golocal|wlw|compass|firmenbuch|stadtbranchenbuch|hotfrog|werkenntdenbesten|immoscout|willhaben|amazon|ebay)\./i;
+      const STOP = new Set(["gmbh", "und", "der", "die", "das", "kg", "og", "co", "the", "salzburg", "wien", "graz", "linz", "innsbruck", String(city).toLowerCase()]);
+      const toks = name.toLowerCase().split(/[^a-zäöüß0-9]+/).filter((t) => t.length >= 4 && !STOP.has(t)).map((t) => t.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss"));
+      const kgSite = String(kg?.website || "");
+      const cand = kgSite && !PLATF.test(host(kgSite)) ? kgSite : (items.filter((x) => x.src === "google" && x.pos <= 20 && !PLATF.test(host(x.link)) && toks.some((t) => host(x.link).replace(/-/g, "").includes(t) || host(x.link).includes(t.replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u")))).sort((p2, q2) => p2.pos - q2.pos)[0]?.link || "");
+      if (cand) {
+        try { site = new URL(cand).origin + "/"; siteVia = kgSite && cand === kgSite ? "kg" : "google"; hp0 = await homepage(site); await say(69, `Im Google-Profil fehlt die Website – gefunden: ${host(site)}`); } catch { /* */ }
+      }
+    }
     await say(70, site ? ((process.env.PAGESPEED_API || process.env.PAGESPEED_API_KEY) ? `Messe die Ladezeit von ${host(site)} mit Google PageSpeed (Handy)` : `Lade ${host(site)} wie ein Handy im mobilen Netz und messe die Ladezeit`) : "Kein Website-Link im Google-Profil – überspringe Website-Check");
     const [au, hp] = site ? await Promise.all([siteAudit(site), Promise.resolve(hp0)]) : [{ perf: null, seo: null, metrics: null, checks: [], finalUrl: "", html: "" } as Audit, { https: false, title: "", desc: "", social: [], ok: false }];
     if (site) await say(74, au.metrics?.lcp ? `${host(site)}: ${au.src === "google" ? "PageSpeed " + au.perf + "/100 · " : ""}fertig geladen nach ${(au.metrics.lcp / 1000).toFixed(1).replace(".", ",")} s · prüfe ${au.checks.length} SEO-Grundlagen` : `Prüfe ${host(site)}: Titel, Beschreibung, Überschriften, Firmendaten`);
@@ -1239,7 +1260,7 @@ async function runScan(scanId: string, loc: J): Promise<void> {
     ];
     const ctx: Ctx = {
       loc, items, suggestions, aiOverview, aiOverviewSent: aiOverview ? String(cls?.aiOverview || "neu") : null, aiOverviewSum: aiOverview ? String(cls?.aiOverviewSum || "").slice(0, 240) : "", ki, reviews,
-      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kiWhy: Object.fromEntries([...aiErr.entries()].filter(([, v]) => v.at >= scanStart).map(([k, v]) => [k, v.why])), backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
+      kiSummary: String(cls?.kiSummary || "").slice(0, 600), kws: await kwPromise, kiWhy: Object.fromEntries([...aiErr.entries()].filter(([, v]) => v.at >= scanStart).map(([k, v]) => [k, v.why])), backlinks: backlinkSum, kgSeen, kiTried: ["ChatGPT", "Claude", "Gemini", "Perplexity"].filter((n) => (n === "ChatGPT" ? !!process.env.OPENAI_API_KEY : n === "Claude" ? !!process.env.ANTHROPIC_API_KEY : n === "Gemini" ? !!process.env.GEMINI_API_KEY : !!process.env.PERPLEXITY_API_KEY)), web: { fromGbp: siteFromGbp, via: siteVia, url: site, perf: au.perf, seo: au.seo, https: hp.https || /^https:/i.test(au.finalUrl), title: hp.title, desc: hp.desc, ok: hp.ok || !!au.html, metrics: au.metrics, checks: au.checks }, social, summary: String(cls?.summary || ""),
     };
     await say(95, "Berechne Ihren Score aus 6 Bereichen und die besten Maßnahmen");
     const result: J = { ...evaluate(ctx), pagesRead: checker.memo.size, profile: profile || null, kiDims: buildDims(ki, cls?.dims), query: q, scannedAt: new Date().toISOString(), location: { name, city, address: loc.address, mapsUrl: loc.maps_url } };
