@@ -2,6 +2,7 @@
    Geht nach JEDER erfolgreichen Abbuchung raus (eigene Mail – unabhängig von den Stripe-E-Mail-Einstellungen). */
 import * as React from "react";
 import { EmailShell, P, NoteBox, CtaButton, type MailLang } from "./components";
+import { BilledReviewList, type BilledReview } from "./BilledReviews";
 
 type L = { subject: string; title: string; hi: string; hi0: string; p: string; note: string; btn: string; close: string; signoff: string };
 const T: Record<MailLang, L> = {
@@ -17,7 +18,7 @@ const T: Record<MailLang, L> = {
   da: {"subject": "Din faktura {nr} – {a} betalt automatisk", "title": "Din faktura", "hi": "Hej {n},", "hi0": "Hej,", "p": "for {k} fjernet/fjernede anmeldelse(r) har vi automatisk trukket {a} fra {pm}. Din faktura {nr} er vedhæftet denne mail.", "note": "Du betaler kun for anmeldelser, der faktisk fjernes. Alle fakturaer ligger også i dit dashboard under “Betalinger”.", "btn": "Se faktura online", "close": "Spørgsmål? Svar bare på denne mail.", "signoff": "Venlig hilsen,"},
   no: {"subject": "Fakturaen din {nr} – {a} betalt automatisk", "title": "Fakturaen din", "hi": "Hei {n},", "hi0": "Hei,", "p": "for {k} fjernet/fjernede anmeldelse(r) har vi automatisk trukket {a} fra {pm}. Fakturaen {nr} ligger vedlagt i denne e-posten.", "note": "Du betaler bare for anmeldelser som faktisk fjernes. Alle fakturaer finnes også i dashbordet under «Betalinger».", "btn": "Se faktura på nett", "close": "Spørsmål? Bare svar på denne e-posten.", "signoff": "Vennlig hilsen,"},
 };
-export interface RechnungAutoProps { lang?: string; name?: string; nr: string; amount: string; pm: string; n: number; url: string; kind?: "reviews" | "profile" }
+export interface RechnungAutoProps { lang?: string; name?: string; nr: string; amount: string; pm: string; n: number; url: string; kind?: "reviews" | "profile"; reviews?: BilledReview[] }
 /** Profil-Löschung (seit 10/2026): eigener Text statt „gelöschte Bewertungen". */
 const PROF: Record<string, { p: string; note: string }> = {
   de: { p: "für die Löschung Ihres Google-Unternehmensprofils haben wir {a} automatisch von {pm} abgebucht. Ihre Rechnung {nr} finden Sie im Anhang dieser E-Mail.", note: "Abgebucht wurde erst nach der erfolgreichen Löschung. Ist ein Schutz-Abo gebucht, wird es ab jetzt monatlich automatisch verrechnet. Alle Rechnungen finden Sie auch in Ihrem Dashboard unter „Zahlungen“." },
@@ -42,6 +43,7 @@ export default function RechnungAuto(p: RechnungAutoProps) {
     <EmailShell preview={fill(t.subject, p)} title={t.title} lang={l}>
       <P><strong>{(p.name || "").trim() ? fill(t.hi, p) : t.hi0}</strong></P>
       <P>{fill(t.p, p)}</P>
+      {p.kind !== "profile" ? <BilledReviewList lang={l} items={p.reviews} /> : null}
       <NoteBox>{t.note}</NoteBox>
       {p.url ? <div style={{ textAlign: "center", margin: "10px 0 20px" }}><CtaButton href={p.url}>{t.btn}</CtaButton></div> : null}
       <P>{t.close}</P>

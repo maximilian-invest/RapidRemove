@@ -187,7 +187,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: LoeschbestaetigungReviews,
     subject: loeschbestaetigungReviewsSubject,
-    sample: { lang: "en", name: "Alex", removedItems: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], submittedCount: 3, per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
+    sample: { lang: "en", name: "Alex", removedItems: [{ name: "Sarah K.", url: "https://maps.app.goo.gl/example1" }, { name: "John D.", url: "https://www.google.com/maps/reviews/data=!4m8!14m7!1m6!2m5!1sChdDSUhNMG9nS0VJQ0FnSURQ" }], submittedCount: 3, per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
     texts: loeschbestaetigungReviewsTexts,
   },
   "mahnung-reviews": {
@@ -195,7 +195,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: MahnungReviews,
     subject: mahnungReviewsSubject,
-    sample: { lang: "en", name: "Alex", removedItems: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456", stage: 3 },
+    sample: { lang: "en", name: "Alex", removedItems: [{ name: "Sarah K.", url: "https://maps.app.goo.gl/example1" }, { name: "John D.", url: "https://www.google.com/maps/reviews/data=!4m8!14m7!1m6!2m5!1sChdDSUhNMG9nS0VJQ0FnSURQ" }], per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456", stage: 3 },
     texts: mahnungReviewsTexts,
   },
   "paypal-zahlung-bestaetigt": {

@@ -27,7 +27,7 @@ import { logCustEvent } from "./custTrack";
 import { notifyPartner } from "./partnerNotify";
 import { notifyCustomer } from "./custPush";
 import { isDashReturnUrl } from "./dashUrl";
-import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, dashLink, DASH_URL, type PayRef, type AutoCharged } from "./customers";
+import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, billedReviewRefs, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, dashLink, DASH_URL, type PayRef, type AutoCharged } from "./customers";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
@@ -337,10 +337,12 @@ export async function retryTick(log: (o: unknown, m: string) => void = () => {})
 }
 
 /** Rechnung als PDF holen (Stripe invoice_pdf) und per Mail an den Kunden; landet im Mail-Verlauf der Aufträge. */
-async function sendInvoiceMail(email: string, inv: { id: string; number?: string; invoice_pdf?: string; hosted_invoice_url?: string }, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews"): Promise<void> {
+async function sendInvoiceMail(email: string, inv: { id: string; number?: string; invoice_pdf?: string; hosted_invoice_url?: string }, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews", picks: PayRef[] = []): Promise<void> {
   if (!pool) return;
   const o = (await pool.query(`SELECT name, lang FROM orders WHERE id = ANY($1::text[]) ORDER BY created_at DESC LIMIT 1`, [orderIds])).rows[0] || {};
-  const props = { lang: String(o.lang || "en").slice(0, 2), name: o.name || "", nr: inv.number || inv.id, amount: fmtReviewMoney(amount, cur), pm: label, n, url: inv.hosted_invoice_url || "", kind };
+  // Einzelbewertungen: abgerechnete Bewertungen mit Name des Bewerters + Direktlink in die Mail (08.11.2026).
+  const reviews = kind === "reviews" && picks.length ? await billedReviewRefs(email, { picks }).catch(() => []) : [];
+  const props = { lang: String(o.lang || "en").slice(0, 2), name: o.name || "", nr: inv.number || inv.id, amount: fmtReviewMoney(amount, cur), pm: label, n, url: inv.hosted_invoice_url || "", kind, reviews };
   const html = await render(React.createElement(RechnungAuto, props));
   const subject = rechnungAutoSubject(props);
   let attachments: { filename: string; content: Buffer; contentType: string }[] = [];
@@ -519,14 +521,14 @@ async function settleReviewsPaid(email: string, k: { mode: Mode }, label: string
     await insertEvent({ orderId: oid, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${label} · ${picks.length} Bewertung(en) · Stripe-Rechnung ${inv.number || inv.id} · Anlass: ${why}`, auto: true }).catch(() => {});
   }
   // Rechnung an den Kunden (PDF im Anhang) – nach JEDER Abbuchung, wie bei den Zahlungslinks.
-  await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, label, picks.length, orderIds).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
+  await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, label, picks.length, orderIds, "reviews", picks).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
   void logCustEvent(email, "payment_success", `Automatisch abgebucht · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", auto: true }, { orderId: primary });
   void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt · ${amount} ${cur.toUpperCase()}`, `${email} · ${label} · ${picks.length} gelöschte Bewertung(en) · ${why}`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
   return { amount, cur, label, invoiceUrl: url };
 }
 
 /** Mail „Zahlung fehlgeschlagen – bitte Zahlungsart aktualisieren" (einmal je fehlgeschlagener Rechnung). */
-async function sendFailMail(email: string, inv: any, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews"): Promise<void> {
+async function sendFailMail(email: string, inv: any, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews", picks: PayRef[] = []): Promise<void> {
   if (!pool) return;
   if (await getDunPause(email).catch(() => null)) { // Admin hat Auto-Mahnungen für diesen Kunden pausiert
     for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "note", title: "Mail „Zahlung fehlgeschlagen“ NICHT gesendet – Auto-Mahnungen pausiert", auto: true }).catch(() => {});
@@ -534,7 +536,8 @@ async function sendFailMail(email: string, inv: any, amount: number, cur: string
   }
   const o = (await pool.query(`SELECT name, lang, profile, company FROM orders WHERE id = ANY($1::text[]) ORDER BY created_at DESC LIMIT 1`, [orderIds])).rows[0] || {};
   const lang = String(o.lang || "en").slice(0, 2);
-  const props = { lang, name: o.name || "", amount: fmtReviewMoney(grossOf(inv, amount), cur), pm: label, n, dashUrl: await dashLink(email, lang), invoiceUrl: inv?.hosted_invoice_url || "", kind, business: o.profile || o.company || "" };
+  const reviews = kind === "reviews" && picks.length ? await billedReviewRefs(email, { picks }).catch(() => []) : [];
+  const props = { lang, name: o.name || "", amount: fmtReviewMoney(grossOf(inv, amount), cur), pm: label, n, dashUrl: await dashLink(email, lang), invoiceUrl: inv?.hosted_invoice_url || "", kind, business: o.profile || o.company || "", reviews };
   const html = await render(React.createElement(ZahlungFehlgeschlagenReviews, props));
   const subject = zahlungFehlgeschlagenSubject(props);
   await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
@@ -789,7 +792,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
           await pool.query(`INSERT INTO cust_autopay_retry (email, mode, cur, inv, pay_id, amount, n, picks, orders, label, tries, hard, next_at, last_error) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11,$12,$13)`,
             [email, k.mode, cur, fin.id, id, amount, picks.length, JSON.stringify(picks), JSON.stringify(orderIds), row.label || null, hard, next, msg]);
           await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → Rechnung ${fin.number || fin.id} bleibt offen · ${next ? `neue Versuche nach ${RETRY_DAYS.join("/")} Tagen (nächster ${fmtAt(next)})` : "harte Ablehnung: keine automatischen Versuche, Kunde muss Zahlungsart ändern"}`, auto: true }).catch(() => {});
-          await sendFailMail(email, fin, amount, cur, row.label || "", picks.length, orderIds).catch((e2) => console.error("Mail „Zahlung fehlgeschlagen“ fehlgeschlagen", e2));
+          await sendFailMail(email, fin, amount, cur, row.label || "", picks.length, orderIds, "reviews", picks).catch((e2) => console.error("Mail „Zahlung fehlgeschlagen“ fehlgeschlagen", e2));
         } else {
           if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {}); // Entwurf nicht stehen lassen
           await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → keine Rechnung angelegt, nächster Anlass versucht es neu`, auto: true }).catch(() => {});

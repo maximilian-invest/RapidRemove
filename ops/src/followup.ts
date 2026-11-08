@@ -27,12 +27,14 @@ import { pool } from "./db";
 import { insertEvent } from "./db";
 import { getDunPause } from "./dunPause";
 import { sendMail } from "./mailer";
-import { loadCustomerOrders, dashLink } from "./customers";
+import { loadCustomerOrders, dashLink, billedReviewRefs } from "./customers";
 import { logCustEvent } from "./custTrack";
 import { notifyCustomer } from "./custPush";
 import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, PRICE_V2_OTHER } from "./reviewsPricing";
 import type { Progress } from "./emails/progressText";
 import KundenErinnerungReviews, { erinnerungSubject, erinnerungTitle, type ErinnerungProps } from "./emails/KundenErinnerungReviews";
+/** Admin-Vorschau: Beispiel-Bewertungen (Name des Bewerters + Direktlink). */
+const SAMPLE_REVIEWS = [{ name: "John D.", url: "https://maps.app.goo.gl/example1" }, { name: "Sarah K.", url: "https://maps.app.goo.gl/example2" }];
 
 const H = 3600_000;
 const MODE = () => (process.env.FOLLOWUP_MODE || "dry").toLowerCase();
@@ -284,7 +286,7 @@ async function sendPlan(app: FastifyInstance, p: Plan): Promise<boolean> {
   if (!due.pay && !due.sw && !due.never && !due.news) return false;
   const props: ErinnerungProps = {
     lang: p.lang, name: p.name, dashUrl: await dashLink(p.email, p.lang).then((u) => (due.sw ? u + (u.includes("?") ? "&" : "?") + "open=software" : u)), // Software: Entscheidung öffnet sich direkt
-    pay: due.pay ? { stage: due.pay.stage, amount: due.pay.amount, n: due.pay.n, prog: due.pay.prog || null } : null,
+    pay: due.pay ? { stage: due.pay.stage, amount: due.pay.amount, n: due.pay.n, prog: due.pay.prog || null, reviews: await billedReviewRefs(p.email, { only: "unpaid" }).catch(() => []) } : null,
     sw: due.sw ? { n: due.sw.n, price: due.sw.price } : null,
     never: !!due.never, news: !!due.news,
   };
@@ -382,12 +384,12 @@ export function registerFollowupRoutes(app: FastifyInstance, adminOk: (t: unknow
     const kind = String(b.kind || "pay");
     const props: ErinnerungProps = {
       lang, name: String(b.name || "Maria Muster"), dashUrl: DASH_URL,
-      pay: kind === "pay" || kind === "pay2" ? { stage: kind === "pay2" ? 2 : 1, amount: fmtReviewMoney(358, "eur"), n: 2 } : null,
+      pay: kind === "pay" || kind === "pay2" ? { stage: kind === "pay2" ? 2 : 1, amount: fmtReviewMoney(358, "eur"), n: 2, reviews: SAMPLE_REVIEWS } : null,
       // Vorschau: Software-Preis wie bei neuen Aufträgen (Preismodell 2: 250); optional b.swPrice (z. B. 300 für Bestandsaufträge).
       sw: kind === "sw" || kind === "combo" ? { n: 1, price: fmtReviewMoney(Number(b.swPrice) > 0 ? Number(b.swPrice) : PRICE_V2_OTHER, "eur") } : null,
       never: kind === "never", news: kind === "news" || kind === "combo",
     };
-    if (kind === "combo") props.pay = { stage: 1, amount: fmtReviewMoney(358, "eur"), n: 2 };
+    if (kind === "combo") props.pay = { stage: 1, amount: fmtReviewMoney(358, "eur"), n: 2, reviews: SAMPLE_REVIEWS };
     const html = await render(React.createElement(KundenErinnerungReviews, props));
     return { ok: true, subject: erinnerungSubject(props), html };
   });

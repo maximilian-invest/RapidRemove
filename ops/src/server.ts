@@ -44,7 +44,7 @@ import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./part
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { PORTAL_URL } from "./dashUrl";
-import { createAutologin, autopayHooks, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { billedReviewRefs, createAutologin, autopayHooks, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -1868,6 +1868,15 @@ app.get("/admin/review-shot/:id", async (req, reply) => {
 });
 
 /** Individuelle Preise (cp) kommen IMMER aus dem Auftrag (nicht aus dem Browser): je Bewertung per Schlüssel übernehmen. */
+/** Name des Bewerters aus der Bestellung ergänzen, wenn nur der Link übergeben wurde (Mail zeigt Name + Direktlink, 08.11.2026). */
+async function withReviewNames<T extends { url?: string; name?: string; text?: string }>(orderId: unknown, items: T[]): Promise<T[]> {
+  const id = clip(orderId, 40);
+  if (!id || !pool || items.every((it) => it.name)) return items;
+  const r = await pool.query(`SELECT raw->'reviewItems' AS a FROM orders WHERE id=$1`, [id]).catch(() => null);
+  const all = (Array.isArray(r?.rows[0]?.a) ? r!.rows[0].a : []) as { url?: string; name?: string }[];
+  const by = new Map(all.filter((x) => x.url && x.name).map((x) => [String(x.url), String(x.name).slice(0, 80)]));
+  return items.map((it) => (!it.name && it.url && by.has(it.url) ? { ...it, name: by.get(it.url) } : it));
+}
 async function withOrderCp<T extends { url?: string; name?: string; text?: string; cp?: number; lp?: number }>(orderId: unknown, items: T[]): Promise<T[]> {
   const id = clip(orderId, 40);
   if (!id || !pool) return items;
@@ -1914,12 +1923,13 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
     const old = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software, schon vorab bezahlt → hier 0
-    if (url) return { url, ...old };
+    if (url) return { url, ...(nm ? { name: nm } : {}), ...old }; // Name des Bewerters mitnehmen – steht in der Mail neben dem Link
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
   removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
+  removedItems.splice(0, removedItems.length, ...(await withReviewNames(b.orderId, removedItems)));
   removedItems.splice(0, removedItems.length, ...(await markSwDue(b.orderId, removedItems)));
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
@@ -2017,12 +2027,13 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
     const old = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software, schon vorab bezahlt → hier 0
-    if (url) return { url, ...old };
+    if (url) return { url, ...(nm ? { name: nm } : {}), ...old }; // Name des Bewerters mitnehmen – steht in der Mail neben dem Link
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine offenen Bewertungen ausgewählt" });
   removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
+  removedItems.splice(0, removedItems.length, ...(await withReviewNames(b.orderId, removedItems)));
   removedItems.splice(0, removedItems.length, ...(await markSwDue(b.orderId, removedItems)));
   const stage = [1, 2, 3].includes(Number(b.stage)) ? Number(b.stage) : 1;
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
@@ -2616,7 +2627,8 @@ async function flushPaidConfirm(key: string) {
     const o = r.rows[0];
     if (!o) return;
     const via = o.pp === "wise" ? "Wise" : "PayPal";
-    const props = { lang: mailLang(o.lang), name: o.name || "", via: via as "Wise" | "PayPal", orderId: ids[0], orderIds: ids, dashUrl: await dashLink(o.email, o.lang) };
+    const reviews = await billedReviewRefs(o.email, { orderIds: ids }).catch(() => []); // bezahlte Bewertungen: Name + Direktlink (08.11.2026)
+    const props = { lang: mailLang(o.lang), name: o.name || "", via: via as "Wise" | "PayPal", orderId: ids[0], orderIds: ids, dashUrl: await dashLink(o.email, o.lang), reviews };
     const html = await render(React.createElement(ZahlungErhaltenReviews, props));
     const subject = zahlungErhaltenSubject(props);
     await sendMail({ to: o.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });

@@ -4,6 +4,7 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, DangerBox, CtaButton, type MailLang } from "./components";
 import ProgressBlock from "./ProgressBlock";
+import { BilledReviewList, type BilledReview } from "./BilledReviews";
 import { progT, fillP, type Progress } from "./progressText";
 
 type N = number;
@@ -154,7 +155,8 @@ const T: Record<MailLang, L> = {
 
 export interface ErinnerungProps {
   lang?: string; name?: string; dashUrl: string;
-  pay?: { stage: 1 | 2; amount: string; n: number; prog?: Progress | null } | null;
+  /** reviews: offene (gelöschte, unbezahlte) Bewertungen – Name des Bewerters + Direktlink (08.11.2026). */
+  pay?: { stage: 1 | 2; amount: string; n: number; prog?: Progress | null; reviews?: BilledReview[] } | null;
   sw?: { n: number; price: string } | null;
   never?: boolean; news?: boolean;
 }
@@ -188,6 +190,7 @@ export default function KundenErinnerungReviews(p: ErinnerungProps) {
       <div style={{ textAlign: "center", margin: "10px 0 20px" }}>
         <CtaButton href={p.dashUrl} variant={p.pay && !p.pay.prog ? "pay" : "primary"}>{p.pay && !p.pay.prog ? t.btnPay : t.btn}</CtaButton>
       </div>
+      {p.pay ? <BilledReviewList lang={l} items={p.pay.reviews} /> : null}
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>

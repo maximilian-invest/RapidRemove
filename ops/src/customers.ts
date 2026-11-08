@@ -681,6 +681,27 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
   return { name: all.rows[0]?.name || "", lang: all.rows[0]?.lang || "en", orders: views };
 }
 
+/** Abgerechnete Bewertungen für die Mails (Name des Bewerters + Direktlink, 08.11.2026).
+ *  picks → genau diese Bewertungen (Abbuchung); sonst alle gelöschten Bewertungen der orderIds (bzw. aller Aufträge),
+ *  optional nur unbezahlte (Erinnerung/Mahnung) oder nur bezahlte (Zahlungsbestätigung). */
+export async function billedReviewRefs(email: string, sel: { picks?: PayRef[]; orderIds?: string[]; only?: "unpaid" | "paid" } = {}): Promise<{ name: string | null; url: string | null; text: string | null }[]> {
+  const { orders } = await loadCustomerOrders(String(email || "").toLowerCase()).catch(() => ({ orders: [] as OrderView[] }));
+  const ref = (it: { name?: string | null; url?: string | null; text?: string | null }) => ({ name: it.name || null, url: it.url || null, text: it.text || null });
+  if (sel.picks && sel.picks.length) {
+    const out: { name: string | null; url: string | null; text: string | null }[] = [];
+    for (const p of sel.picks) {
+      const it = orders.find((o) => o.id === p.o)?.items.find((x) => x.key === p.k) as { name?: string | null; url?: string | null; text?: string | null } | undefined;
+      // Bewertung nicht (mehr) im Auftrag gefunden → Schlüssel ist meist der Direktlink selbst.
+      out.push(it ? ref(it) : /^https?:\/\//.test(p.k) ? { name: null, url: p.k, text: null } : { name: p.k.split("|")[0] || null, url: null, text: p.k.split("|").slice(1).join("|") || null });
+    }
+    return out;
+  }
+  const ids = sel.orderIds && sel.orderIds.length ? new Set(sel.orderIds) : null;
+  return orders.filter((o) => o.kind === "reviews" && (!ids || ids.has(o.id)) && (sel.only !== "unpaid" || !o.cancelled))
+    .flatMap((o) => o.items.filter((it) => it.status === "removed" && (sel.only === "unpaid" ? !it.paid && !(it as { waived?: boolean }).waived : sel.only === "paid" ? !!it.paid : true)))
+    .map((it) => ref(it as { name?: string | null; url?: string | null; text?: string | null }));
+}
+
 /** Laufen noch Aufträge (in Bearbeitung, wartend, offen zu zahlen)? → hinterlegte Zahlungsart darf nicht entfernt werden, nur getauscht. */
 export function ordersRunning(orders: OrderView[]): boolean {
   return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate || !!(o as { reasons?: unknown }).reasons

@@ -4,8 +4,10 @@
    7 Tagen noch mehrmals (autopay.ts RETRY_DAYS). Kunde kann die Zahlungsart im Dashboard tauschen oder die Rechnung direkt zahlen. */
 import * as React from "react";
 import { EmailShell, P, CtaButton, NoteBox, A, brand, type MailLang } from "./components";
+import { BilledReviewList, type BilledReview } from "./BilledReviews";
 
-export type FailProps = { lang?: string; name?: string; amount: string; pm?: string; n: number; dashUrl: string; invoiceUrl?: string; reason?: string | null; kind?: "reviews" | "profile"; business?: string };
+/** reviews: die abgerechneten Bewertungen (Name des Bewerters + Direktlink) – Liste unter den Buttons (08.11.2026). */
+export type FailProps = { lang?: string; name?: string; amount: string; pm?: string; n: number; dashUrl: string; invoiceUrl?: string; reason?: string | null; kind?: "reviews" | "profile"; business?: string; reviews?: BilledReview[] };
 
 interface L {
   subject: string; title: string; hi: (n: string) => string;
@@ -108,6 +110,7 @@ export default function ZahlungFehlgeschlagenReviews(p: FailProps) {
       <P><strong>{t.p2}</strong></P>
       <div style={{ textAlign: "center", margin: "14px 0 10px" }}><CtaButton href={p.dashUrl}>{t.btn}</CtaButton></div>
       {p.invoiceUrl ? <P><span style={{ display: "block", textAlign: "center" }}><A href={p.invoiceUrl}>{t.alt}</A></span></P> : null}
+      {p.kind !== "profile" ? <BilledReviewList lang={l} items={p.reviews} /> : null}
       <NoteBox><span style={{ color: brand.tintText }}>{p.kind === "profile" ? t.note.split(" · ")[0] : t.note}</span></NoteBox>
       <P><span style={{ color: brand.muted }}>{t.close}</span></P>
       <P>{t.signoff}<br />RapidRemove</P>

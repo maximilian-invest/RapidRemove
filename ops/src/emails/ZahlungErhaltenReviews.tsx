@@ -2,6 +2,7 @@
    im Admin „Als bezahlt markieren" wurde (Stripe-Zahler bekommen ihre Bestätigung von Stripe). */
 import * as React from "react";
 import { EmailShell, P, NoteBox, CtaButton, type MailLang } from "./components";
+import { BilledReviewList, type BilledReview } from "./BilledReviews";
 
 interface L { subject: string; title: string; hi: (n: string) => string; p: (via: string, id: string) => string; pm: (via: string, ids: string) => string; note: string; btn: string; close: string; signoff: string }
 const T: Record<MailLang, L> = {
@@ -17,7 +18,7 @@ const T: Record<MailLang, L> = {
   da: { pm: (v, id) => `vi har modtaget din betaling via ${v} for ordrerne ${id}. Tak!`, subject: "Betaling modtaget – tak!", title: "Betaling modtaget", hi: (n) => (n ? `Hej ${n},` : "Hej,"), p: (v, id) => `vi har modtaget din betaling via ${v} for ordre ${id}. Tak!`, note: "Dine fjernede anmeldelser er nu fuldt betalt. Du kan altid se det hele i dit dashboard.", btn: "Åbn mit dashboard", close: "Spørgsmål? Svar bare på denne mail.", signoff: "Venlig hilsen," },
   no: { pm: (v, id) => `vi har mottatt betalingen din via ${v} for bestillingene ${id}. Takk!`, subject: "Betaling mottatt – takk!", title: "Betaling mottatt", hi: (n) => (n ? `Hei ${n},` : "Hei,"), p: (v, id) => `vi har mottatt betalingen din via ${v} for bestilling ${id}. Takk!`, note: "De fjernede omtalene dine er nå fullt betalt. Du ser alt i dashbordet når som helst.", btn: "Åpne dashbordet mitt", close: "Spørsmål? Bare svar på denne e-posten.", signoff: "Vennlig hilsen," },
 };
-export interface ZahlungErhaltenProps { lang?: string; name?: string; via: "Wise" | "PayPal"; orderId: string; orderIds?: string[]; dashUrl: string }
+export interface ZahlungErhaltenProps { lang?: string; name?: string; via: "Wise" | "PayPal"; orderId: string; orderIds?: string[]; dashUrl: string; reviews?: BilledReview[] }
 const tOf = (l?: string) => T[(l && (T as Record<string, L>)[l] ? l : "en") as MailLang];
 export const zahlungErhaltenSubject = (p: ZahlungErhaltenProps) => tOf(p.lang).subject;
 export default function ZahlungErhaltenReviews(p: ZahlungErhaltenProps) {
@@ -27,6 +28,7 @@ export default function ZahlungErhaltenReviews(p: ZahlungErhaltenProps) {
     <EmailShell preview={t.subject} title={t.title} lang={l}>
       <P><strong>{t.hi((p.name || "").trim())}</strong></P>
       <P>{p.orderIds && p.orderIds.length > 1 ? t.pm(p.via, p.orderIds.join(", ")) : t.p(p.via, p.orderId)}</P>
+      <BilledReviewList lang={l} items={p.reviews} />
       <NoteBox>{t.note}</NoteBox>
       <div style={{ textAlign: "center", margin: "10px 0 20px" }}><CtaButton href={p.dashUrl}>{t.btn}</CtaButton></div>
       <P>{t.close}</P>

@@ -10,7 +10,8 @@
    übrige Sprachen im „du"-Ton. */
 import * as React from "react";
 import { DashButton } from "./DashBox";
-import { EmailShell, P, NoteBox, CtaButton, Bullets, brand, type MailLang } from "./components";
+import { EmailShell, P, NoteBox, CtaButton, brand, type MailLang } from "./components";
+import { BilledReviewList } from "./BilledReviews";
 
 /** Eine gelöschte Bewertung: Teilen-Link ODER Name + Bewertungstext
    (so, wie der Kunde sie im Wizard identifiziert hat). */
@@ -279,15 +280,8 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
       <P>{t.p1(n, of)}{orderId ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
 
-      {list.length ? (
-        <React.Fragment>
-          <P><strong>{t.listH}</strong></P>
-          <Bullets items={list.map((it, i) => it.url
-            ? <span key={i} style={{ wordBreak: "break-all" }}>✓ {it.url}</span>
-            : <span key={i}>✓ <strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
-          )} />
-        </React.Fragment>
-      ) : null}
+      {/* Name des Bewerters + Direktlink je gelöschter Bewertung (08.11.2026) */}
+      <BilledReviewList lang={lang} items={list} heading={list.length ? t.listH : undefined} />
 
       <NoteBox>
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.billH}</span><br />

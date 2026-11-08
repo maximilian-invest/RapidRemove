@@ -7,6 +7,7 @@
    übrige Sprachen im „du"-Ton. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, DangerBox, CtaButton, brand, type MailLang } from "./components";
+import { BilledReviewList } from "./BilledReviews";
 
 /** Eine offene (gelöschte, aber unbezahlte) Bewertung. */
 export interface MahnungReviewRef { url?: string; name?: string; text?: string }
@@ -293,6 +294,9 @@ export default function MahnungReviews({ lang = "en", name = "", removedItems = 
 
       {method ? <P><strong style={{ color: brand.tintText }}>{(PAY_VIA[lang] || PAY_VIA.en).replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total)}</strong></P>
         : payUrl ? <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton> : null}
+
+      {/* Offene (gelöschte) Bewertungen: Name des Bewerters + Direktlink (08.11.2026) */}
+      <BilledReviewList lang={lang} items={list} />
 
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>
