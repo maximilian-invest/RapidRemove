@@ -75,6 +75,21 @@ const ABO_COPY = {
   no: { badge: "Mest valgt", title: "Beskyttelsesabonnement", desc: "Gratis ny fjerning – overvåking inkludert", aria: "Faktureringsperiode", y: "Årlig", m: "Månedlig", free: "2 måneder gratis", freeS: "2 mnd. gratis", perY: "/ år", perM: "/ måned", onlyPm: (v) => ["Bare ", v, " per måned – faktureres én gang i året"], save: "Du sparer", saveSub: "per år mot månedlig", mSub: (v) => `Kan sies opp månedlig · ${v} per år`, swY: "Betal årlig", swYB: (v) => `Spar ${v}`, feats: ["Gratis ny fjerning – så ofte det trengs", "Automatisk overvåking av profilen din", "Ukentlig kontrollrapport på e-post", "Status alltid i kundeportalen"], footY: "Faktureres først etter vellykket fjerning · kan sies opp ved periodens slutt", footM: "Faktureres først etter vellykket fjerning · kan sies opp månedlig", sumSave: "Besparelse mot månedlig", sumSaveV: (v) => `−${v} / år`, barSave: (v) => `Du sparer ${v} per år`, nameY: "Årlig beskyttelse", nameM: "Månedlig beskyttelse" },
 };
 const abc = (code) => ABO_COPY[code] || ABO_COPY.en;
+/* Schutz-Schritt Ja/Nein (09.11.2026): erst die Frage, Optionen nur nach „Ja“. pm = Preis pro Monat beim Jahresabo. */
+const ASK_COPY = {
+  de: { yes: "Ja, mit Schutz", yesD: (pm) => `Ab ${pm} pro Monat – erneute Löschung kostenlos, inklusive Überwachung`, no: "Nein, ohne Schutz weiter", noD: "Kann später jederzeit hinzugebucht werden" },
+  en: { yes: "Yes, add protection", yesD: (pm) => `From ${pm} per month – free re-removal, monitoring included`, no: "No, continue without protection", noD: "You can add it any time later" },
+  es: { yes: "Sí, con protección", yesD: (pm) => `Desde ${pm} al mes – nueva eliminación gratis, supervisión incluida`, no: "No, continuar sin protección", noD: "Se puede añadir más tarde en cualquier momento" },
+  fr: { yes: "Oui, avec protection", yesD: (pm) => `À partir de ${pm} par mois – nouvelle suppression gratuite, surveillance incluse`, no: "Non, continuer sans protection", noD: "Peut être ajoutée plus tard à tout moment" },
+  it: { yes: "Sì, con protezione", yesD: (pm) => `Da ${pm} al mese – nuova rimozione gratuita, monitoraggio incluso`, no: "No, continua senza protezione", noD: "Si può aggiungere in qualsiasi momento" },
+  nl: { yes: "Ja, met bescherming", yesD: (pm) => `Vanaf ${pm} per maand – gratis opnieuw verwijderen, monitoring inbegrepen`, no: "Nee, doorgaan zonder bescherming", noD: "Kan later altijd nog worden toegevoegd" },
+  pt: { yes: "Sim, com proteção", yesD: (pm) => `A partir de ${pm} por mês – nova remoção grátis, monitorização incluída`, no: "Não, continuar sem proteção", noD: "Pode ser adicionada mais tarde a qualquer momento" },
+  ja: { yes: "はい、保護を追加する", yesD: (pm) => `月あたり${pm}から – 再削除は無料、監視付き`, no: "いいえ、保護なしで続行", noD: "後からいつでも追加できます" },
+  sv: { yes: "Ja, med skydd", yesD: (pm) => `Från ${pm} per månad – ny borttagning gratis, övervakning ingår`, no: "Nej, fortsätt utan skydd", noD: "Kan läggas till när som helst senare" },
+  da: { yes: "Ja, med beskyttelse", yesD: (pm) => `Fra ${pm} om måneden – gratis ny fjernelse, overvågning inkluderet`, no: "Nej, fortsæt uden beskyttelse", noD: "Kan altid tilføjes senere" },
+  no: { yes: "Ja, med beskyttelse", yesD: (pm) => `Fra ${pm} per måned – gratis ny fjerning, overvåking inkludert`, no: "Nei, fortsett uten beskyttelse", noD: "Kan legges til når som helst senere" },
+};
+const askc = (code) => ASK_COPY[code] || ASK_COPY.en;
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -1889,7 +1904,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const xAvail = useExpressOn() !== false;
   const dur = useDurations(); // Löschdauer Standard je Preisstufe (Admin → Express & Löschdauer)
   React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : "yearly"); // null | monthly | yearly | lifetime — Default: Jahresabo vorausgewählt (Entscheidung 06.11.2026; monitor nur Bestand)
+  // Schutz-Frage Ja/Nein (09.11.2026) – vorerst nur mit ?schutzfrage=1 (Vorschau), sonst wie bisher Jahresabo vorausgewählt.
+  const [askOn] = React.useState(() => { try { const q = new URLSearchParams(window.location.search).get("schutzfrage"); if (q === "1") sessionStorage.setItem("rr_schutzfrage", "1"); if (q === "0") sessionStorage.removeItem("rr_schutzfrage"); return sessionStorage.getItem("rr_schutzfrage") === "1"; } catch (e) { return false; } });
+  const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : (askOn ? null : "yearly")); // null | monthly | yearly | lifetime — mit Schutz-Frage nichts vorausgewählt, sonst Jahresabo (Entscheidung 06.11.2026; monitor nur Bestand)
+  const [protAsk, setProtAsk] = React.useState(!askOn || (R && R.protection) ? "yes" : null); // Schutz-Schritt: null = Frage Ja/Nein, "yes" = Schutz-Optionen sichtbar
   const [aboBill, setAboBill] = React.useState(protection === "monthly" ? "monthly" : "yearly"); // Umschalter der Abo-Karte (Schutz-Schritt neu)
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
@@ -4088,6 +4106,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   function StepProtectNew() {
     const bp = bpCopy(t.code);
     const ab = abc(t.code);
+    const ak = askc(t.code);
     const isAbo = protection === "monthly" || protection === "yearly";
     const bill = isAbo ? protection : aboBill;
     const yr = bill === "yearly";
@@ -4109,6 +4128,18 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <section className="bpr-res">
             <h1 className="bpr-h1 bpr-fade">{bp.protH}</h1>
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.protSub}</p>
+            {protAsk !== "yes" ? (
+              <div className="bpr-ropts">
+                <button type="button" className="bpr-rop bpr-fade" style={{ animationDelay: ".1s" }} onClick={() => { setProtAsk("yes"); setProtection(aboBill || "yearly"); }} aria-pressed={false}>
+                  <span className="rd" />
+                  <span className="tx"><b>{ak.yes}</b><span>{ak.yesD(pmV)}</span></span>
+                </button>
+                <button type="button" className="bpr-rop none bpr-fade" style={{ animationDelay: ".14s" }} onClick={() => { setProtAsk(null); setProtection(null); go(5); }} aria-pressed={false}>
+                  <span className="rd" />
+                  <span className="tx"><b>{ak.no}</b><span>{ak.noD}</span></span>
+                </button>
+              </div>
+            ) : (<React.Fragment>
             <div className="bpr-ropts bpr-ropts-abo">
               <div className={"bpr-abo bpr-fade" + (isAbo ? " on" : "")} style={{ animationDelay: ".1s" }}>
                 <span className="bdg"><LStar />{ab.badge}</span>
@@ -4157,9 +4188,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="bpr-warn"><LAlert /><span><b>{bp.warnB}</b>{bp.warnR}</span></div>
               <BprReturnFlow title={bp.exT} nodes={bp.exN} />
             </React.Fragment>) : null}
+            </React.Fragment>)}
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
               <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>
-              <button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button>
+              {protAsk === "yes" ? <button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button> : null}
             </div>
           </section>
           <aside className="bpr-aside bpr-sticky">
@@ -4167,7 +4199,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="lb">{bp.yourSel}</div>
               <div className="rows">
                 <div><span>{svcLabel}<small>{vatNote(lang)} · {wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
-                <div><span>{protName}<small>{vatNote(lang)} · {bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
+                {protAsk === "yes" ? <div><span>{protName}<small>{vatNote(lang)} · {bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div> : null}
                 {protection === "yearly" ? <div className="svr"><span>{ab.sumSave}</span><b>{ab.sumSaveV(saveV)}</b></div> : null}
               </div>
               <div className="now"><span>{bp.today}</span><b>{money(lang, w.s5.dueNow)}</b></div>
@@ -4183,7 +4215,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <div className="bpr-mbar bpr-mbar2">
           <div className="ln2"><span>{svcLabel}{protection ? " + " + protName : ""}</span><b>{bp.todayShort(money(lang, w.s5.dueNow))}</b></div>
           {protection === "yearly" ? <div className="ln3">{ab.barSave(saveV)}</div> : null}
-          <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button></div>
+          <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>{protAsk === "yes" ? <button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button> : null}</div>
         </div>
       </div>
     );
