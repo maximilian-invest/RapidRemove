@@ -11,6 +11,8 @@ import { maxDays } from "@/lib/durations";
 /* Balkenlänge „Typische Dauer": im Verhältnis zur längsten Standard-Dauer (mind. 18 %). */
 const durBarW = (t, d) => Math.max(18, Math.round((maxDays(t) / Math.max(maxDays(d.fresh), maxDays(d.other))) * 100)) + "%";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
+import { requestOffer } from "@/lib/order";
+import { offerUi, readOfferCtx, setOfferCtx } from "@/lib/offer-copy";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount, fetchFreshPrice, fetchPriceQuote } from "@/lib/order";
 import { industryOf, isPremiumIndustry } from "@/lib/industry";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -2280,6 +2282,32 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     setExitQ((q) => (q ? { ...q, sent: key } : q));
   };
   const exitClose = (leave) => { const f = exitQ && exitQ.then; setExitQ(null); if (leave && f) f(); };
+
+  // Schriftliches Angebot (09.11.2026): Box in Schritt 4 + Angebots-Kontext an der Kasse.
+  const [ofMail, setOfMail] = React.useState(() => (R && R.contact && R.contact.email) || "");
+  const [ofRem, setOfRem] = React.useState(false);
+  const [ofState, setOfState] = React.useState("idle"); // idle | sending | sent | error | bad
+  const [ofRes, setOfRes] = React.useState(null); // { id, validUntil, email }
+  const [offerCtx] = React.useState(() => readOfferCtx());
+  const sendOffer = async () => {
+    const em = ofMail.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(em)) { setOfState("bad"); return; }
+    setOfState("sending");
+    try {
+      const sel = selected || {};
+      const r = await requestOffer({
+        checkId, email: em, reminders: ofRem, lang: t.code, service: "remove",
+        placeId: sel.placeId || "", profile: sel.name || name || "", category: sel.cat || "", addr: sel.addr || "",
+        country: String(sel.cc || addrCountry(sel.addr || "") || "").toUpperCase(), rating: sel.rating || "", reviews: Number(sel.reviews) || 0,
+        placeType: sel.ptype || "", placeTypes: sel.types || [], source: (() => { try { return attributionPayload().source || ""; } catch (e) { return ""; } })(),
+      });
+      setOfRes({ id: r.id, validUntil: r.validUntil, email: em });
+      setContact((c) => ({ ...c, email: c.email || em }));
+      setOfState("sent");
+      try { if (window.dataLayer) window.dataLayer.push({ event: "offer_request" }); } catch (e) {}
+    } catch (e) { setOfState("error"); }
+  };
+  const fmtOfferDate = (iso) => { try { return new Intl.DateTimeFormat(t.code === "en" ? "en-GB" : t.code, { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(iso)); } catch (e) { return String(iso || "").slice(0, 10); } };
   const touchRef = React.useRef(null);
   const onTouchStart = (e) => {
     if (!e.touches || e.touches.length !== 1) { touchRef.current = null; return; }
@@ -2300,6 +2328,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Bewertungs-Abrechnung: eigener Zweig (reviewMode) ODER im Profil-Fluss in
   // Schritt 4 „Einzelne Bewertungen löschen" gewählt (service === "reviews").
   const revFlow = reviewMode || service === "reviews";
+  // Angebot gilt nur für dasselbe Profil + „Profil löschen"/„Neustart" wie im Angebot.
+  const offerOk = !!(offerCtx && !revFlow && selected && (!offerCtx.placeId || offerCtx.placeId === selected.placeId) && (offerCtx.service || "remove") === service);
   const reviewList = [
     ...(pickSel || []).map((r) => ({ url: (r.link || "").trim(), name: (r.name || "").trim(), text: (r.text || "").trim(), ...(!reviewHasText(r) ? { nt: true } : reviewIsOld(r) ? (revMethod(r) === "sw" ? { old: true, sw: true } : { old: true }) : {}), ...(r.rating ? { rating: r.rating } : {}), ...(r.days >= 0 ? { days: r.days } : {}) })),
     ...(reviewItems || []).map((it) => {
@@ -2516,6 +2546,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // Funnel: Zahlung/Bestellung gestartet (Stufe 4) + finaler Gesamtpreis.
     submitCheck({ checkId, step: 4, amount: oneTimeTotal || undefined, source: checkSource }).catch(() => {});
     clearResumeProfile(); // Bestellung abgeschickt → Funnel abgeschlossen, CTA zurück auf „Gratis-Check"
+    setOfferCtx(null);
     // Affiliate-Attribution (FirstPromoter): Tracking-ID (_fprom_tid) für die Sale-
     // Zuordnung UND den lesbaren Partner-Code (_fprom_ref) mitschicken, damit im
     // Admin/Push direkt sichtbar ist, von welchem Affiliate die Bestellung kommt.
@@ -2540,6 +2571,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       } : {}),
       express: !revFlow && !!express, expressAmount: !revFlow && express ? num(p.express) : 0,
       chatSid: (() => { try { return sessionStorage.getItem("rr_site_chat_sid") || ""; } catch (e) { return ""; } })(), // Website-Chat ↔ Bestellung
+      offerId: offerOk ? offerCtx.id : undefined, // schriftliches Angebot → Preisbindung + „angenommen"
       profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
       placeId: revFlow ? revPid : selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",
@@ -3880,6 +3912,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <section className="bpr-res">
             <h1 className="bpr-h1 bpr-fade">{w.s5.h}</h1>
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.coSub}</p>
+            {offerOk ? <div className="bpr-ofb bpr-fade" style={{ animationDelay: ".06s" }}><LFile /><span>{offerUi(t.code).banner(offerCtx.id, fmtOfferDate(offerCtx.validUntil))}</span></div> : null}
             {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
               <div className="bpr-alert" role="alert"><b>{D.t}</b>{D.p((dupOrder.orders || []).join(", "))}{" "}<a href={dashHref("/my-reviews") + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")}>{D.l}</a></div>
             ); })() : null}
@@ -4318,6 +4351,32 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               {opt("reset", null, bp.svc2[0], bp.svc2[1], bp.svc2[2], money(lang, p.reset), wm.afterSuccess, null, 1, null, true)}
               {revOk ? opt("reviews", "/assets/bestell/bewertungen.webp", rv.tileT, rv.tileD, null, money(rl, p.review) + (pk.fromSuf || ""), rv.per, null, 2, (pk.fromPre || "").trim()) : null}
             </div>
+            {selected && !offerCtx ? (() => {
+              const oc = offerUi(t.code);
+              if (ofState === "sent" && ofRes) {
+                const [a1, a2, a3, a4, a5] = oc.sentP(ofRes.email, fmtOfferDate(ofRes.validUntil));
+                return (
+                  <div className="bpr-offer sent bpr-fade">
+                    <div className="oh"><span className="oi ok"><LCheck /></span><div><b>{oc.sentH}</b><span>{a1}<strong>{a2}</strong>{a3}<strong>{a4}</strong>{a5}</span></div></div>
+                    <div className="oq"><span>{oc.quick}</span><span className="ob">
+                      <a href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}><LMsg />WhatsApp</a>
+                      <a href={t.code === "de" ? "tel:08000900001" : "tel:+4362459305300"} onClick={() => trackContact("phone")}><LTel />{oc.call}</a>
+                    </span></div>
+                  </div>
+                );
+              }
+              return (
+                <div className="bpr-offer bpr-fade" style={{ animationDelay: ".2s" }}>
+                  <div className="oh"><span className="oi"><LFile /></span><div><b>{oc.boxH}</b><span>{oc.boxP}</span></div></div>
+                  <form className="of" onSubmit={(e) => { e.preventDefault(); if (ofState !== "sending") sendOffer(); }}>
+                    <input type="email" inputMode="email" autoComplete="email" placeholder={oc.ph} value={ofMail} onChange={(e) => { setOfMail(e.target.value); if (ofState === "bad" || ofState === "error") setOfState("idle"); }} aria-label={oc.ph} />
+                    <button type="submit" disabled={ofState === "sending"}>{ofState === "sending" ? oc.sending : oc.send}</button>
+                  </form>
+                  <label className="or"><input type="checkbox" checked={ofRem} onChange={(e) => setOfRem(e.target.checked)} /><span className="bx"><LCheck /></span><span>{oc.rem}</span></label>
+                  {ofState === "bad" || ofState === "error" ? <p className="oe">{ofState === "bad" ? oc.bad : oc.err}</p> : null}
+                </div>
+              );
+            })() : null}
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
           </section>
           <aside className="bpr-aside">

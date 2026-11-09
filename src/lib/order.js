@@ -134,3 +134,20 @@ export async function findReviewByLink(placeId, link, lang) {
   if (!res.ok || !d || !d.ok) throw Object.assign(new Error((d && d.error) || "HTTP " + res.status), { code: (d && d.error) || "fetch" });
   return d.review;
 }
+
+/** Schriftliches Angebot anfordern (09.11.2026). Wirft bei Fehler (Status im Text). */
+export async function requestOffer(payload) {
+  if (!OPS) throw new Error("offer offline");
+  const res = await fetch(OPS + "/offer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload || {}) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error("offer " + res.status + (j.error ? " " + j.error : ""));
+  return j;
+}
+/** Angebot laden (Angebotsseite). peek=true zählt keinen Klick. null = nicht gefunden. */
+export async function fetchOffer(id, t, peek) {
+  if (!OPS || !id || !t) return null;
+  const res = await fetch(OPS + "/offer-info?id=" + encodeURIComponent(id) + "&t=" + encodeURIComponent(t) + (peek ? "&peek=1" : ""));
+  if (!res.ok) return null;
+  const j = await res.json().catch(() => null);
+  return j && j.ok ? j : null;
+}

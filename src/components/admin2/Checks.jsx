@@ -6,7 +6,7 @@
 import React from "react";
 import { ArrowLeft, Search, Filter, Loader, Send, MailPlus, Mail, RefreshCw, Globe, MapPin, ArrowRight, Check, Star, Store, ChevronRight } from "lucide-react";
 import { dedupeChecks, SRC_LABEL, SOCIAL_KINDS, srcLabelOf, CHECK_DROP, checkStepOf, checkMapsUrl, checkWebSearchUrl } from "@/components/admin/AdminApp";
-import { saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendTemplate } from "@/lib/admin-api";
+import { saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendTemplate, fetchOffers } from "@/lib/admin-api";
 import { fetchProfileById } from "@/lib/places";
 
 const SRCS = [["google_ads", "Google Ads"], ["ms_ads", "Microsoft Ads"], ["social", "Social Media"], ["affiliate", "Affiliate"], ["utm", "UTM"], ["organic", "Organisch"], ["referral", "Verweis"], ["direct", "Direkt"], ["none", "Unbekannt"]];
@@ -26,6 +26,63 @@ export const EXIT_LABEL = { price: "Zu teuer", info: "Braucht mehr Infos", trust
 const EXIT_STEP = { 3: "Leistung", 4: "Schutz", 5: "Kasse" };
 const EXIT_VIA = { close: "Seite verlassen", back: "Zurück", idle: "60 s inaktiv", intent: "Maus aus Fenster" };
 
+/* Schriftliche Angebote (09.11.2026): Verlauf je Angebot + „heiß" = Link geklickt, nicht bestellt */
+const fmtMoneyA = (v, cur) => { try { return new Intl.NumberFormat("de-DE", { style: "currency", currency: cur === "usd" ? "USD" : "EUR", maximumFractionDigits: 0 }).format(Number(v) || 0); } catch (e) { return String(v); } };
+const offerHot = (o) => o.status === "sent" && !!o.clicked_at;
+export function offerSteps(o) {
+  const st = [["Gesendet " + fmtDT(o.created_at), o.mail_ok === false ? "bad" : ""]];
+  if (o.mail_ok === false) st.push(["Mail fehlgeschlagen", "bad"]);
+  if (o.opened_at) st.push(["Geöffnet" + (o.open_count > 1 ? " " + o.open_count + "×" : ""), ""]);
+  if (o.pdf_at) st.push(["PDF geladen", ""]);
+  if (o.r1_at) st.push(["Erinnerung 1", ""]);
+  if (o.r2_at) st.push(["Erinnerung 2", ""]);
+  if (o.r3_at) st.push(["Erinnerung 3", ""]);
+  if (o.clicked_at) st.push(["Link geklickt " + fmtDT(o.clicked_at), o.status === "sent" ? "hot" : ""]);
+  if (o.status === "accepted") st.push(["Angenommen ✓" + (o.order_id ? " " + o.order_id : ""), "ok"]);
+  else if (o.status === "expired") st.push(["Abgelaufen", "off"]);
+  if (o.unsub_at) st.push(["Erinnerungen abbestellt", "off"]);
+  return st;
+}
+const ST_COL = { ok: { background: "#ecfdf5", color: "#047857" }, hot: { background: "#fff4e8", color: "#a34f00" }, off: { background: "#fafafa", color: "#aaa" }, bad: { background: "#fdecec", color: "#b42318" }, "": { background: "#f1f1f1", color: "#555" } };
+export function OfferTimeline({ o }) {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+      {offerSteps(o).map(([t, k], i) => <React.Fragment key={i}>{i ? <span style={{ color: "#ccc", fontSize: 11 }}>→</span> : null}<span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 8px", borderRadius: 999, whiteSpace: "nowrap", ...ST_COL[k] }}>{t}</span></React.Fragment>)}
+    </div>
+  );
+}
+function OffersCard({ offers, onHot, hot }) {
+  if (!offers || !offers.length) return null;
+  const since = Date.now() - 30 * 864e5;
+  const recent = offers.filter((o) => new Date(o.created_at).getTime() >= since);
+  const n = recent.length, op = recent.filter((o) => o.opened_at).length, acc = recent.filter((o) => o.status === "accepted");
+  const days = acc.length ? (acc.reduce((a, o) => a + (new Date(o.accepted_at) - new Date(o.created_at)) / 864e5, 0) / acc.length) : null;
+  const hotN = offers.filter(offerHot).length;
+  const list = (hot ? offers.filter(offerHot) : offers).slice(0, hot ? 50 : 6);
+  const k = (l, v, sub) => <div style={{ background: "#f6f6f5", borderRadius: 12, padding: "10px 12px" }}><span style={{ fontSize: 11.5, color: "#888" }}>{l}</span><b style={{ display: "block", fontSize: 19, fontWeight: 700, marginTop: 2 }}>{v}{sub ? <small style={{ fontSize: 12, color: "#888", fontWeight: 500, marginLeft: 4 }}>{sub}</small> : null}</b></div>;
+  return (
+    <div className="card" style={{ padding: "14px", marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <b style={{ fontSize: 15 }}>Angebote <span style={{ fontSize: 12, color: "#888", fontWeight: 500 }}>· letzte 30 Tage</span></b>
+        <button type="button" className={"achip" + (hot ? " on" : "")} onClick={onHot}>Heiß<span className="n">{hotN}</span></button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8, marginBottom: 10 }}>
+        {k("Angefordert", n)}{k("Geöffnet", op, n ? Math.round((op / n) * 100) + " %" : "")}{k("Angenommen", acc.length, n ? Math.round((acc.length / n) * 100) + " %" : "")}{k("Ø bis Annahme", days != null ? days.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " Tage" : "–")}
+      </div>
+      {list.map((o) => (
+        <div key={o.id} style={{ padding: "10px 0", borderTop: "1px solid #f0f0f0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13.5 }}>
+            <span><b>{o.profile}</b><span style={{ color: "#888" }}> · {o.id} · {o.email}</span></span>
+            <b style={{ whiteSpace: "nowrap" }}>{fmtMoneyA(o.amount, o.cur)}</b>
+          </div>
+          <div style={{ marginTop: 6 }}><OfferTimeline o={o} /></div>
+          {offerHot(o) ? <div style={{ marginTop: 6, fontSize: 12.5 }}><a href={"mailto:" + o.email} style={{ fontWeight: 600 }}>Nachfassen per E-Mail</a></div> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ChecksScreen({ ctx }) {
   const { checks: rawChecks, orders, setMoreSub, openSheet, toast, chk, setChk } = ctx;
   // Bewertungs-Kennzeichen VOR dem Zusammenfassen ermitteln (eine Gruppe ist „Bewertungen", sobald eine Prüfung es ist)
@@ -40,6 +97,10 @@ export function ChecksScreen({ ctx }) {
   }, [rawChecks, orders]);
   const eff = (c) => (chk.saved[c.id] !== undefined ? chk.saved[c.id] : (c.email || ""));
   const conv = (c) => c.status === "konvertiert";
+  const [offers, setOffers] = React.useState([]);
+  const [hotOnly, setHotOnly] = React.useState(false);
+  React.useEffect(() => { let a = true; fetchOffers().then((x) => { if (a) setOffers(x); }).catch(() => {}); return () => { a = false; }; }, []);
+  const offerByCheck = React.useMemo(() => { const m = {}; offers.forEach((o) => { if (o.check_id && !m[o.check_id]) m[o.check_id] = o; }); return m; }, [offers]);
 
   /* Auto-Recherche (wie bisheriges Admin): offene Prüfungen ohne E-Mail mit Place-ID, noch nie recherchiert, max. 10 */
   const ran = React.useRef(false);
@@ -87,6 +148,7 @@ export function ChecksScreen({ ctx }) {
       <div className="usrch"><Search /><input type="search" placeholder="Profil, Name, E-Mail" value={chk.q} onChange={(e) => setChk((s) => ({ ...s, q: e.target.value }))} />
         <button type="button" className="bt" onClick={() => openSheet({ kind: "pick", title: "Quelle", cur: chk.src, opts: srcOpts.map(([k, l, n]) => [k, l, null, n]), onPick: (k) => setChk((s) => ({ ...s, src: k })) })}>
           <Filter />{chk.src === "all" ? "Quelle" : (srcOpts.find((x) => x[0] === chk.src) || [0, "Quelle"])[1]}</button></div>
+      <OffersCard offers={offers} hot={hotOnly} onHot={() => setHotOnly((v) => !v)} />
       {(() => {
         const since = Date.now() - 30 * 864e5;
         const ex = (rawChecks || []).filter((c) => !c.test && c.exitReason && new Date(c.exitAt || c.createdAt).getTime() >= since);
@@ -109,10 +171,10 @@ export function ChecksScreen({ ctx }) {
           const em = eff(c);
           const st = conv(c) ? "Beauftragt" : c.step == null ? "Profil-Auswahl" : (CHECK_DROP[checkStepOf(c)] || CHECK_DROP[1]).t;
           return (
-            <button key={c.id} type="button" className="ord ckr" style={{ "--pi": Math.min(j, 10) }} onClick={() => openSheet({ kind: "chk", id: c.id, c })}>
+            <button key={c.id} type="button" className="ord ckr" style={{ "--pi": Math.min(j, 10) }} onClick={() => openSheet({ kind: "chk", id: c.id, c: offerByCheck[c.id] ? { ...c, offer: offerByCheck[c.id] } : c })}>
               <span className="t"><span className="l1"><b>{c.profile || c.name || "—"}{c.dupes > 1 ? <i className="x2">{c.dupes}×</i> : null}</b></span>
                 <span className="l2">{c.test ? <span className="ktag ktest">Test</span> : null}<span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Bewertungen" : "Profil"}</span>
-                  <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}{c.exitReason ? <> · <b style={{ color: "#b45309", fontWeight: 600 }}>{EXIT_LABEL[c.exitReason] || c.exitReason}</b></> : null}</span></span>
+                  <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}{c.exitReason ? <> · <b style={{ color: "#b45309", fontWeight: 600 }}>{EXIT_LABEL[c.exitReason] || c.exitReason}</b></> : null}{offerByCheck[c.id] ? <> · <b style={{ color: offerByCheck[c.id].status === "accepted" ? "#047857" : "#a34f00", fontWeight: 600 }}>Angebot {offerByCheck[c.id].status === "accepted" ? "angenommen" : offerHot(offerByCheck[c.id]) ? "· heiß" : "gesendet"}</b></> : null}</span></span>
               {conv(c) ? <span className="ab ok"><Check /></span> : <span className={"ab" + (em ? " on" : "")}>{em ? <Send /> : <MailPlus />}</span>}
             </button>
           );
@@ -190,6 +252,12 @@ export function CheckSheet({ c, ctx, close }) {
           <b style={{ display: "block", color: "#5c2c00" }}>Abbruchgrund: {EXIT_LABEL[c.exitReason] || c.exitReason}</b>
           {c.exitText ? <span style={{ display: "block", margin: "4px 0" }}>„{c.exitText}"</span> : null}
           <span style={{ fontSize: 12, opacity: 0.8 }}>{[EXIT_STEP[c.exitStep], EXIT_VIA[c.exitVia], c.exitAt ? fmtDT(c.exitAt) : ""].filter(Boolean).join(" · ")}</span>
+        </div>
+      ) : null}
+      {c.offer ? (
+        <div style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: 14, background: "#f6f6f5", fontSize: 14 }}>
+          <b style={{ display: "block", marginBottom: 6 }}>Angebot {c.offer.id} · {fmtMoneyA(c.offer.amount, c.offer.cur)} · {c.offer.email}</b>
+          <OfferTimeline o={c.offer} />
         </div>
       ) : null}
       <div className="ckt"><span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Prüfung für Einzelbewertungen" : "Profil-Prüfung"}</span>{c.dupes > 1 ? <span className="ktag">{c.dupes}× geprüft</span> : null}</div>

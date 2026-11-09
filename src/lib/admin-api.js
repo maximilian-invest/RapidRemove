@@ -787,3 +787,12 @@ export const expressStatus = async () => { const r = await fetch(OPS + "/express
 export const expressSet = (on) => adminPost("/admin/express", { on });
 /* Löschdauer Standard je Preisstufe (02.11.2026): dur = { fresh, other } je { min, max, unit "d"|"w" }. */
 export const durationsSet = (dur) => adminPost("/admin/durations", { dur });
+
+/** Schriftliche Angebote aus dem Bestellprozess (09.11.2026) – Liste mit Verlauf. */
+export async function fetchOffers() {
+  if (!OPS) return [];
+  const res = await fetch(OPS + "/admin/offers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN }) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j.offers || [];
+}
