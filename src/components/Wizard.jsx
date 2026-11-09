@@ -45,6 +45,10 @@ const DUP_TXT = {
 };
 import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_CONSENT_VERSION } from "@/lib/consents";
 import { dashHref } from "@/lib/portal";
+
+// ?schutzfrage=1/0 sofort beim Laden merken – App.jsx räumt die URL auf, bevor der Wizard rendert.
+function readSchutzfrageParam() { try { const q = new URLSearchParams(window.location.search).get("schutzfrage"); if (q === "1") sessionStorage.setItem("rr_schutzfrage", "1"); if (q === "0") sessionStorage.removeItem("rr_schutzfrage"); } catch (e) {} }
+if (typeof window !== "undefined") readSchutzfrageParam();
 /* Schutz (06.11.2026): „Automatische Überwachung" (69,90) entfällt, dafür Jahresabo (299) – Monitoring ist bei jedem Schutz inklusive. */
 const YEARLY_COPY = {
   de: { name: "Jährlicher Schutz", tier: "Jährlich", desc: "Wie monatlich, inkl. wöchentlicher Prüfung – 2 Monate gratis.", sm: "jährlich kündbar", per: " / Jahr", monthly: "Wöchentliche Prüfung inklusive – erneute Löschung kostenlos." },
@@ -1905,7 +1909,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const dur = useDurations(); // Löschdauer Standard je Preisstufe (Admin → Express & Löschdauer)
   React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
   // Schutz-Frage Ja/Nein (09.11.2026) – vorerst nur mit ?schutzfrage=1 (Vorschau), sonst wie bisher Jahresabo vorausgewählt.
-  const [askOn] = React.useState(() => { try { const q = new URLSearchParams(window.location.search).get("schutzfrage"); if (q === "1") sessionStorage.setItem("rr_schutzfrage", "1"); if (q === "0") sessionStorage.removeItem("rr_schutzfrage"); return sessionStorage.getItem("rr_schutzfrage") === "1"; } catch (e) { return false; } });
+  const [askOn] = React.useState(() => { readSchutzfrageParam(); try { return sessionStorage.getItem("rr_schutzfrage") === "1"; } catch (e) { return false; } });
   const [protection, setProtection] = React.useState(R ? (R.protection === "monitor" ? "monthly" : (R.protection ?? null)) : (askOn ? null : "yearly")); // null | monthly | yearly | lifetime — mit Schutz-Frage nichts vorausgewählt, sonst Jahresabo (Entscheidung 06.11.2026; monitor nur Bestand)
   const [protAsk, setProtAsk] = React.useState(!askOn || (R && R.protection) ? "yes" : null); // Schutz-Schritt: null = Frage Ja/Nein, "yes" = Schutz-Optionen sichtbar
   const [aboBill, setAboBill] = React.useState(protection === "monthly" ? "monthly" : "yearly"); // Umschalter der Abo-Karte (Schutz-Schritt neu)
