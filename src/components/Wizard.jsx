@@ -50,6 +50,8 @@ import { dashHref } from "@/lib/portal";
 // Sofort beim Laden lesen – App.jsx räumt die URL auf, bevor der Wizard rendert.
 function readSchutzfrageParam() { try { const q = new URLSearchParams(window.location.search).get("schutzfrage"); if (q === "0") sessionStorage.setItem("rr_schutzfrage", "0"); if (q === "1") sessionStorage.removeItem("rr_schutzfrage"); } catch (e) {} }
 if (typeof window !== "undefined") readSchutzfrageParam();
+// Länder mit Pflicht-Wortlaut am Bestell-Button (EU + EWR + UK + CH).
+const BUTTON_LAW_CC = new Set(["AT","BE","BG","CY","CZ","DE","DK","EE","ES","FI","FR","GR","HR","HU","IE","IT","LT","LU","LV","MT","NL","PL","PT","RO","SE","SI","SK","IS","LI","NO","GB","UK","CH"]);
 /* Schutz (06.11.2026): „Automatische Überwachung" (69,90) entfällt, dafür Jahresabo (299) – Monitoring ist bei jedem Schutz inklusive. */
 const YEARLY_COPY = {
   de: { name: "Jährlicher Schutz", tier: "Jährlich", desc: "Wie monatlich, inkl. wöchentlicher Prüfung – 2 Monate gratis.", sm: "jährlich kündbar", per: " / Jahr", monthly: "Wöchentliche Prüfung inklusive – erneute Löschung kostenlos." },
@@ -3818,7 +3820,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <span>{children}</span>
       </label>
     );
-    const orderBtn = <button type="submit" form="bpr-co" className="bpr-go"><LLock />{bp.order}</button>;
+    // Bestell-Button: EU/EWR/UK/CH brauchen „mit Zahlungspflicht“ (Button-Lösung, § 8 FAGG / § 312j BGB / UK CCR) – sonst (z. B. USA, Kanada, Australien) auf Englisch nur „Place order“ (09.11.2026).
+    const coCc = String((revFlow ? revCountry : selected && (selected.cc || addrCountry(selected.addr || ""))) || "").toUpperCase();
+    const orderLbl = t.code === "en" && coCc && !BUTTON_LAW_CC.has(coCc) ? "Place order" : bp.order;
+    const orderBtn = <button type="submit" form="bpr-co" className="bpr-go"><LLock />{orderLbl}</button>;
     const backBtn = <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>;
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="co">
