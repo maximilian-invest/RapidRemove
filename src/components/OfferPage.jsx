@@ -72,7 +72,7 @@ export default function OfferPage() {
     <div className="ofp">
       <header className="ofp-top"><a href={asset(lang === "de" ? "/" : "/" + lang + "/")}><img src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" /></a></header>
       <main className="ofp-main">{children}</main>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
     </div>
   );
 
