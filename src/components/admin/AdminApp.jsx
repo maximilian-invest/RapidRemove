@@ -471,6 +471,8 @@ export function dedupeChecks(list) {
       addr: base.addr || g.map((c) => c.addr).find(Boolean) || "",
       // Rückgewinnung gilt für die ganze Gruppe als gesendet (frühester Versand-Zeitpunkt).
       rueckgewinnungAt: g.map((c) => c.rueckgewinnungAt).filter(Boolean).sort()[0] || null,
+      // Abbruch-Frage: jüngste Antwort der Gruppe
+      ...(() => { const ex = g.filter((c) => c.exitReason).sort((a, b) => String(b.exitAt || "").localeCompare(String(a.exitAt || "")))[0]; return ex ? { exitReason: ex.exitReason, exitText: ex.exitText, exitStep: ex.exitStep, exitVia: ex.exitVia, exitAt: ex.exitAt } : {}; })(),
       dupes: g.length,
     });
   }

@@ -96,6 +96,11 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS enriched_at timestamptz, ADD COLUMN IF NOT EXISTS rueckgewinnung_at timestamptz,
       ADD COLUMN IF NOT EXISTS reason text
   `);
+  // Abbruch-Frage im Bestellprozess (09.11.2026): Antwort auf „Was hält Sie gerade ab?".
+  await pool.query(`ALTER TABLE checks
+      ADD COLUMN IF NOT EXISTS exit_reason text, ADD COLUMN IF NOT EXISTS exit_text text,
+      ADD COLUMN IF NOT EXISTS exit_step integer, ADD COLUMN IF NOT EXISTS exit_via text,
+      ADD COLUMN IF NOT EXISTS exit_at timestamptz`);
   // Herkunft der Prüfung (nur NEUE, nullable Spalten – kein Backfill, bestehende
   // Spalten unangetastet). `source` bleibt was es war und trägt ab jetzt den
   // LAST-Touch; `source_first` den unveränderlichen First-Touch. Die einzelnen
@@ -418,6 +423,17 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
      c.fbclid || null, c.fbclidTs || null, c.fbc || null, c.fbp || null,
      c.consentMarketing ?? null, c.leadEventId || null, c.eventSourceUrl || null,
      c.clientIp || null, c.clientUa || null, c.reason || null],
+  );
+}
+
+/** Abbruch-Frage: Antwort an der Prüfung speichern (letzte Antwort gilt; Freitext nur bei „Sonstiges"). */
+export async function setCheckExit(id: string, e: { reason: string; text?: string; step?: number; via?: string }): Promise<void> {
+  if (!pool || !id || !e.reason) return;
+  await pool.query(
+    `INSERT INTO checks (id, exit_reason, exit_text, exit_step, exit_via, exit_at) VALUES ($1,$2,$3,$4,$5,now())
+     ON CONFLICT (id) DO UPDATE SET exit_reason=EXCLUDED.exit_reason, exit_text=COALESCE(EXCLUDED.exit_text, checks.exit_text),
+       exit_step=EXCLUDED.exit_step, exit_via=EXCLUDED.exit_via, exit_at=now()`,
+    [id, e.reason, e.text || null, e.step ?? null, e.via || null],
   );
 }
 

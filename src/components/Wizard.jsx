@@ -749,6 +749,22 @@ function convFor(code) { return { ...CONV.en, ...(CONV[code] || {}) }; }
 
 /* Optionale Frage „Warum löschen?" (Danke-Seite nach der Bestellung) — fließt nur aggregiert
    in den Datenreport ein. Schlüssel: closed · bad_reviews · wrong · moved · other. */
+/* Abbruch-Frage (09.11.2026): „Was hält Sie gerade ab?" – einmal pro Sitzung in Leistung/Schutz/Kasse. */
+const EXIT_KEYS = ["price", "info", "trust", "justprice", "later", "other_need", "other"];
+const EXIT_COPY = {
+  de: { h: "Kurze Frage: Was hält Sie gerade ab?", sub: "Ein Klick hilft uns, besser zu werden.", o: { price: "Zu teuer", info: "Ich brauche mehr Infos", trust: "Unsicher, ob das seriös ist", justprice: "Wollte nur den Preis wissen", later: "Muss das erst intern besprechen", other_need: "Ich brauche eigentlich etwas anderes", other: "Sonstiges" }, ph: "Was fehlt Ihnen? (optional)", send: "Senden", skip: "Überspringen", thx: "Danke für Ihre Antwort!", tip: { price: "Gut zu wissen: Sie zahlen erst nach erfolgreicher Löschung – heute fällig: 0 €.", trust: "Verständlich. Wir sind ein österreichisches Unternehmen (Simple Solution. OG, Hallein) und seit 2017 auf Google-Profile spezialisiert – fragen Sie uns gern direkt.", info: "Fragen Sie uns einfach – wir antworten meist in wenigen Minuten.", later: "Kein Problem – Ihre Auswahl bleibt gespeichert, Sie können jederzeit hier weitermachen." }, tipX: "Fragen? Max & Matthias antworten meist in wenigen Minuten.", chat: "Mit Experten chatten", stay: "Zurück zur Bestellung", leave: "Trotzdem verlassen" },
+  en: { h: "Quick question: what's holding you back?", sub: "One tap helps us improve.", o: { price: "Too expensive", info: "I need more information", trust: "Not sure if this is legitimate", justprice: "Just wanted to see the price", later: "I need to discuss it internally first", other_need: "I actually need something else", other: "Something else" }, ph: "What's missing? (optional)", send: "Send", skip: "Skip", thx: "Thanks for your answer!", tip: { price: "Good to know: you only pay after a successful removal – due today: $0.", trust: "Understandable. We're an Austrian company (Simple Solution. OG) specialised in Google profiles since 2017 – feel free to ask us directly.", info: "Just ask us – we usually reply within minutes.", later: "No problem – your selection is saved and you can continue here anytime." }, tipX: "Questions? Max & Matthias usually reply within minutes.", chat: "Chat with an expert", stay: "Back to my order", leave: "Leave anyway" },
+  es: { h: "Una pregunta rápida: ¿qué le frena?", sub: "Un clic nos ayuda a mejorar.", o: { price: "Demasiado caro", info: "Necesito más información", trust: "No estoy seguro de que sea serio", justprice: "Solo quería ver el precio", later: "Tengo que consultarlo internamente", other_need: "En realidad necesito otra cosa", other: "Otro motivo" }, ph: "¿Qué le falta? (opcional)", send: "Enviar", skip: "Omitir", thx: "¡Gracias por su respuesta!", tip: { price: "Bueno saberlo: solo paga tras la eliminación – hoy: 0 €.", trust: "Comprensible. Somos una empresa austriaca (Simple Solution. OG) especializada en perfiles de Google desde 2017 – pregúntenos directamente.", info: "Pregúntenos – solemos responder en minutos.", later: "Sin problema: su selección queda guardada y puede continuar cuando quiera." }, tipX: "¿Preguntas? Max y Matthias suelen responder en minutos.", chat: "Chatear con un experto", stay: "Volver al pedido", leave: "Salir de todos modos" },
+  fr: { h: "Petite question : qu'est-ce qui vous retient ?", sub: "Un clic nous aide à nous améliorer.", o: { price: "Trop cher", info: "J'ai besoin de plus d'informations", trust: "Je ne suis pas sûr que ce soit sérieux", justprice: "Je voulais juste voir le prix", later: "Je dois d'abord en parler en interne", other_need: "J'ai besoin d'autre chose", other: "Autre" }, ph: "Que vous manque-t-il ? (facultatif)", send: "Envoyer", skip: "Passer", thx: "Merci pour votre réponse !", tip: { price: "Bon à savoir : vous ne payez qu'après la suppression – aujourd'hui : 0 €.", trust: "Compréhensible. Nous sommes une entreprise autrichienne (Simple Solution. OG) spécialisée dans les fiches Google depuis 2017 – posez-nous vos questions.", info: "Demandez-nous – nous répondons en général en quelques minutes.", later: "Aucun problème : votre sélection est enregistrée, vous pouvez reprendre à tout moment." }, tipX: "Des questions ? Max et Matthias répondent en quelques minutes.", chat: "Discuter avec un expert", stay: "Retour à la commande", leave: "Quitter quand même" },
+  it: { h: "Una domanda veloce: cosa la frena?", sub: "Un clic ci aiuta a migliorare.", o: { price: "Troppo caro", info: "Mi servono più informazioni", trust: "Non sono sicuro che sia serio", justprice: "Volevo solo vedere il prezzo", later: "Devo prima parlarne internamente", other_need: "In realtà mi serve altro", other: "Altro" }, ph: "Cosa le manca? (facoltativo)", send: "Invia", skip: "Salta", thx: "Grazie per la risposta!", tip: { price: "Buono a sapersi: paga solo dopo la rimozione – oggi: 0 €.", trust: "Comprensibile. Siamo un'azienda austriaca (Simple Solution. OG) specializzata in profili Google dal 2017 – ci chieda pure.", info: "Ci chieda pure – di solito rispondiamo in pochi minuti.", later: "Nessun problema: la selezione resta salvata, può continuare quando vuole." }, tipX: "Domande? Max e Matthias rispondono di solito in pochi minuti.", chat: "Chatta con un esperto", stay: "Torna all'ordine", leave: "Esci comunque" },
+  nl: { h: "Korte vraag: wat houdt u tegen?", sub: "Eén klik helpt ons beter te worden.", o: { price: "Te duur", info: "Ik heb meer informatie nodig", trust: "Niet zeker of dit betrouwbaar is", justprice: "Wilde alleen de prijs weten", later: "Moet het eerst intern bespreken", other_need: "Ik heb eigenlijk iets anders nodig", other: "Anders" }, ph: "Wat mist u? (optioneel)", send: "Versturen", skip: "Overslaan", thx: "Bedankt voor uw antwoord!", tip: { price: "Goed om te weten: u betaalt pas na een geslaagde verwijdering – vandaag: € 0.", trust: "Begrijpelijk. Wij zijn een Oostenrijks bedrijf (Simple Solution. OG), sinds 2017 gespecialiseerd in Google-profielen – vraag het ons gerust.", info: "Vraag het ons – we antwoorden meestal binnen enkele minuten.", later: "Geen probleem: uw keuze blijft bewaard, u kunt hier altijd verder." }, tipX: "Vragen? Max en Matthias antwoorden meestal binnen enkele minuten.", chat: "Chat met een expert", stay: "Terug naar bestelling", leave: "Toch verlaten" },
+  pt: { h: "Pergunta rápida: o que o impede?", sub: "Um clique ajuda-nos a melhorar.", o: { price: "Demasiado caro", info: "Preciso de mais informações", trust: "Não sei se é sério", justprice: "Só queria ver o preço", later: "Tenho de discutir internamente primeiro", other_need: "Na verdade preciso de outra coisa", other: "Outro motivo" }, ph: "O que lhe falta? (opcional)", send: "Enviar", skip: "Saltar", thx: "Obrigado pela resposta!", tip: { price: "Bom saber: só paga após a remoção – hoje: 0 €.", trust: "Compreensível. Somos uma empresa austríaca (Simple Solution. OG) especializada em perfis Google desde 2017 – pergunte-nos diretamente.", info: "Pergunte-nos – respondemos normalmente em minutos.", later: "Sem problema: a sua seleção fica guardada e pode continuar quando quiser." }, tipX: "Dúvidas? Max e Matthias respondem normalmente em minutos.", chat: "Falar com um especialista", stay: "Voltar à encomenda", leave: "Sair mesmo assim" },
+  ja: { h: "ひとつだけ質問させてください:何が気になっていますか?", sub: "ワンタップでサービス改善に役立ちます。", o: { price: "高すぎる", info: "もっと情報が必要", trust: "信頼できるか不安", justprice: "料金を見たかっただけ", later: "社内で相談が必要", other_need: "実は別のものが必要", other: "その他" }, ph: "足りない点は?(任意)", send: "送信", skip: "スキップ", thx: "ご回答ありがとうございます!", tip: { price: "お支払いは削除完了後のみ。本日のお支払い:$0。", trust: "ごもっともです。当社はオーストリアの企業(Simple Solution. OG)で、2017年からGoogleプロフィールを専門にしています。お気軽にご質問ください。", info: "お気軽にご質問ください。通常数分で返信します。", later: "問題ありません。選択内容は保存され、いつでも再開できます。" }, tipX: "ご質問は?MaxとMatthiasが通常数分で返信します。", chat: "専門家とチャット", stay: "注文に戻る", leave: "このまま離れる" },
+  sv: { h: "Snabb fråga: vad håller dig tillbaka?", sub: "Ett klick hjälper oss att bli bättre.", o: { price: "För dyrt", info: "Jag behöver mer information", trust: "Osäker på om det är seriöst", justprice: "Ville bara se priset", later: "Måste diskutera det internt först", other_need: "Jag behöver egentligen något annat", other: "Annat" }, ph: "Vad saknas? (valfritt)", send: "Skicka", skip: "Hoppa över", thx: "Tack för ditt svar!", tip: { price: "Bra att veta: du betalar först efter lyckad borttagning – idag: 0 €.", trust: "Förståeligt. Vi är ett österrikiskt företag (Simple Solution. OG) specialiserat på Google-profiler sedan 2017 – fråga oss gärna.", info: "Fråga oss – vi svarar oftast inom några minuter.", later: "Inga problem – ditt val sparas och du kan fortsätta här när som helst." }, tipX: "Frågor? Max och Matthias svarar oftast inom några minuter.", chat: "Chatta med en expert", stay: "Tillbaka till beställningen", leave: "Lämna ändå" },
+  da: { h: "Hurtigt spørgsmål: hvad holder dig tilbage?", sub: "Ét klik hjælper os med at blive bedre.", o: { price: "For dyrt", info: "Jeg har brug for mere information", trust: "Usikker på, om det er seriøst", justprice: "Ville bare se prisen", later: "Skal først drøfte det internt", other_need: "Jeg har egentlig brug for noget andet", other: "Andet" }, ph: "Hvad mangler du? (valgfrit)", send: "Send", skip: "Spring over", thx: "Tak for dit svar!", tip: { price: "Godt at vide: du betaler først efter vellykket sletning – i dag: 0 €.", trust: "Forståeligt. Vi er en østrigsk virksomhed (Simple Solution. OG), specialiseret i Google-profiler siden 2017 – spørg os gerne.", info: "Spørg os – vi svarer typisk inden for få minutter.", later: "Intet problem – dit valg gemmes, og du kan fortsætte her når som helst." }, tipX: "Spørgsmål? Max og Matthias svarer typisk inden for få minutter.", chat: "Chat med en ekspert", stay: "Tilbage til bestillingen", leave: "Forlad alligevel" },
+  no: { h: "Raskt spørsmål: hva holder deg tilbake?", sub: "Ett klikk hjelper oss å bli bedre.", o: { price: "For dyrt", info: "Jeg trenger mer informasjon", trust: "Usikker på om det er seriøst", justprice: "Ville bare se prisen", later: "Må diskutere det internt først", other_need: "Jeg trenger egentlig noe annet", other: "Annet" }, ph: "Hva mangler? (valgfritt)", send: "Send", skip: "Hopp over", thx: "Takk for svaret!", tip: { price: "Greit å vite: du betaler først etter vellykket sletting – i dag: 0 €.", trust: "Forståelig. Vi er et østerriksk selskap (Simple Solution. OG), spesialisert på Google-profiler siden 2017 – spør oss gjerne.", info: "Spør oss – vi svarer vanligvis innen få minutter.", later: "Ikke noe problem – valget ditt lagres, og du kan fortsette her når som helst." }, tipX: "Spørsmål? Max og Matthias svarer vanligvis innen få minutter.", chat: "Chat med en ekspert", stay: "Tilbake til bestillingen", leave: "Forlat likevel" },
+};
+
 const WZ_REASON = {
   de: { thx: "Danke!", q: "Warum soll das Profil weg?", opt: "optional", o: { closed: "Firma geschlossen", bad_reviews: "Unfaire Bewertungen", wrong: "Falsches/doppeltes Profil", moved: "Umzug/Inhaberwechsel", other: "Anderes" } },
   en: { thx: "Thanks!", q: "Why should the profile go?", opt: "optional", o: { closed: "Business closed", bad_reviews: "Unfair reviews", wrong: "Wrong/duplicate profile", moved: "Moved/new owner", other: "Other" } },
@@ -2231,6 +2247,39 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
   // Navigation per Wisch (nach links = ein Schritt zurück) und per Klick auf einen erledigten Stepper-Schritt.
   const canStepBack = step > 0 && step < 6 && !processing;
+
+  // Abbruch-Frage (09.11.2026): einmal pro Sitzung, nur bei Leistung (3), Schutz (4) und Kasse (5) –
+  // ausgelöst durch „Zur Startseite", Zurück auf der Leistungsseite, 60 s Inaktivität oder Maus verlässt das Fenster.
+  const [exitQ, setExitQ] = React.useState(null); // { then, via, step, sent }
+  const [exitOther, setExitOther] = React.useState(false);
+  const [exitTxt, setExitTxt] = React.useState("");
+  const exitOn = (step === 3 || step === 4 || step === 5) && !processing && !reviewMode && !!checkId;
+  const askExit = (then, via) => {
+    let done = false; try { done = sessionStorage.getItem("rr_exitq") === "1"; } catch (e) {}
+    if (!exitOn || exitQ || done) { if (then) then(); return; }
+    try { sessionStorage.setItem("rr_exitq", "1"); } catch (e) {}
+    setExitOther(false); setExitTxt("");
+    setExitQ({ then: then || null, via, step, sent: null });
+  };
+  const exitRef = React.useRef(askExit); exitRef.current = askExit;
+  React.useEffect(() => {
+    if (!exitOn) return undefined;
+    const IDLE = 60000;
+    let tm = setTimeout(() => exitRef.current(null, "idle"), IDLE);
+    const reset = () => { clearTimeout(tm); tm = setTimeout(() => exitRef.current(null, "idle"), IDLE); };
+    const out = (e) => { if (!e.relatedTarget && e.clientY <= 0) exitRef.current(null, "intent"); };
+    const evs = ["pointerdown", "keydown", "scroll", "touchstart"];
+    evs.forEach((k) => window.addEventListener(k, reset, { passive: true }));
+    document.addEventListener("mouseout", out);
+    return () => { clearTimeout(tm); evs.forEach((k) => window.removeEventListener(k, reset)); document.removeEventListener("mouseout", out); };
+  }, [exitOn, step]); // eslint-disable-line react-hooks/exhaustive-deps
+  const exitSend = (key, text) => {
+    if (!exitQ) return;
+    submitCheck({ checkId, exitReason: key, exitText: text || undefined, exitStep: exitQ.step, exitVia: exitQ.via }).catch(() => {});
+    try { if (typeof window !== "undefined" && window.dataLayer) window.dataLayer.push({ event: "exit_reason", exit_reason: key, exit_step: exitQ.step }); } catch (e) {}
+    setExitQ((q) => (q ? { ...q, sent: key } : q));
+  };
+  const exitClose = (leave) => { const f = exitQ && exitQ.then; setExitQ(null); if (leave && f) f(); };
   const touchRef = React.useRef(null);
   const onTouchStart = (e) => {
     if (!e.touches || e.touches.length !== 1) { touchRef.current = null; return; }
@@ -3176,7 +3225,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     );
   }
 
-  const Top = <WizardTop homeHref={asset(localePath(t.code))} label={w.backHome} onExit={onExit} />;
+  const Top = <WizardTop homeHref={asset(localePath(t.code))} label={w.backHome} onExit={onExit ? () => askExit(onExit, "close") : undefined} />;
 
   /* ---- erste Seite: Service-Router (mit den anderen Dienstleistungen) ---- */
   function RouterScreen() {
@@ -4255,7 +4304,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small></span>
       </button>
     );
-    const back = () => go(selected && selected.unverified ? 2 : 1);
+    const back = () => askExit(() => go(selected && selected.unverified ? 2 : 1), "back");
     const nm = (selected && selected.name) || name;
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="svc">
@@ -4500,6 +4549,35 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
             <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>
             <button type="button" className="ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
+          </div>
+        </div>
+        );
+      })() : null}
+      {exitQ ? (() => {
+        const ec = EXIT_COPY[t.code] || EXIT_COPY.en;
+        return (
+        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) exitClose(false); }}>
+          <div className="sw-sheet bpr-sheet bpr-exs" role="dialog" aria-modal="true" aria-labelledby="ex-sheet-t">
+            <div className="grab" aria-hidden="true" />
+            {!exitQ.sent ? (<React.Fragment>
+              <div className="hd"><h3 id="ex-sheet-t">{ec.h}</h3><button type="button" className="x" onClick={() => exitClose(false)} aria-label="×"><LX /></button></div>
+              <p className="exs-sub">{ec.sub}</p>
+              {!exitOther ? (
+                <div className="bpr-exq">{EXIT_KEYS.map((k) => <button key={k} type="button" onClick={() => (k === "other" ? setExitOther(true) : exitSend(k))}>{ec.o[k]}<LArrowRight /></button>)}</div>
+              ) : (
+                <div className="bpr-exo">
+                  <textarea rows={3} maxLength={500} value={exitTxt} onChange={(e) => setExitTxt(e.target.value)} placeholder={ec.ph} autoFocus />
+                  <button type="button" className="ok" onClick={() => exitSend("other", exitTxt.trim())}>{ec.send}</button>
+                </div>
+              )}
+              <button type="button" className="exs-skip" onClick={() => exitClose(true)}>{ec.skip}</button>
+            </React.Fragment>) : (<React.Fragment>
+              <div className="hd"><h3 id="ex-sheet-t">{ec.thx}</h3><button type="button" className="x" onClick={() => exitClose(false)} aria-label="×"><LX /></button></div>
+              <div className="bpr-srisk"><LShieldCheck /><span>{ec.tip[exitQ.sent] || ec.tipX}</span></div>
+              <button type="button" className="exs-chat" onClick={(e) => { exitClose(false); openTidioChat(e); }}><LChat />{ec.chat}</button>
+              <button type="button" className="ok" onClick={() => exitClose(false)}>{ec.stay}</button>
+              {exitQ.then ? <button type="button" className="exs-skip" onClick={() => exitClose(true)}>{ec.leave}</button> : null}
+            </React.Fragment>)}
           </div>
         </div>
         );

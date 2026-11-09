@@ -168,6 +168,8 @@ function mapCheck(r) {
     placeId: r.place_id || "", mapsUri: r.maps_uri || "", addr: r.addr || "", lang: r.lang || "de", country: r.country || "DE",
     enrichedAt: r.enriched_at || null, // Auto-E-Mail-Recherche bereits gelaufen (auch ohne Fund)
     rueckgewinnungAt: r.rueckgewinnung_at || null, // Rückgewinnungs-Angebot gesendet am (→ „Angebot gesandt am …")
+    // Abbruch-Frage im Bestellprozess (09.11.2026)
+    exitReason: r.exit_reason || null, exitText: r.exit_text || "", exitStep: r.exit_step != null ? Number(r.exit_step) : null, exitVia: r.exit_via || null, exitAt: r.exit_at || null,
   };
 }
 

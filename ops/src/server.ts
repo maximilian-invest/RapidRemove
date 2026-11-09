@@ -8,7 +8,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats, changeVersion } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, setCheckExit, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats, changeVersion } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
@@ -1162,6 +1162,12 @@ app.post("/check", async (req, reply) => {
           else if (!r.skipped) app.log.info({ id, received: r.received, match: r.matchKeys }, "CAPI Lead gesendet");
         }
       }
+    }
+    // Abbruch-Frage (09.11.2026): feste Schlüssel, Freitext gekürzt.
+    const EXIT_KEYS = ["price", "info", "trust", "justprice", "other_need", "later", "other"];
+    const ex = clip(b.exitReason, 20);
+    if (dbReady() && ex && EXIT_KEYS.includes(ex)) {
+      await setCheckExit(id, { reason: ex, text: clip(b.exitText, 500) || undefined, step: b.exitStep != null ? Number(b.exitStep) || undefined : undefined, via: clip(b.exitVia, 12) || undefined });
     }
   } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }
   return { ok: true, id };

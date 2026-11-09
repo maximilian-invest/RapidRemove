@@ -21,6 +21,10 @@ const fmtDT = (iso) => {
 };
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 const num = (v) => (Number(v) || 0).toLocaleString("de-DE");
+/* Abbruch-Frage im Bestellprozess (09.11.2026) – Schlüssel → Text */
+export const EXIT_LABEL = { price: "Zu teuer", info: "Braucht mehr Infos", trust: "Unsicher, ob seriös", justprice: "Wollte nur Preis wissen", later: "Muss intern besprechen", other_need: "Braucht etwas anderes", other: "Sonstiges" };
+const EXIT_STEP = { 3: "Leistung", 4: "Schutz", 5: "Kasse" };
+const EXIT_VIA = { close: "Seite verlassen", back: "Zurück", idle: "60 s inaktiv", intent: "Maus aus Fenster" };
 
 export function ChecksScreen({ ctx }) {
   const { checks: rawChecks, orders, setMoreSub, openSheet, toast, chk, setChk } = ctx;
@@ -83,6 +87,19 @@ export function ChecksScreen({ ctx }) {
       <div className="usrch"><Search /><input type="search" placeholder="Profil, Name, E-Mail" value={chk.q} onChange={(e) => setChk((s) => ({ ...s, q: e.target.value }))} />
         <button type="button" className="bt" onClick={() => openSheet({ kind: "pick", title: "Quelle", cur: chk.src, opts: srcOpts.map(([k, l, n]) => [k, l, null, n]), onPick: (k) => setChk((s) => ({ ...s, src: k })) })}>
           <Filter />{chk.src === "all" ? "Quelle" : (srcOpts.find((x) => x[0] === chk.src) || [0, "Quelle"])[1]}</button></div>
+      {(() => {
+        const since = Date.now() - 30 * 864e5;
+        const ex = (rawChecks || []).filter((c) => !c.test && c.exitReason && new Date(c.exitAt || c.createdAt).getTime() >= since);
+        if (!ex.length) return null;
+        const cnt = {}; ex.forEach((c) => { cnt[c.exitReason] = (cnt[c.exitReason] || 0) + 1; });
+        const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+        return (
+          <div className="card" style={{ padding: "12px 14px", marginBottom: 10 }}>
+            <div style={{ fontSize: 12, color: "var(--fg-3, #888)", marginBottom: 8 }}>Abbruchgründe · letzte 30 Tage · {ex.length} Antworten</div>
+            <div className="achips" style={{ flexWrap: "wrap" }}>{top.map(([k, n]) => <span key={k} className="achip" style={{ cursor: "default" }}>{EXIT_LABEL[k] || k}<span className="n">{n}</span></span>)}</div>
+          </div>
+        );
+      })()}
       <div className="sec3 ckh">
         <div className="achips">{[["open", "Offen"], ["hired", "Beauftragt"], ["all", "Alle"]].map(([k, l]) => <button key={k} type="button" className={"achip" + (chk.f === k ? " on" : "")} onClick={() => setChk((s) => ({ ...s, f: k }))}>{l}<span className="n">{base.filter((c) => !c.test && CF[k](c)).length}</span></button>)}</div>
         <div className="seg2">{[["all", "Alle"], ["profile", "Profile"], ["reviews", "Bewertungen"]].map(([k, l]) => <button key={k} type="button" className={chk.type === k ? "on" : ""} onClick={() => setChk((s) => ({ ...s, type: k }))}>{l}</button>)}</div>
@@ -95,7 +112,7 @@ export function ChecksScreen({ ctx }) {
             <button key={c.id} type="button" className="ord ckr" style={{ "--pi": Math.min(j, 10) }} onClick={() => openSheet({ kind: "chk", id: c.id, c })}>
               <span className="t"><span className="l1"><b>{c.profile || c.name || "—"}{c.dupes > 1 ? <i className="x2">{c.dupes}×</i> : null}</b></span>
                 <span className="l2">{c.test ? <span className="ktag ktest">Test</span> : null}<span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Bewertungen" : "Profil"}</span>
-                  <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}</span></span>
+                  <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}{c.exitReason ? <> · <b style={{ color: "#b45309", fontWeight: 600 }}>{EXIT_LABEL[c.exitReason] || c.exitReason}</b></> : null}</span></span>
               {conv(c) ? <span className="ab ok"><Check /></span> : <span className={"ab" + (em ? " on" : "")}>{em ? <Send /> : <MailPlus />}</span>}
             </button>
           );
@@ -168,6 +185,13 @@ export function CheckSheet({ c, ctx, close }) {
         <div><b>{st}</b><span>{c.status === "konvertiert" ? "Status" : "Abbruch bei"}</span></div>
         <div><b>{srcLabelOf(c) || "Unbekannt"}</b><span>Quelle</span></div>
       </div>
+      {c.exitReason ? (
+        <div style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: 14, background: "#fff7e6", color: "#7a3b00", fontSize: 14, lineHeight: 1.5 }}>
+          <b style={{ display: "block", color: "#5c2c00" }}>Abbruchgrund: {EXIT_LABEL[c.exitReason] || c.exitReason}</b>
+          {c.exitText ? <span style={{ display: "block", margin: "4px 0" }}>„{c.exitText}"</span> : null}
+          <span style={{ fontSize: 12, opacity: 0.8 }}>{[EXIT_STEP[c.exitStep], EXIT_VIA[c.exitVia], c.exitAt ? fmtDT(c.exitAt) : ""].filter(Boolean).join(" · ")}</span>
+        </div>
+      ) : null}
       <div className="ckt"><span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Prüfung für Einzelbewertungen" : "Profil-Prüfung"}</span>{c.dupes > 1 ? <span className="ktag">{c.dupes}× geprüft</span> : null}</div>
       {linked ? (
         <div className="ctas" style={{ marginTop: 12 }}><button type="button" className="cta" onClick={() => { close(); openOrder(linked.id, true); }}><ArrowRight />Auftrag {linked.id} öffnen</button></div>
