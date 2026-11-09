@@ -4192,7 +4192,6 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             </div>
             {protection === null ? (<React.Fragment>
               <div className="bpr-warn"><LAlert /><span><b>{bp.warnB}</b>{bp.warnR}</span></div>
-              <BprReturnFlow title={bp.exT} nodes={bp.exN} />
             </React.Fragment>) : null}
             </React.Fragment>)}
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
@@ -4248,7 +4247,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <span className="tx"><b>{title}</b><span>{desc}</span>
           {bullets ? <ul className="bpr-bl">{bullets.map((x, j) => <li key={j}><LCheck />{x}</li>)}</ul> : null}
         </span>
-        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small>{fp ? <span className="bpr-fp" role="button" tabIndex={0} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFpInfo(true); }} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setFpInfo(true); } }}>{bp.fpLine}<LInfo /></span> : null}</span>
+        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small></span>
       </button>
     );
     const back = () => go(selected && selected.unverified ? 2 : 1);
@@ -4297,7 +4296,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {badge ? <span className="bpr-bdg">{badge}</span> : null}
         <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
         <span className="tx"><b>{title}</b><span>{desc}</span></span>
-        <span className="pr"><strong>{price}</strong><small>{vatNote(lang)} · {wm.afterSuccess}</small>{fp ? <span className="bpr-fp" role="button" tabIndex={0} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFpInfo(true); }} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setFpInfo(true); } }}>{bp.fpLine}<LInfo /></span> : null}</span>
+        <span className="pr"><strong>{price}</strong><small>{vatNote(lang)} · {wm.afterSuccess}</small></span>
       </button>
     );
     return (
