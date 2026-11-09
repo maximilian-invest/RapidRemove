@@ -1,5 +1,5 @@
 "use client";
-/* Angebotsseite /angebot/<id>?t=<token> (09.11.2026).
+/* Angebotsseite /angebot?id=<id>&t=<token> (09.11.2026).
    Gültiges Angebot → Bestellprozess wird mit Profil, Leistung und E-Mail vorbereitet und an der Kasse geöffnet
    (gespeicherter Wizard-Stand + Angebots-Kontext für Banner/Preisbindung). Abgelaufen → neues Angebot anfordern
    oder direkt bestellen. Angenommen → Hinweis aufs Kundenportal. */
@@ -15,7 +15,7 @@ import { Clock, CircleCheck, FileText, X, Loader } from "lucide-react";
 
 const BP_FONT = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap";
 
-export default function OfferPage({ id }) {
+export default function OfferPage() {
   const [st, setSt] = React.useState({ k: "loading" });
   const [busy, setBusy] = React.useState(false);
   const [renewed, setRenewed] = React.useState("");
@@ -26,7 +26,9 @@ export default function OfferPage({ id }) {
     if (!document.querySelector(`link[href="${BP_FONT}"]`)) { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = BP_FONT; document.head.appendChild(l); }
     let alive = true;
     (async () => {
-      const t = new URLSearchParams(window.location.search).get("t") || "";
+      const qs = new URLSearchParams(window.location.search);
+      const t = qs.get("t") || "";
+      const id = qs.get("id") || "";
       const o = await fetchOffer(id, t).catch(() => null);
       if (!alive) return;
       if (!o) { setSt({ k: "nf" }); return; }
@@ -36,7 +38,7 @@ export default function OfferPage({ id }) {
       await openCheckout(o, t);
     })();
     return () => { alive = false; };
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function openCheckout(o, t, withOffer = true) {
     let prof = null;

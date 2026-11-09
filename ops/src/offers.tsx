@@ -113,7 +113,7 @@ export async function fetchRatingSummary(placeId: string, lang: string): Promise
 }
 
 /* ---------- Links ---------- */
-export const offerUrl = (o: Pick<Offer, "id" | "token">) => `${SITE()}/angebot/${encodeURIComponent(o.id)}?t=${o.token}`;
+export const offerUrl = (o: Pick<Offer, "id" | "token">) => `${SITE()}/angebot?id=${encodeURIComponent(o.id)}&t=${o.token}`;
 const pdfUrl = (o: Pick<Offer, "id" | "token">) => `${OPS_PUBLIC()}/offer-pdf/${encodeURIComponent(o.id)}.pdf?t=${o.token}`;
 const unsubUrl = (o: Pick<Offer, "id" | "token">) => `${OPS_PUBLIC()}/offer-unsub?id=${encodeURIComponent(o.id)}&t=${o.token}`;
 const pixel = (o: Pick<Offer, "id" | "token">) => OPS_PUBLIC() ? `<img src="${OPS_PUBLIC()}/offer-o/${encodeURIComponent(o.id)}/${o.token}.gif" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;opacity:0" />` : "";
@@ -189,7 +189,7 @@ export async function offerHtml(o: Offer): Promise<string> {
   ${opt}
   <div class="facts">${c.facts.map((f) => `<div><b>${esc(fill(f[0], o))}</b><span>${esc(f[1])}</span></div>`).join("")}</div>
   <div class="terms">${c.terms.map((t) => `<div><b>${esc(t[0])}</b>${esc(fill(t[1], o))}</div>`).join("")}</div>
-  <div class="accept"><div><h3>${esc(c.accH)}</h3><p>${esc(c.accP)}</p><div class="url mono">${esc(offerUrl(o).replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, ""))}</div></div><div class="qr">${qr}</div></div>
+  <div class="accept"><div><h3>${esc(c.accH)}</h3><p>${esc(c.accP)}</p><div class="url mono">rapid-remove.com/angebot · ${esc(o.id)}</div></div><div class="qr">${qr}</div></div>
   <div class="people"><div class="av"><img src="${SITE()}/assets/bestell/avatar-max.webp" alt=""><img src="${SITE()}/assets/bestell/avatar-matthias.webp" alt=""></div><div><b>${esc(c.people)}</b><span>${esc(c.peopleSub)}</span></div></div>
   ${foot(2)}
 </section></body></html>`;
@@ -328,7 +328,7 @@ function r1Html(o: Offer, c: OfferCopy): string {
   const r = c.r1, until = fmtDateO(o, o.valid_until), u = offerUrl(o);
   return `<!doctype html><html lang="${esc(o.lang)}"><head><meta charset="utf-8"></head><body style="margin:0;background:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#222;font-size:15px;line-height:1.6">
 <div style="max-width:560px;padding:20px 16px"><p>${esc(r.hello)}</p><p>${esc(r.p1(o.profile))}</p><p>${esc(r.p2)}</p>
-<p>${esc(r.p3(until))}<br><a href="${esc(u)}" style="color:#111;font-weight:600">${esc(u.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, ""))}</a></p>
+<p>${esc(r.p3(until))}<br><a href="${esc(u)}" style="color:#111;font-weight:600">${esc(c.mail.cta)}</a></p>
 <p>${esc(r.bye)}<br>${esc(r.sign)}</p><p style="font-size:13px;color:#888;margin-top:22px">${esc(r.signSub)}<br>+43 6245 9305300 · WhatsApp</p>
 <p style="font-size:11px;color:#aaa;margin-top:18px"><a href="${esc(unsubUrl(o))}" style="color:#aaa">${esc(c.mail.unsub)}</a></p></div></body></html>`;
 }

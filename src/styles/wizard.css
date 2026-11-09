@@ -1759,8 +1759,8 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-offer .oi svg{width:18px;height:18px}
 .bpr-offer .oi.ok{background:#16a34a;color:#fff}
 .bpr-offer .oi.ok svg{stroke-width:3}
-.bpr-offer .oh b{display:block;font-size:16px;font-weight:600;letter-spacing:-.3px;color:#111}
-.bpr-offer .oh span{display:block;font-size:13px;line-height:1.5;color:#6b6b6b;margin-top:2px;text-wrap:pretty}
+.bpr-offer .oh > div > b{display:block;font-size:16px;font-weight:600;letter-spacing:-.3px;color:#111}
+.bpr-offer .oh > div > span{display:block;font-size:13px;line-height:1.5;color:#6b6b6b;margin-top:2px;text-wrap:pretty}
 .bpr-offer .oh strong{color:#111;font-weight:600}
 .bpr-offer .of{display:flex;gap:8px;align-items:center;margin-top:14px;height:52px;border-radius:26px;background:#fff;box-shadow:0 0 0 1px #e8e8e8;padding:4px 4px 4px 18px}
 .bpr-offer .of:focus-within{box-shadow:0 0 0 2px #111}

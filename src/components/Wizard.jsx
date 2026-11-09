@@ -4368,7 +4368,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               return (
                 <div className="bpr-offer bpr-fade" style={{ animationDelay: ".2s" }}>
                   <div className="oh"><span className="oi"><LFile /></span><div><b>{oc.boxH}</b><span>{oc.boxP}</span></div></div>
-                  <form className="of" onSubmit={(e) => { e.preventDefault(); if (ofState !== "sending") sendOffer(); }}>
+                  <form className="of" noValidate onSubmit={(e) => { e.preventDefault(); if (ofState !== "sending") sendOffer(); }}>
                     <input type="email" inputMode="email" autoComplete="email" placeholder={oc.ph} value={ofMail} onChange={(e) => { setOfMail(e.target.value); if (ofState === "bad" || ofState === "error") setOfState("idle"); }} aria-label={oc.ph} />
                     <button type="submit" disabled={ofState === "sending"}>{ofState === "sending" ? oc.sending : oc.send}</button>
                   </form>
