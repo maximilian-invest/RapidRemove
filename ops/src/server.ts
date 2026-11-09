@@ -8,6 +8,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
+import { registerOffers, initOffers, offerTick, offerForOrder, markOfferAccepted } from "./offers";
 import { initDb, dbReady, insertOrder, upsertCheck, setCheckExit, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats, changeVersion } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
@@ -602,7 +603,11 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     const prem = !!profTier && profTier.prem && !profTier.legacy;
     const list = profilePriceFor(service, pCur, prem);
     const cPct = req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0; // Chat-Rabatt nur über den internen Chat-Aufruf
-    const amt = cPct ? Math.round(list * (100 - cPct)) / 100 : list;
+    let amt = cPct ? Math.round(list * (100 - cPct)) / 100 : list;
+    // Schriftliches Angebot (09.11.2026): Preis 14 Tage festgehalten – nie teurer als der aktuelle Listenpreis.
+    const offerHit = b.offerId ? await offerForOrder(b.offerId, b.placeId, service).catch(() => null) : null;
+    if (offerHit && Number(offerHit.amount) > 0 && Number(offerHit.amount) < amt) amt = Number(offerHit.amount);
+    if (!offerHit) delete (b as Record<string, unknown>).offerId;
     const wantX = service === "remove" && (b.express === true || b.express === "true");
     const xAmt = wantX ? PROFILE_EXPRESS_FEE : 0;
     // Schutz: Preis legt der Server fest (29,90 / 299 / 990; „monitor" nur noch von alten Browser-Ständen → 69,90 wie gewählt).
@@ -837,6 +842,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
         clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
       });
       if (checkId) await linkCheck(checkId, id);
+      if (b.offerId) void markOfferAccepted(b.offerId, id).catch(() => {});
       if (b.chatSid) void linkSiteChat(b.chatSid, id, email).catch(() => {}); // Website-Chat → Bestellung (Admin: „hat bestellt")
       // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
       // Software-Fälle (sw) sind normale Aufgaben: der Partner prüft, ob Software verfügbar ist, und setzt dann „Software"
@@ -2806,6 +2812,8 @@ app.post("/admin/order-mark-paid", async (req, reply) => {
 
 // Monitor: Überwachung gelöschter Profile (Admin → Monitor), eigene Routen in monitor.ts.
 registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
+// Schriftliches Angebot aus dem Bestellprozess (09.11.2026), Routen in offers.tsx.
+registerOffers(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
@@ -2820,6 +2828,10 @@ async function start() {
     const addr = await app.listen({ host: "0.0.0.0", port });
     app.log.info(`ops läuft auf ${addr}`);
     startUpsellWorker(app);
+    // Angebote: Tabelle anlegen + Erinnerungen/Ablauf alle 10 Min.
+    void initOffers().catch((e) => app.log.error({ err: e }, "Angebote: Init fehlgeschlagen"));
+    setTimeout(() => void offerTick((o, m) => app.log.info(o, m)).catch((e) => app.log.error({ err: e }, "Angebote: Erinnerungen fehlgeschlagen")), 90_000);
+    setInterval(() => void offerTick((o, m) => app.log.info(o, m)).catch((e) => app.log.error({ err: e }, "Angebote: Erinnerungen fehlgeschlagen")), 10 * 60_000);
     // Kunden-Dashboard: Sammel-Mails („Neuigkeiten im Dashboard") 5 Min. nach der letzten Partner-Änderung.
     setInterval(async () => {
       try {

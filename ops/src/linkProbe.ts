@@ -48,6 +48,23 @@ function scheduleClose(): void {
   }, 120_000);
 }
 
+/** HTML → PDF (A4) im selben Browser (Angebote, 09.11.2026). Wirft bei Fehlern – Aufrufer fängt ab. */
+export async function htmlToPdf(html: string, timeoutMs = 45_000): Promise<Buffer> {
+  active++;
+  let page: any = null;
+  try {
+    const b = await getBrowser();
+    page = await b.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0", timeout: timeoutMs });
+    await page.evaluate(async () => { try { await (document as any).fonts.ready; } catch { /* */ } });
+    const pdf = await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true });
+    return Buffer.from(pdf);
+  } finally {
+    try { if (page) await page.close(); } catch { /* */ }
+    active--; scheduleClose();
+  }
+}
+
 import { GONE, norm, PAGE_SNAPSHOT, reviewIdOf, classify, type Snap } from "./reviewPage";
 
 /** Bewertungslink öffnen; „gone" bei „no longer available", „visible" wenn der Verfasser auf der Seite steht. */
