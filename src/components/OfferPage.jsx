@@ -19,7 +19,9 @@ export default function OfferPage() {
   const [st, setSt] = React.useState({ k: "loading" });
   const [busy, setBusy] = React.useState(false);
   const [renewed, setRenewed] = React.useState("");
-  const lang = st.o ? st.o.lang : (typeof navigator !== "undefined" && /^de/i.test(navigator.language || "") ? "de" : "en");
+  const [navLang, setNavLang] = React.useState("de"); // erst nach dem Laden aus dem Browser (sonst Hydration-Fehler)
+  React.useEffect(() => { try { if (!/^de/i.test(navigator.language || "")) setNavLang("en"); } catch (e) {} }, []);
+  const lang = st.o ? st.o.lang : navLang;
   const c = offerUi(lang);
 
   React.useEffect(() => {
