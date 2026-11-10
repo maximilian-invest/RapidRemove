@@ -17,6 +17,8 @@ import { sendMail } from "./mailer";
 import { fmtReviewMoney, profileOneTime } from "./reviewsPricing";
 import RechnungAuto, { rechnungAutoSubject } from "./emails/RechnungAuto";
 import ZahlungFehlgeschlagenReviews, { zahlungFehlgeschlagenSubject } from "./emails/ZahlungFehlgeschlagenReviews";
+import DeckungAbgelehnt, { deckungAbgelehntSubject } from "./emails/DeckungAbgelehnt";
+import { reasonKeyOf, reasonText, type ReasonKey } from "./emails/declineReasons";
 import { getDunPause } from "./dunPause";
 import { checkAddress, checkVat } from "./billingCheck";
 import { pool, insertEvent, setOrderRawField } from "./db";
@@ -129,6 +131,8 @@ async function init(): Promise<void> {
     status text NOT NULL DEFAULT 'open', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`CREATE INDEX IF NOT EXISTS cust_autopay_retry_open ON cust_autopay_retry (email) WHERE status='open'`);
   await pool.query(`ALTER TABLE cust_autopay_retry ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'reviews', ADD COLUMN IF NOT EXISTS order_id text`);
+  // Letzte abgelehnte Deckungsprüfung (Dashboard-Hinweis bis eine Zahlungsart durchgeht; Mail max. 1× je 30 Min.)
+  await pool.query(`CREATE TABLE IF NOT EXISTS cust_cov_fail (email text PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(), amount numeric, cur text, label text, reason text, mailed_at timestamptz)`);
   ready = true;
 }
 type Row = { email: string; mode: Mode; customer: string; pm: string | null; label: string | null; pm_type: string | null; last_error: string | null; updated_at: string };
@@ -150,11 +154,35 @@ function pmLabel(pm: any): string {
 }
 
 /** Info fürs Dashboard (/cust/me). */
-async function info(email: string): Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: Mode; type: string | null; error: string | null } | null; billing: Billing }> {
+type CovFail = { at: string; amount: number; cur: string; label: string; reason: ReasonKey; reasonText: string } | null;
+async function covFailOf(email: string): Promise<CovFail> {
+  if (!pool) return null;
+  const r = (await pool.query(`SELECT c.*, (SELECT lang FROM orders WHERE lower(email)=c.email ORDER BY created_at DESC LIMIT 1) AS lang FROM cust_cov_fail c WHERE email=$1 AND at > now() - interval '14 days'`, [email.toLowerCase()]).catch(() => ({ rows: [] as any[] }))).rows[0];
+  if (!r) return null;
+  const reason = (r.reason || "bank") as ReasonKey;
+  return { at: new Date(r.at).toISOString(), amount: Number(r.amount) || 0, cur: String(r.cur || "eur"), label: String(r.label || ""), reason, reasonText: reasonText(r.lang, reason) };
+}
+async function info(email: string): Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: Mode; type: string | null; error: string | null } | null; billing: Billing; covFail: CovFail }> {
   const k = keyFor(email);
   const r = await rowOf(email).catch(() => null);
   const saved = r && r.pm && k && r.mode === k.mode ? { label: r.label || "", mode: r.mode, type: r.pm_type, error: r.last_error } : null;
-  return { available: !!k, test: k?.mode === "test", saved, billing: await billingOf(email).catch(() => emptyBilling) };
+  return { available: !!k, test: k?.mode === "test", saved, billing: await billingOf(email).catch(() => emptyBilling), covFail: await covFailOf(email).catch(() => null) };
+}
+
+/** Mail „Karte abgelehnt – nichts abgebucht" nach abgelehnter Deckungsprüfung (max. 1× je 30 Min. je Kunde). */
+async function sendCoverageMail(email: string, amount: number, cur: string, label: string, reason: ReasonKey): Promise<boolean> {
+  if (!pool) return false;
+  const r = (await pool.query(`SELECT mailed_at FROM cust_cov_fail WHERE email=$1`, [email])).rows[0];
+  if (r?.mailed_at && Date.now() - new Date(r.mailed_at).getTime() < 30 * 60e3) return false;
+  const o = (await pool.query(`SELECT id, name, lang, service FROM orders WHERE lower(email)=$1 AND COALESCE(status,'') <> 'storniert' ORDER BY created_at DESC LIMIT 1`, [email])).rows[0] || {};
+  const lang = String(o.lang || "en").slice(0, 2);
+  const props = { lang, name: o.name || "", amount: fmtReviewMoney(amount, cur), pm: label, reason: reasonText(lang, reason), dashUrl: await dashLink(email, lang), kind: (o.service === "reviews" ? "reviews" : "profile") as "reviews" | "profile" };
+  const html = await render(React.createElement(DeckungAbgelehnt, props));
+  const subject = deckungAbgelehntSubject(props);
+  await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+  await pool.query(`UPDATE cust_cov_fail SET mailed_at=now() WHERE email=$1`, [email]).catch(() => {});
+  if (o.id) await insertEvent({ orderId: o.id, email, type: "mail", title: "Mail „Karte abgelehnt – nichts abgebucht“ gesendet (automatisch)", detail: `${props.amount} · ${label} · Grund: ${props.reason}`, html, subject, auto: true }).catch(() => {});
+  return true;
 }
 
 /* ---- Rechnungsdetails (erscheinen auf allen künftigen Stripe-Rechnungen) ---- */
@@ -528,7 +556,7 @@ async function settleReviewsPaid(email: string, k: { mode: Mode }, label: string
 }
 
 /** Mail „Zahlung fehlgeschlagen – bitte Zahlungsart aktualisieren" (einmal je fehlgeschlagener Rechnung). */
-async function sendFailMail(email: string, inv: any, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews", picks: PayRef[] = []): Promise<void> {
+async function sendFailMail(email: string, inv: any, amount: number, cur: string, label: string, n: number, orderIds: string[], kind: "reviews" | "profile" = "reviews", picks: PayRef[] = [], reasonKey: ReasonKey | null = null): Promise<void> {
   if (!pool) return;
   if (await getDunPause(email).catch(() => null)) { // Admin hat Auto-Mahnungen für diesen Kunden pausiert
     for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "note", title: "Mail „Zahlung fehlgeschlagen“ NICHT gesendet – Auto-Mahnungen pausiert", auto: true }).catch(() => {});
@@ -537,7 +565,7 @@ async function sendFailMail(email: string, inv: any, amount: number, cur: string
   const o = (await pool.query(`SELECT name, lang, profile, company FROM orders WHERE id = ANY($1::text[]) ORDER BY created_at DESC LIMIT 1`, [orderIds])).rows[0] || {};
   const lang = String(o.lang || "en").slice(0, 2);
   const reviews = kind === "reviews" && picks.length ? await billedReviewRefs(email, { picks }).catch(() => []) : [];
-  const props = { lang, name: o.name || "", amount: fmtReviewMoney(grossOf(inv, amount), cur), pm: label, n, dashUrl: await dashLink(email, lang), invoiceUrl: inv?.hosted_invoice_url || "", kind, business: o.profile || o.company || "", reviews };
+  const props = { lang, name: o.name || "", amount: fmtReviewMoney(grossOf(inv, amount), cur), pm: label, n, dashUrl: await dashLink(email, lang), invoiceUrl: inv?.hosted_invoice_url || "", kind, business: o.profile || o.company || "", reviews, reason: reasonKey ? reasonText(lang, reasonKey) : null };
   const html = await render(React.createElement(ZahlungFehlgeschlagenReviews, props));
   const subject = zahlungFehlgeschlagenSubject(props);
   await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
@@ -673,7 +701,7 @@ async function openProfileRetry(email: string, k: { mode: Mode }, inv: any, payI
   await pool?.query(`INSERT INTO cust_autopay_retry (email, mode, cur, inv, pay_id, amount, n, picks, orders, label, tries, hard, next_at, last_error, kind, order_id) VALUES ($1,$2,$3,$4,$5,$6,1,'[]'::jsonb,$7,$8,1,$9,$10,$11,'profile',$12)`,
     [email, k.mode, cur, inv.id, payId, amount, JSON.stringify([orderId]), label || null, hard, next, msg, orderId]);
   await insertEvent({ orderId, email, type: "pay", title: `Rechnung ${inv.number || inv.id} bleibt offen – neue Abbuchungsversuche laufen`, detail: next ? `nach ${RETRY_DAYS.join("/")} Tagen (nächster ${fmtAt(next)})` : "harte Ablehnung: keine automatischen Versuche, Kunde muss Zahlungsart ändern", auto: true }).catch(() => {});
-  await sendFailMail(email, inv, amount, cur, label, 1, [orderId], "profile").catch((e) => console.error("Mail „Zahlung fehlgeschlagen“ (Profil) fehlgeschlagen", e));
+  await sendFailMail(email, inv, amount, cur, label, 1, [orderId], "profile", [], err ? reasonKeyOf(err.decline || err.code, err.message) : null).catch((e) => console.error("Mail „Zahlung fehlgeschlagen“ (Profil) fehlgeschlagen", e));
 }
 
 /** Admin „Abbuchung erneut versuchen" für Profil-Aufträge: offene Retry-Rechnung sofort belasten; sonst offene Stripe-Rechnung
@@ -792,7 +820,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
           await pool.query(`INSERT INTO cust_autopay_retry (email, mode, cur, inv, pay_id, amount, n, picks, orders, label, tries, hard, next_at, last_error) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11,$12,$13)`,
             [email, k.mode, cur, fin.id, id, amount, picks.length, JSON.stringify(picks), JSON.stringify(orderIds), row.label || null, hard, next, msg]);
           await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → Rechnung ${fin.number || fin.id} bleibt offen · ${next ? `neue Versuche nach ${RETRY_DAYS.join("/")} Tagen (nächster ${fmtAt(next)})` : "harte Ablehnung: keine automatischen Versuche, Kunde muss Zahlungsart ändern"}`, auto: true }).catch(() => {});
-          await sendFailMail(email, fin, amount, cur, row.label || "", picks.length, orderIds, "reviews", picks).catch((e2) => console.error("Mail „Zahlung fehlgeschlagen“ fehlgeschlagen", e2));
+          await sendFailMail(email, fin, amount, cur, row.label || "", picks.length, orderIds, "reviews", picks, reasonKeyOf(err.decline || err.code, err.message)).catch((e2) => console.error("Mail „Zahlung fehlgeschlagen“ fehlgeschlagen", e2));
         } else {
           if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {}); // Entwurf nicht stehen lassen
           await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → keine Rechnung angelegt, nächster Anlass versucht es neu`, auto: true }).catch(() => {});
@@ -811,7 +839,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
  * Neue Zahlungsart → Autorisierung (manual capture) über den offenen Auftragswert, sofort wieder storniert (nichts abgebucht).
  * Abgelehnt → Zahlungsart wird NICHT gespeichert, Kunde muss eine andere nehmen. Nicht prüfbar (3-D-Secure nötig, Zahlungsart
  * kann keine Reservierung, Stripe-Fehler) → durchlassen, Vermerk im Verlauf. Abschalten: AUTOPAY_COVERAGE=off. */
-type Coverage = { result: "ok" | "declined" | "skipped"; amount: number; cur: string; why?: string };
+type Coverage = { result: "ok" | "declined" | "skipped"; amount: number; cur: string; why?: string; reason?: ReasonKey };
 /** Offener Auftragswert (netto) je Währung: unbezahlte, nicht stornierte/abgelehnte Bewertungen + unbezahlte Profil-Aufträge mit Autopay. */
 async function openOrderValue(email: string): Promise<{ amount: number; cur: string; orderIds: string[] }> {
   const { orders } = await loadCustomerOrders(email);
@@ -844,7 +872,7 @@ export async function coverageCheck(email: string, k: { key: string; mode: Mode 
     const err = e as StripeErr;
     const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 200);
     if (err.code === "authentication_required" || err.decline === "authentication_required") return { result: "skipped", amount, cur, why: "3-D-Secure nötig – nicht prüfbar" };
-    if (err.code === "card_declined" || err.code === "payment_method_provider_decline" || err.code === "expired_card" || err.code === "insufficient_funds" || err.decline) return { result: "declined", amount, cur, why: msg };
+    if (err.code === "card_declined" || err.code === "payment_method_provider_decline" || err.code === "expired_card" || err.code === "insufficient_funds" || err.decline) return { result: "declined", amount, cur, why: msg, reason: reasonKeyOf(err.decline || err.code, err.message) };
     return { result: "skipped", amount, cur, why: `nicht prüfbar: ${msg}` };
   }
   if (pi?.id && pi.status !== "succeeded") await sx(k.key, "POST", `payment_intents/${pi.id}/cancel`, {}).catch(() => {}); // Reservierung sofort freigeben
@@ -965,7 +993,12 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
           void logCustEvent(si.email, "autopay_rejected", `Deckungsprüfung abgelehnt · ${covMoney}`, { mode: k.mode, amount: cov.amount, cur: cov.cur });
           if (firstOrder) await insertEvent({ orderId: firstOrder.id, email: si.email, type: "note", title: `Deckungsprüfung abgelehnt (${covMoney}) – Zahlungsart nicht gespeichert`, detail: `${pmLabel(pm)} · ${cov.why || ""}`, auto: true }).catch(() => {});
           void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Deckungsprüfung abgelehnt`, `${si.email} · ${pmLabel(pm)} · ${covMoney} · Kunde muss andere Zahlungsart nehmen`, `${SITE_URL}/admin`, { kind: "customer" });
-          return reply.code(400).send({ ok: false, error: "coverage", amount: cov.amount, cur: cov.cur });
+          const reason = cov.reason || "bank";
+          await pool.query(`INSERT INTO cust_cov_fail (email, at, amount, cur, label, reason) VALUES ($1, now(), $2, $3, $4, $5)
+            ON CONFLICT (email) DO UPDATE SET at=now(), amount=EXCLUDED.amount, cur=EXCLUDED.cur, label=EXCLUDED.label, reason=EXCLUDED.reason`, [si.email, cov.amount, cov.cur, pmLabel(pm), reason]).catch(() => {});
+          await sendCoverageMail(si.email, cov.amount, cov.cur, pmLabel(pm), reason).catch((e) => app.log.error({ err: e }, "Mail „Karte abgelehnt“ fehlgeschlagen"));
+          const lang = String((firstOrder as { lang?: string } | undefined)?.lang || "en");
+          return reply.code(400).send({ ok: false, error: "coverage", amount: cov.amount, cur: cov.cur, label: pmLabel(pm), reason, reasonText: reasonText(lang, reason) });
         }
         if (firstOrder) await insertEvent({ orderId: firstOrder.id, email: si.email, type: "note", title: cov.result === "ok" ? `Deckungsprüfung bestanden (${covMoney} reserviert und sofort freigegeben)` : `Deckungsprüfung übersprungen${cov.amount > 0 ? ` (${covMoney})` : ""}`, detail: `${pmLabel(pm)}${cov.why ? " · " + cov.why : ""}`, auto: true }).catch(() => {});
       }
@@ -975,6 +1008,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       await sx(k.key, "POST", `customers/${row.customer}`, { invoice_settings: { default_payment_method: pm.id } }).catch(() => {});
       await pushBillingToStripe(si.email, k.key, row.customer, pm).catch(() => {});
       await pool.query(`UPDATE cust_autopay SET pm=$2, label=$3, pm_type=$4, last_error=NULL, updated_at=now() WHERE email=$1`, [si.email, pm.id, label, pm.type || null]);
+      await pool.query(`DELETE FROM cust_cov_fail WHERE email=$1`, [si.email]).catch(() => {}); // Hinweis „letzte Karte abgelehnt" weg
       const { orders } = await loadCustomerOrders(si.email);
       for (const o of orders.filter((x) => !x.cancelled).slice(0, 5)) {
         await insertEvent({ orderId: o.id, email: si.email, type: "note", title: `Kunde: Zahlungsart hinterlegt – zahlt automatisch${k.mode === "test" ? " (TEST)" : ""}`, detail: `${label} · wird nach jeder Löschung abgebucht`, auto: true }).catch(() => {});

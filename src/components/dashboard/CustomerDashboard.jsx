@@ -404,7 +404,19 @@ function Stars({ n }) {
   if (!n) return null;
   return <span className="stars" aria-label={n + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < n ? "f" : ""} />)}</span>;
 }
-function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apStart, apBusy, zero }) {
+// Letzte Karte bei der Deckungsprüfung abgelehnt → dauerhafter Hinweis mit Grund, bis eine Zahlungsart durchgeht (10.11.2026).
+function CovFailNote({ cf }) {
+  if (!cf) return null;
+  return (
+    <div className="covfail" role="alert">
+      <b>{T("covFailT", { card: cf.label || "", amount: money(cf.amount, cf.cur) })}</b>
+      <span>{T("covFailR", { reason: cf.reasonText || "" })}</span>
+      <span>{T("covFailDo")}</span>
+    </div>
+  );
+}
+
+function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apStart, apBusy, zero, covFail }) {
   const [seq, setSeq] = React.useState(null); // [{ k: intro|r|sum|v|p|done, ph, item? }]
   const [ix, setIx] = React.useState(0);
   const [ans, setAns] = React.useState({}); // key → { r, note }
@@ -633,6 +645,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
         <div className="fl-art sf-art"><img src={IMG.wallet} alt="" /></div>
         <div className="fl-k">{kick}</div>
         <h2>{T("pgH")}</h2>
+        <CovFailNote cf={covFail} />
         <p>{T(prof ? "pgPprof" : "pgP")}</p>
         <div className="pgs-f sf-pf">
           <div><span className="ico"><Check /></span><b>{T("pgF1", { zero })}</b></div>
@@ -1490,7 +1503,7 @@ export default function CustomerDashboard() {
         // Großer Moment: Karte fliegt rein, Häkchen, Konfetti, Ton (Celebrate kind „card").
         setCele({ id: Date.now(), kind: "card", label: r.label || "", title: T("ceCardT"), sub: r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : r.started ? T("ceCardS") : T("ceCardS2") });
       })
-      .catch((e) => showToast(e && e.code === "coverage" ? T("apNoFunds", { amount: money(e.data && e.data.amount, e.data && e.data.cur) }) : T(e && e.code === "prepaid" ? "apPrepaid" : "genericErr"), true))
+      .catch((e) => showToast(e && e.code === "coverage" ? T("apNoFunds", { amount: money(e.data && e.data.amount, e.data && e.data.cur) }) + (e.data && e.data.reasonText ? " " + T("covFailR", { reason: e.data.reasonText }) : "") : T(e && e.code === "prepaid" ? "apPrepaid" : "genericErr"), true))
       .finally(() => { setBusy(""); prev.current = null; load(token); }); // kein zweiter „Bezahlt"-Toast aus dem Vergleich
   }, [token, load, showToast]);
   React.useEffect(() => { if (!data || !intro || gate) return undefined; const t = setTimeout(() => setIntro(false), 1600); return () => clearTimeout(t); }, [data, intro, gate]);
@@ -1895,7 +1908,7 @@ export default function CustomerDashboard() {
     return (
       <div className="paycard apc">
         <span className="ico"><CreditCard /></span>
-        <span><b>{T("apT")}{data.autopayTest ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apS")}</span><span className="pg-hold">{T("pgHold")}</span></span>
+        <span><b>{T("apT")}{data.autopayTest ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apS")}</span><span className="pg-hold">{T("pgHold")}</span><CovFailNote cf={data.covFail} /></span>
         <button className="mini" disabled={!!busy} onClick={apStart}>{busy === "ap" ? <Loader className="spin" /> : <Lock />}{T("apBtn")}</button>
       </div>
     );
@@ -2435,7 +2448,7 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
+      <StartFlow order={sfOrder} autopay={data.autopay} covFail={data.covFail} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
       <NewOrderFlow open={noOpen} presetLinks={noLinks} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
         onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />

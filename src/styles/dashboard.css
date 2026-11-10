@@ -208,6 +208,9 @@ min-height:100vh;background:#fff;color:var(--ink);font-family:var(--font-body);f
 .rra .secure svg{width:15px;height:15px}
 .rra .pg-hold,.rra .fl-body p.pg-hold{font-size:12.5px;line-height:1.45;color:var(--g3);margin:6px auto 0;max-width:420px;text-align:center}
 .rra span.pg-hold{display:block;text-align:left;margin:4px 0 0;max-width:none}
+.rra .covfail{display:flex;flex-direction:column;gap:4px;background:#fff1f0;border:1px solid #ffccc7;color:#a8071a;border-radius:12px;padding:12px 14px;margin:10px 0 12px;font-size:14px;line-height:1.45;text-align:left}
+.rra .covfail b{font-weight:600;color:#a8071a}
+.rra .covfail span{color:#5c0011}
 .rra .fl-foot{padding:12px 20px calc(34px + env(safe-area-inset-bottom) / 2);display:flex;gap:10px}
 .rra .fl-foot .bk{width:56px;height:56px;border-radius:16px;background:var(--g1);display:grid;place-items:center;flex:none}
 .rra .fl-again{display:block;margin:14px auto 0;font-size:15px;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px}

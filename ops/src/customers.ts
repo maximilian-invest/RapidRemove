@@ -218,7 +218,7 @@ export const autopayHooks: {
   settle?: (email: string) => Promise<void>; // Webhook: offene Fehlschlag-Rechnung wurde bezahlt → verbuchen
   profilePaid?: (orderId: string) => void; // Profil-Auftrag nachträglich automatisch bezahlt → Meta-Purchase + Schutz-Hinweis
   profileFallback?: (orderId: string, why: string) => Promise<void>; // Profil: endgültig fehlgeschlagen → Zahlungslink + Auto-Mahnungen
-  info?: (email: string) => Promise<{ billing?: Record<string, unknown>; available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
+  info?: (email: string) => Promise<{ billing?: Record<string, unknown>; available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null; covFail?: { at: string; amount: number; cur: string; label: string; reason: string; reasonText: string } | null }>;
 } = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");
 /** Stripe-Payment-Link mit eindeutiger Zuordnung (client_reference_id landet in checkout.session.completed). */
@@ -809,7 +809,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     // Vom Admin angelegtes Dashboard ohne Auftrag: Name/Sprache aus den Stammdaten (Admin → Kunden & Preise).
     const setup = !d.orders.length ? await custSetup(email).catch(() => null) : null;
     const locked = await pwLocked(email);
-    return { ok: true, pwLocked: locked, email, name: d.name || setup?.name || "", lang: d.orders.length ? d.lang : setup?.lang || d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
+    return { ok: true, pwLocked: locked, email, name: d.name || setup?.name || "", lang: d.orders.length ? d.lang : setup?.lang || d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null, covFail: ap?.covFail || null };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
