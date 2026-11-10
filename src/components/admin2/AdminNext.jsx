@@ -16,7 +16,7 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf, orderParts, money, pendingWhy } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf, orderParts, money, pendingWhy, SERVICE_L } from "./model";
 import PaidCelebration from "./Celebrate";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf, freeItems, OrderInfoScreen, isPayOpen, RStars, rvStars } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
@@ -28,7 +28,7 @@ import { MahnSheet } from "./Mahnung";
 import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
 import { PayLinkSheet, ChangePayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
-import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList, Redo2 } from "lucide-react";
+import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList, Redo2, Hourglass } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 import { useHistState, useHardLeave } from "./navHistory";
 import { openGoogleLink, needsSafari } from "@/lib/open-google";
@@ -36,15 +36,26 @@ import { openGoogleLink, needsSafari } from "@/lib/open-google";
 const R = { replace: true }; // Navigations-Korrektur ohne neuen Verlaufseintrag
 
 const DESK_Q = "(min-width: 900px)";
-/* Storno-Gründe (Vorlagen aus dem Backend, wie „Auftrag stornieren“ im bisherigen Admin). */
-const STORNO_OPTS = [
-  ["storno", "Löschung nicht möglich", "Storno-Mail · keine Kosten"],
+/* Storno-Gründe je Auftragsart (Vorlagen aus dem Backend). Profil (remove/reset/express) und
+   Presse auslisten (deindex, auch orm) haben eigene Texte – eine Auslistungsanfrage bekommt nie die Profil-Mail. */
+const STORNO_PROFILE = [
+  ["storno", "Löschung nicht möglich", "Profil nicht löschbar · keine Kosten"],
   ["kundenstorno", "Auf Kundenwunsch", "Kunde hat storniert"],
+  ["keine-rueckmeldung", "Keine Rückmeldung", "Kunde meldet sich nicht mehr"],
   ["rechtestorno", "Keine Rechte am Profil", "Kunde ist nicht berechtigt"],
   ["scamstorno", "Unlautere Praktiken", "Verdacht auf Missbrauch"],
 ];
+const STORNO_PRESS = [
+  ["storno-presse", "Auslistung nicht möglich", "Inhalte nicht entfernbar · keine Kosten"],
+  ["kundenstorno-presse", "Auf Kundenwunsch", "Kunde will nicht mehr"],
+  ["keine-rueckmeldung-presse", "Keine Rückmeldung", "Kunde meldet sich nicht mehr"],
+  ["scamstorno-presse", "Unlautere Praktiken", "Öffentliches Interesse · Verbraucherschutz"],
+];
+const stornoOptsOf = (o) => (o.service === "deindex" || o.service === "orm" ? STORNO_PRESS : STORNO_PROFILE);
 const RV_STORNO = [
   ["impossible", "Löschung nicht möglich", "Ganze Bestellung storniert", Ban],
+  ["customer", "Auf Kundenwunsch", "Kunde hat storniert", UserX],
+  ["noreply", "Keine Rückmeldung", "Zahlungsart/Freigabe fehlt", Hourglass],
   ["age", "Älter als 4 Wochen", "Bewertung zu alt", CalendarClock],
   ["text", "Kein Bewertungstext", "Nur Sterne, kein Text", MessageSquareOff],
 ];
@@ -561,7 +572,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       );
     } else {
       const usage = readTplUsage();
-      const list = (tpls || []).filter((t) => !["storno-reviews", "storno-reviews-all", "mahnung", "mahnung-reviews"].includes(t.key)); // Mahnungen: eigener Ablauf (Mahnung senden)
+      const list = (tpls || []).filter((t) => !["storno-reviews", "storno-reviews-all", "kundenstorno-reviews", "keine-rueckmeldung-reviews", "mahnung", "mahnung-reviews"].includes(t.key)); // Mahnungen: eigener Ablauf (Mahnung senden)
       const top = [...list].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 5);
       const groups = ["Mitwirkung", "Storno", "Schutz", "Bestellung"].map((g) => [g, list.filter((t) => t.group === g)]).filter(([, l]) => l.length);
       const row = (t) => <Opt key={t.key} onClick={() => setConfirm({ key: t.key, label: t.label })} right={AUTO_KEYS.includes(t.key) ? <span className="zp" title="Wird sonst automatisch versendet"><Zap /></span> : null}><span className="ico"><Mail /></span><span className="ol">{t.label}</span></Opt>;
@@ -663,15 +674,15 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
           <div className="ctas2"><button type="button" className="cta gh" onClick={() => setConfirm(null)}>Zurück</button><button type="button" className="cta red" disabled={busy || (confirm.type !== "none" && !o.email)} onClick={run}><Ban />{busy ? "Storniert …" : confirm.type === "none" ? "Stornieren" : "Storno senden"}</button></div></>
       );
     } else {
-      const stTpl = STORNO_OPTS.map(([key, l, sub]) => { const t = (tpls || []).find((x) => x.key === key); return t || !tpls ? { key, label: l, sub } : null; }).filter(Boolean);
+      const stTpl = stornoOptsOf(o).map(([key, l, sub]) => { const t = (tpls || []).find((x) => x.key === key); return t || !tpls ? { key, label: l, sub } : null; }).filter(Boolean);
       body = (
         <><h3 style={{ paddingBottom: 2 }}>Auftrag stornieren</h3>
-          <p className="shp">{o.name || o.email} · {o.id} — Grund wählen, der Kunde bekommt die passende Storno-Mail.</p>
+          <p className="shp">{o.name || o.email} · {o.id} · <b>{SERVICE_L[o.service] || o.service || "—"}</b> — Grund wählen, der Kunde bekommt die passende Storno-Mail.</p>
           <p className="shl">Grund</p>
           <div className="opts" style={{ marginBottom: 16 }}>
             {isRev
               ? RV_STORNO.map(([reason, l, sub, I]) => <Opt key={reason} red disabled={!o.email} onClick={() => setConfirm({ type: "rv", reason, label: l })} right={<ChevronRight className="chev" />}><span className="ico"><I /></span><span className="ol">{l}<br /><small>{sub} · Mail auf {LANG_L[rvLang(o)]}</small></span></Opt>)
-              : stTpl.map((t) => <Opt key={t.key} red disabled={!o.email} onClick={() => setConfirm({ type: "tpl", key: t.key, label: t.label })} right={<ChevronRight className="chev" />}><span className="ico"><Mail /></span><span className="ol">{t.label}<br /><small>{t.sub}</small></span></Opt>)}
+              : stTpl.map((t) => <Opt key={t.key} red disabled={!o.email} onClick={() => setConfirm({ type: "tpl", key: t.key, label: t.label })} right={<ChevronRight className="chev" />}><span className="ico"><Mail /></span><span className="ol">{t.label}<br /><small>{t.sub} · Mail auf {LANG_L[o.lang || "de"] || (o.lang || "de").toUpperCase()}</small></span></Opt>)}
           </div>
           <div className="opts"><Opt onClick={() => setConfirm({ type: "none" })} right={<ChevronRight className="chev" />}><span className="ico"><MailX /></span><span className="ol">Ohne E-Mail stornieren<br /><small>z. B. Test- oder Doppelbestellung</small></span></Opt></div></>
       );

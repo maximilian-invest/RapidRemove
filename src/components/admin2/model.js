@@ -229,7 +229,7 @@ export function computeOffer(o) {
 const TPL_USAGE_KEY = "rr_tpl_usage";
 export function readTplUsage() { try { return JSON.parse(localStorage.getItem(TPL_USAGE_KEY) || "{}") || {}; } catch (e) { return {}; } }
 export function bumpTplUsage(key) { try { const u = readTplUsage(); u[key] = (u[key] || 0) + 1; localStorage.setItem(TPL_USAGE_KEY, JSON.stringify(u)); } catch (e) {} }
-export const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno"];
+export const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno", "keine-rueckmeldung", "storno-presse", "kundenstorno-presse", "keine-rueckmeldung-presse", "scamstorno-presse"];
 /* Vorlagen, die das System automatisch verschickt (⚡ im Sheet). */
 export const AUTO_KEYS = ["auftragsbestaetigung", "auftragsbestaetigung-reviews", "zahlungsbestaetigung", "neues-abo", "abo-deaktiviert", "paypal-erinnerung", "profil-wiedererschienen", "presse-eingang"];
 

@@ -225,7 +225,7 @@ const AUTOMATIONS = [
     title: "Bestellbestätigung",
     trigger: "Sobald eine neue Bestellung im Funnel eingeht.",
     how: "Der Kunde erhält automatisch die Bestellbestätigung per E-Mail." },
-  { id: "storno", keys: ["storno", "kundenstorno", "rechtestorno", "scamstorno"], match: null,
+  { id: "storno", keys: ["storno", "kundenstorno", "rechtestorno", "scamstorno", "keine-rueckmeldung", "storno-presse", "kundenstorno-presse", "keine-rueckmeldung-presse", "scamstorno-presse"], match: null,
     title: "Storno → Status „storniert“",
     trigger: "Beim Senden einer Storno-Mail aus diesem Bereich.",
     how: "Die Bestellung wird automatisch auf den Status „storniert“ gesetzt." },

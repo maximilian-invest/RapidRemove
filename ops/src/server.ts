@@ -1798,8 +1798,10 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
   // "impossible" = ganze Bestellung storniert, Löschung nicht möglich (kurze Mail, Rest über den Partner-Workflow).
-  const reason = b.reason === "text" ? "text" : b.reason === "age" ? "age" : b.reason === "impossible" ? "impossible" : null;
-  if (!reason) return reply.code(400).send({ ok: false, error: "Grund fehlt (age | text | impossible)" });
+  // "customer" = auf Kundenwunsch · "noreply" = keine Rückmeldung (z. B. Zahlungsart/Freigabe fehlt) – beide ganze Bestellung.
+  const reason = b.reason === "text" ? "text" : b.reason === "age" ? "age" : b.reason === "impossible" ? "impossible" : b.reason === "customer" ? "customer" : b.reason === "noreply" ? "noreply" : null;
+  if (!reason) return reply.code(400).send({ ok: false, error: "Grund fehlt (age | text | impossible | customer | noreply)" });
+  const whole = reason === "impossible" || reason === "customer" || reason === "noreply";
   type StornoItem = { url?: string; name?: string; text?: string };
   const items: StornoItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
@@ -1815,9 +1817,9 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   const tlang = raw;
   const orderId = clip(b.orderId, 40);
   try {
-    const key = reason === "impossible" ? "storno-reviews-all" : "storno-reviews";
+    const key = reason === "impossible" ? "storno-reviews-all" : reason === "customer" ? "kundenstorno-reviews" : reason === "noreply" ? "keine-rueckmeldung-reviews" : "storno-reviews";
     const t = TEMPLATES[key];
-    const props = reason === "impossible"
+    const props = whole
       ? { lang: tlang, name: clip(b.name, 120), orderId, dashUrl: await dashLink(to, tlang) }
       : { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: await dashLink(to, tlang) };
     const { html, subject } = await renderTemplate(key, props as any);
@@ -1825,7 +1827,7 @@ app.post("/admin/reviews-storno", async (req, reply) => {
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `Grund: ${reason === "age" ? "älter als 4 Wochen" : reason === "text" ? "kein Text" : "Löschung nicht möglich (ganze Bestellung)"} · ${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `Grund: ${reason === "age" ? "älter als 4 Wochen" : reason === "text" ? "kein Text" : reason === "customer" ? "auf Kundenwunsch (ganze Bestellung)" : reason === "noreply" ? "keine Rückmeldung (ganze Bestellung)" : "Löschung nicht möglich (ganze Bestellung)"} · ${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     return { ok: true, lang: tlang, reason, count: items.length };

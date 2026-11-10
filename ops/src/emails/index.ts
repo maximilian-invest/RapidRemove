@@ -35,6 +35,9 @@ import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject,
 import BearbeitungGestartetReviews, { subject as bearbeitungGestartetReviewsSubject, T as bearbeitungGestartetReviewsTexts } from "./BearbeitungGestartetReviews";
 import StornoReviews, { subject as stornoReviewsSubject, T as stornoReviewsTexts } from "./StornoReviews";
 import StornoReviewsAll, { subject as stornoReviewsAllSubject, T as stornoReviewsAllTexts } from "./StornoReviewsAll";
+import { StornoReviewsCustomer, StornoReviewsNoreply, subjectCustomer as stornoReviewsCustomerSubject, subjectNoreply as stornoReviewsNoreplySubject, TC as stornoReviewsCustomerTexts, TN as stornoReviewsNoreplyTexts } from "./StornoReviewsMore";
+import { StornoPresseImpossible, StornoPresseCustomer, StornoPresseNoreply, StornoPresseScam, subject as stornoPresseSubject } from "./StornoPresse";
+import KeineRueckmeldung, { subject as keineRueckmeldungSubject } from "./KeineRueckmeldung";
 import MahnungReviews, { subject as mahnungReviewsSubject, T as mahnungReviewsTexts } from "./MahnungReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
@@ -182,6 +185,22 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     sample: { lang: "en", name: "Alex", orderId: "RR-123456" },
     texts: stornoReviewsAllTexts,
   },
+  "kundenstorno-reviews": {
+    label: "Storno Bewertungen (auf Kundenwunsch)",
+    group: "Storno",
+    component: StornoReviewsCustomer,
+    subject: stornoReviewsCustomerSubject,
+    sample: { lang: "en", name: "Alex", orderId: "RR-123456" },
+    texts: stornoReviewsCustomerTexts,
+  },
+  "keine-rueckmeldung-reviews": {
+    label: "Storno Bewertungen (keine Rückmeldung)",
+    group: "Storno",
+    component: StornoReviewsNoreply,
+    subject: stornoReviewsNoreplySubject,
+    sample: { lang: "en", name: "Alex", orderId: "RR-123456" },
+    texts: stornoReviewsNoreplyTexts,
+  },
   "loeschbestaetigung-reviews": {
     label: "Löschbestätigung + Rechnung Bewertungen (außerhalb DACH)",
     group: "Bestellung",
@@ -286,6 +305,42 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Storno",
     component: Scamstorno,
     subject: scamstornoSubject,
+    sample: de,
+  },
+  "keine-rueckmeldung": {
+    label: "Storno Profil (keine Rückmeldung)",
+    group: "Storno",
+    component: KeineRueckmeldung,
+    subject: keineRueckmeldungSubject,
+    sample: de,
+  },
+  // Presse auslisten (deindex) – eigene Texte, kein Bezug aufs Unternehmensprofil
+  "storno-presse": {
+    label: "Storno Presse (Auslistung nicht möglich)",
+    group: "Storno",
+    component: StornoPresseImpossible,
+    subject: (p) => stornoPresseSubject({ ...p, reason: "impossible" }),
+    sample: de,
+  },
+  "kundenstorno-presse": {
+    label: "Storno Presse (auf Kundenwunsch)",
+    group: "Storno",
+    component: StornoPresseCustomer,
+    subject: (p) => stornoPresseSubject({ ...p, reason: "customer" }),
+    sample: de,
+  },
+  "keine-rueckmeldung-presse": {
+    label: "Storno Presse (keine Rückmeldung)",
+    group: "Storno",
+    component: StornoPresseNoreply,
+    subject: (p) => stornoPresseSubject({ ...p, reason: "noreply" }),
+    sample: de,
+  },
+  "scamstorno-presse": {
+    label: "Storno Presse (unlautere Praktiken / öffentliches Interesse)",
+    group: "Storno",
+    component: StornoPresseScam,
+    subject: (p) => stornoPresseSubject({ ...p, reason: "scam" }),
     sample: de,
   },
   reaktivierung: {
