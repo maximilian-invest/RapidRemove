@@ -124,7 +124,7 @@ export async function factsOf(email: string, orders: Record<string, unknown>[]):
   return f;
 }
 const day = (v: unknown) => { const t = v ? new Date(String(v)).getTime() : NaN; return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : ""; };
-const ageTxt = (days: number) => (days < 1 ? "less than a day" : days < 14 ? `${days} days` : days < 60 ? `${Math.round(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${Math.round(days / 365)} years`);
+const ageTxt = (days: number) => (days < 1 ? "less than a day" : days < 14 ? `${days} days` : days < 60 ? `${Math.floor(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${Math.round(days / 365)} years`);
 /** Google-Review-ID aus dem gespeicherten Bewertungs-Link (…!1sCh…/Ci…), sonst leer. */
 const reviewIdOf = (u: unknown) => { const raw = String(u || ""); let d = raw; try { d = decodeURIComponent(raw); } catch { /* */ } return (d.match(/!1s(C[A-Za-z0-9_-]{16,})/) || [])[1] || ""; };
 const normTxt = (s: unknown) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60);
@@ -663,7 +663,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
       // Ohne Text (Bewertung aufgelöst: Sterne bekannt, Text leer) = immer Software (300) – schon bei der Bestellung, nicht erst später.
       const ntOf = (x: { text: string; rating: number }) => !x.text && x.rating >= 1 && x.rating <= 5;
       // Pause (05.11.2026): älter als 4 Wochen / ohne Text → „Wieder verfügbar ab Januar 2027".
-      if (items.some((x) => x.old || ntOf(x) || (Number.isFinite(x.days) && x.days > 28))) return reply.code(400).send({ ok: false, error: "reviews_paused" });
+      if (items.some((x) => x.old || ntOf(x) || (Number.isFinite(x.days) && x.days >= 28))) return reply.code(400).send({ ok: false, error: "reviews_paused" });
       const q = quoteReviewsLite(items.map((x) => ({ ...x, nt: ntOf(x), sw: ntOf(x) || (x.old && !!x.text && pc === "US") })), pct);
       Object.assign(payload, {
         reviewItems: items.map((x) => ({ url: x.url, ...(x.name ? { name: x.name } : {}), ...(x.text ? { text: x.text } : {}), ...(ntOf(x) ? { nt: true } : x.old ? { old: true } : {}), ...(x.rating >= 1 && x.rating <= 5 ? { rating: x.rating } : {}), ...(Number.isFinite(x.days) && x.days >= 0 ? { days: x.days } : {}) })), reviewUrls: items.map((x) => x.url), reviewCount: items.length,

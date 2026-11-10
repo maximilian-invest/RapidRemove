@@ -7,7 +7,7 @@ const ok = (name: string, fn: () => unknown) => { fn(); n++; console.log("✓", 
 
 ok("Neuer Frisch-Preis = 199, alte = 179 und 99", () => { assert.equal(PRICE_V2_FRESH, 199); assert.equal(PRICE_V2_FRESH_LEGACY2, 179); assert.equal(PRICE_V2_FRESH_LEGACY, 99); });
 ok("Listenpreis: frisch mit Text = 199", () => assert.equal(listPriceV2({ days: 3 }), 199));
-ok("Listenpreis: 28 Tage = noch frisch", () => assert.equal(listPriceV2({ days: 28 }), PRICE_V2_FRESH));
+ok("Listenpreis: 27 Tage = frisch, 28 Tage (Google „vor 4 Wochen\") = alt", () => { assert.equal(listPriceV2({ days: 27 }), PRICE_V2_FRESH); assert.equal(listPriceV2({ days: 28 }), PRICE_V2_OTHER); });
 ok("Listenpreis: 29 Tage = 250", () => assert.equal(listPriceV2({ days: 29 }), PRICE_V2_OTHER));
 ok("Listenpreis: old-Flag = 250", () => assert.equal(listPriceV2({ old: true }), PRICE_V2_OTHER));
 ok("Listenpreis: ohne Text (nt) = 250", () => assert.equal(listPriceV2({ nt: true, days: 2 }), PRICE_V2_OTHER));
@@ -22,7 +22,7 @@ ok("Bestandsauftrag (ohne lp) unverändert: 179 / 229 / 300", () => {
 ok("Modell 2 neu: 2 × 199 ohne Rabatt", () => { const q = quoteReviews([{ lp: 199 }, { lp: 199 }], "usd"); assert.equal(q.total, 398); assert.equal(q.per, "$199"); });
 ok("Bestand: 2 × 179 bleibt 179", () => { const q = quoteReviews([{ lp: 179 }, { lp: 179 }], "usd"); assert.equal(q.total, 358); assert.equal(q.per, "$179"); assert.equal(q.nFreshOld, 2); });
 ok("Gemischt: 99 + 179 (Bestand) + 199 (neu)", () => { const q = quoteReviews([{ lp: 99 }, { lp: 179 }, { lp: 199 }], "eur"); assert.equal(q.subtotal, 477); assert.equal(q.total, Math.round(477 * 0.9)); assert.equal(q.per, "99 € / 179 € / 199 € (−10 %)"); assert.equal(q.freshOldLines.length, 2); });
-ok("Pause: älter 28 Tage / ohne Text / sw / old nicht bestellbar, frisch schon", () => { assert.equal(isPausedReview({ days: 29 }), true); assert.equal(isPausedReview({ nt: true, days: 1 }), true); assert.equal(isPausedReview({ old: true }), true); assert.equal(isPausedReview({ sw: true }), true); assert.equal(isPausedReview({ days: 28 }), false); assert.equal(isPausedReview({}), false); });
+ok("Pause: älter 28 Tage / ohne Text / sw / old nicht bestellbar, frisch schon", () => { assert.equal(isPausedReview({ days: 29 }), true); assert.equal(isPausedReview({ nt: true, days: 1 }), true); assert.equal(isPausedReview({ old: true }), true); assert.equal(isPausedReview({ sw: true }), true); assert.equal(isPausedReview({ days: 28 }), true); assert.equal(isPausedReview({ days: 27 }), false); assert.equal(isPausedReview({}), false); });
 ok("Bestand: 2 × 99 bleibt 99 (Einzug autopay/Ersatzlink)", () => { const q = quoteReviews([{ lp: 99 }, { lp: 99 }], "usd"); assert.equal(q.total, 198); assert.equal(q.per, "$99"); });
 ok("Bestand: 99er in Abrechnung „rest\" bleibt 99", () => assert.equal(quoteReviews([{ lp: 99 }], "eur", 1, "rest").total, 99));
 ok("Gemischt: 99 (Bestand) + 179 (neu) → beide Stückpreise", () => { const q = quoteReviews([{ lp: 99 }, { lp: 179 }], "eur"); assert.equal(q.total, 278); assert.equal(q.n99, 2); assert.equal(q.per, "99 € / 179 €"); });

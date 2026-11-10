@@ -77,11 +77,11 @@ export function profileOneTime(amount: number, express: boolean, expressAmount: 
  *  für den Rest von 2026 NICHT mehr neu angenommen – Kunden sehen „Wieder verfügbar ab Januar 2027".
  *  Bestandsaufträge (schon gespeicherte 250er) laufen unverändert weiter. Admin darf weiterhin manuell anlegen. */
 export const REVIEWS_OTHER_PAUSED = true;
-/** Neue Bewertung nicht bestellbar (Pause)? old/nt/sw oder days > 28. */
+/** Neue Bewertung nicht bestellbar (Pause)? old/nt/sw oder days ≥ 28 (= Google zeigt „vor 4 Wochen"). */
 export const isPausedReview = (it: { old?: boolean; nt?: boolean; sw?: boolean; days?: number | null } | null | undefined): boolean => {
   if (!REVIEWS_OTHER_PAUSED || !it) return false;
   const d = Number(it.days);
-  return !!(it.old || it.nt || it.sw) || (it.days !== null && it.days !== undefined && Number.isFinite(d) && d > 28);
+  return !!(it.old || it.nt || it.sw) || (it.days !== null && it.days !== undefined && Number.isFinite(d) && d >= 28);
 };
 export const EXPRESS_FEE = 100;
 export const EXPRESS_CUSTOMER_H = 30; // Zusage an den Kunden (Start Mo 0:00 – Fr 12:00 Wiener Zeit)
@@ -128,7 +128,7 @@ export const expressPartnerDue = (startIso: string | null | undefined) => isoOrN
 /** fresh = Frisch-Preis dieses Auftrags (Land × Branche, siehe freshPriceFor); Standard 199. */
 export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string | null; rating?: number | null; days?: number | null }, fresh: number = PRICE_V2_FRESH): number => {
   const days = Number(it.days);
-  const old = it.old === true || (Number.isFinite(days) && it.days !== null && it.days !== undefined && days > 28);
+  const old = it.old === true || (Number.isFinite(days) && it.days !== null && it.days !== undefined && days >= 28);
   return it.nt || it.sw || old ? PRICE_V2_OTHER : (PRICE_V2_FRESH_TIERS.includes(fresh) ? fresh : PRICE_V2_FRESH);
 };
 /** Frisch-Preis (199/249/309 neu, 179/99 Bestand)? */
@@ -157,7 +157,7 @@ export type ReviewMethod = "sw" | "legal" | "std";
 export const isSwItem = (it: PricedItem | null | undefined) => !!it && (!!it.nt || !!it.sw);
 export function reviewMethod(it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string; days?: number }, country: string): ReviewMethod {
   if (it.nt || it.sw) return "sw";
-  const old = it.old === true || (Number.isFinite(Number(it.days)) && Number(it.days) > 28);
+  const old = it.old === true || (Number.isFinite(Number(it.days)) && Number(it.days) >= 28);
   if (!old) return "std";
   return String(country || "").toUpperCase() === "US" ? "sw" : "legal";
 }

@@ -33,7 +33,7 @@ const MAPS_RE = /(maps|goo\.gl|g\.page|google\.)/i;
 const num = (v) => { const n = Number(String(v || "").replace(/\s/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 && n < 100000 ? Math.round(n * 100) / 100 : 0; };
 const rkey = (it) => it.url || `${it.name || ""}|${it.text || ""}`;
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
-const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} ${Math.round(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
+const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.floor(d / 7)} ${Math.floor(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 
 const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, askReasons: true, busy: false, done: null, cands: null, candBusy: false, cpAll: "", cpMap: {}, cpOpen: false, profAmt: "" });
@@ -113,7 +113,7 @@ export default function NewOrder({ ctx }) {
   const revList = (s.revs || []).filter((r) => s.rsf === "all" || (r.rating && r.rating <= 2));
   const items = s.type !== "reviews" ? [] : s.mode === "links"
     ? s.rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, rating: r.info.rating, days: r.info.days, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
-    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days, ...(String(r.text || "").trim() ? {} : { nt: true }) }));
+    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days >= 28, rating: r.rating, days: r.days, ...(String(r.text || "").trim() ? {} : { nt: true }) }));
   // US-Profil + älter als 4 Wochen → Software-Verfahren (intern), Preis 250 – wie im Backend (Preismodell 2)
   if (s.country === "US") for (const it of items) if (it.old) it.sw = true;
   // Individueller Preis je Bewertung (einzeln > für alle) – genau der wird abgebucht und verrechnet.
@@ -149,7 +149,7 @@ export default function NewOrder({ ctx }) {
     resolveReviewLinkApi(u).then((r) => {
       const info = r.review || null;
       set((x) => ({
-        rl: x.rl.map((y) => (y.url === u ? { ...y, st: info ? "ok" : "unknown", info, old: info ? info.days > 28 : y.old } : y)),
+        rl: x.rl.map((y) => (y.url === u ? { ...y, st: info ? "ok" : "unknown", info, old: info ? info.days >= 28 : y.old } : y)),
         ...(!x.biz && r.place ? { biz: r.place, bizErr: "" } : {}),
       }));
     }).catch(() => set((x) => ({ rl: x.rl.map((y) => (y.url === u ? { ...y, st: "unknown" } : y)) })));
@@ -274,7 +274,7 @@ export default function NewOrder({ ctx }) {
                       return (
                         <button key={r.id} type="button" className={"rlr pk" + (on ? " on" : "")} onClick={() => set((x) => ({ sel: on ? x.sel.filter((y) => y !== r.id) : [...x.sel, r.id] }))}>
                           <span className="cb2"><Check /></span>
-                          <div className="t"><b>{r.name} <Stars n={r.rating} /></b><span className="q">{r.text || "Nur Sterne, kein Text"}</span><span>{ago(r.days)}{r.days > 28 ? " · älter 4 Wo." : ""}</span></div>
+                          <div className="t"><b>{r.name} <Stars n={r.rating} /></b><span className="q">{r.text || "Nur Sterne, kein Text"}</span><span>{ago(r.days)}{r.days >= 28 ? " · älter 4 Wo." : ""}</span></div>
                         </button>
                       );
                     })}

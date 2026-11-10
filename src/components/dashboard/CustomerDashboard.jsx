@@ -766,7 +766,7 @@ const TfLine = ({ n99, n250 }) => {
   return <div className="sp-tf"><Clock />{n99 && n250 ? xp.tfLine(xp.d99, xp.cmpStdV) : n99 ? xp.tf99 : xp.stdD}</div>;
 };
 /** Pause 05.11.2026: Bewertung älter als 4 Wochen oder ohne Text → nicht wählbar („Wieder verfügbar ab Januar 2027"). */
-const dashPaused = (r) => REVIEWS_OTHER_PAUSED && !!r && (!String(r.text || "").trim() || Number(r.days) > 28);
+const dashPaused = (r) => REVIEWS_OTHER_PAUSED && !!r && (!String(r.text || "").trim() || Number(r.days) >= 28);
 const lpCount = (items) => { let n99 = 0, n250 = 0; for (const it of items) { if (listPriceV2(it) === PRICE_V2_OTHER) n250++; else n99++; } return { n99, n250 }; };
 
 function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
@@ -917,7 +917,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const isPick = step === "pick" || (step === "speed" && spFrom === "pick");
   const usd = isPick ? !!place && place.cc === "US" : !!cc0 && cc0.cc === "US";
   const selQ = isPick
-    ? sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; })
+    ? sel.map((r) => { const old = r.days >= 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; })
     : okRows.filter((r) => !r.r.paused).map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw })); // pausierte zählen nicht
   const q2 = reviewQuote(selQ, LANG);
   // Eigene Preise des Kunden (Admin → Kunden & Preise) gelten auch von Hand: Staffel nach Anzahl + Software-Preis.
@@ -1228,7 +1228,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   }, [oid, token]);
   const sel = (list || []).filter((r) => pick.includes(r.id));
   const us = order && order.country === "US";
-  const selQ = sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; });
+  const selQ = sel.map((r) => { const old = r.days >= 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; });
   const q = reviewQuote(selQ, LANG);
   const lpc = lpCount(selQ);
   const canX = lpc.n250 > 0;

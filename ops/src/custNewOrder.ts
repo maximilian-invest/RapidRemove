@@ -117,7 +117,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const last = pool ? (await pool.query(`SELECT name, phone, company, country, raw->>'payPref' AS pp FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]).catch(() => ({ rows: [] as Record<string, string | null>[] }))).rows[0] || {} : {};
     const setup = await custSetup(email).catch(() => null); // vom Admin angelegtes Dashboard: Name für den ersten Auftrag
     const items = picks.map((r) => {
-      const nt = !String(r.text || "").trim(), old = r.days > 28;
+      const nt = !String(r.text || "").trim(), old = r.days >= 28;
       return { ...(r.link ? { url: r.link } : {}), name: r.name, ...(r.text ? { text: r.text } : {}), ...(nt ? { nt: true } : old ? { old: true } : {}), rating: r.rating, ...(r.days >= 0 ? { days: r.days } : {}) };
     });
     const orderId = "RR-" + (100000 + crypto.randomInt(900000));
@@ -185,7 +185,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
   }
   const flagsOf = (s: Scan) => {
     const nt = s.found && !String(s.text || "").trim();
-    const old = s.found && Number(s.days) > 28;
+    const old = s.found && Number(s.days) >= 28;
     return { nt, old, sw: nt || (old && s.place?.cc === "US"), paused: REVIEWS_OTHER_PAUSED && (nt || old) };
   };
 

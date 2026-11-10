@@ -63,7 +63,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const c = CO[lang] || CO.en;
   const [f, setF] = React.useState({ name: "", email: "", phone: "", company: co.company || "", profileLink: "", country: co.country || "", payPref: "none", agb: false, pol: false });
   const [revs, setRevs] = React.useState(() => (co.items && co.items.length
-    ? co.items.map((r) => ({ url: r.link || r.url || "", age: r.days > 28 ? "old" : "new", name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days, fixed: true }))
+    ? co.items.map((r) => ({ url: r.link || r.url || "", age: r.days >= 28 ? "old" : "new", name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days, fixed: true }))
     : [{ url: "", age: "new" }]));
   const [bad, setBad] = React.useState({});
   // Per Hand eingefügte Links auflösen → Sterne/Text/Alter bekannt → richtiger Preis (ohne Text = Software 300) schon vor dem Bestellen
@@ -73,7 +73,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       if (r.fixed || r.chk === u || !/^https?:\/\/\S{8,}$/i.test(u)) return;
       setRevs((l) => l.map((x, k) => (k === i ? { ...x, chk: u, busy: true } : x)));
       findReviewByLink("", u, lang).then((rv) => {
-        setRevs((l) => l.map((x) => (String(x.url || "").trim() === u && !x.fixed ? { ...x, busy: false, fixed: true, name: rv.name || "", text: rv.text || "", rating: rv.rating || 0, days: rv.days, age: rv.days > 28 ? "old" : "new" } : x)));
+        setRevs((l) => l.map((x) => (String(x.url || "").trim() === u && !x.fixed ? { ...x, busy: false, fixed: true, name: rv.name || "", text: rv.text || "", rating: rv.rating || 0, days: rv.days, age: rv.days >= 28 ? "old" : "new" } : x)));
       }).catch(() => setRevs((l) => l.map((x) => (String(x.url || "").trim() === u ? { ...x, busy: false } : x))));
     });
   }, [revs.map((r) => (r.fixed ? "" : String(r.url || "").trim())).join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -226,7 +226,7 @@ const ago = (days, lang) => {
 export const Stars = ({ n }) => (n ? <span className="pk-st">{"★".repeat(n)}<i>{"★".repeat(5 - n)}</i></span> : null);
 
 /** Pause 05.11.2026: älter als 4 Wochen oder ohne Text → nicht wählbar. */
-const pausedR = (r) => !String(r.text || "").trim() || Number(r.days) > 28;
+const pausedR = (r) => !String(r.text || "").trim() || Number(r.days) >= 28;
 export function ReviewPicker({ pick, lang, P, onNext, done }) {
   const [q, setQ] = React.useState("");
   const [sel, setSel] = React.useState(() => new Set());

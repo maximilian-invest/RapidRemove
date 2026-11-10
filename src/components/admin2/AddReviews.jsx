@@ -13,7 +13,7 @@ import { money } from "./model";
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
 const normU = (u) => String(u || "").trim().toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");
 const normT = (t) => String(t || "").toLowerCase().replace(/\s+/g, " ").trim();
-const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} Wo.` : d < 365 ? `vor ${Math.round(d / 30)} Mon.` : `vor ${Math.round(d / 365)} J.`);
+const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.floor(d / 7)} Wo.` : d < 365 ? `vor ${Math.round(d / 30)} Mon.` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 const MSG = { already_ordered: "Diese Bewertung ist schon beauftragt.", cancelled: "Auftrag ist storniert.", order: "Auftrag nicht gefunden (nur Bewertungs-Aufträge).", empty: "Keine gültige Bewertung." };
 
@@ -43,7 +43,7 @@ export default function AddReviews({ ctx, id }) {
   const list = (revs || []).filter((r) => rsf === "all" || (r.rating && r.rating <= 2));
   const items = mode === "links"
     ? rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, rating: r.info.rating, days: r.info.days, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
-    : (revs || []).filter((r) => sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days }));
+    : (revs || []).filter((r) => sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days >= 28, rating: r.rating, days: r.days }));
   const c = o.country === "US" ? "$" : "€";
   const cpv = (() => { const n = Number(String(cpAll || "").replace(/\s/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 && n < 100000 ? Math.round(n * 100) / 100 : 0; })();
   if (cpv) for (const it of items) it.cp = cpv;
@@ -56,7 +56,7 @@ export default function AddReviews({ ctx, id }) {
     setRl((x) => [...x, { url: u, old: false, st: "busy", info: null }]); setRlin("");
     resolveReviewLinkApi(u).then((r) => {
       const info = r.review || null;
-      setRl((x) => x.map((y) => (y.url === u ? { ...y, st: info ? "ok" : "unknown", info, old: info ? info.days > 28 : y.old } : y)));
+      setRl((x) => x.map((y) => (y.url === u ? { ...y, st: info ? "ok" : "unknown", info, old: info ? info.days >= 28 : y.old } : y)));
     }).catch(() => setRl((x) => x.map((y) => (y.url === u ? { ...y, st: "unknown" } : y))));
   };
   const save = async () => {
@@ -117,7 +117,7 @@ export default function AddReviews({ ctx, id }) {
                     return (
                       <button key={r.id} type="button" disabled={done} className={"rlr pk" + (on ? " on" : "") + (done ? " dis" : "")} onClick={() => setSel((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
                         <span className="cb2"><Check /></span>
-                        <div className="t"><b>{r.name} <Stars n={r.rating} /></b><span className="q">{r.text || "Nur Sterne, kein Text"}</span><span>{done ? "Schon im Auftrag" : ago(r.days) + (r.days > 28 ? " · älter 4 Wo." : "")}</span></div>
+                        <div className="t"><b>{r.name} <Stars n={r.rating} /></b><span className="q">{r.text || "Nur Sterne, kein Text"}</span><span>{done ? "Schon im Auftrag" : ago(r.days) + (r.days >= 28 ? " · älter 4 Wo." : "")}</span></div>
                       </button>
                     );
                   })}

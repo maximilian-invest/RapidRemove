@@ -21,7 +21,8 @@ export type FetchedReview = {
   rating: number;
   text: string;
   date: string;   // ISO-Datum
-  days: number;   // Alter in Tagen (-1 = unbekannt)
+  days: number;   // Alter in Tagen (-1 = unbekannt) – zeigt Google „vor 4 Wochen" o. älter, mindestens 28 (siehe ageDays)
+  rel?: string;   // Googles Altersangabe wie angezeigt („vor 4 Wochen", „a month ago")
   link: string;
 };
 
@@ -44,13 +45,30 @@ const daysSince = (iso: string | undefined): number => {
   const t = Date.parse(iso);
   return Number.isFinite(t) ? Math.max(0, Math.floor((Date.now() - t) / 86_400_000)) : -1;
 };
+/** Wochen laut Googles Anzeige („vor 4 Wochen" → 4, „a week ago" → 1, Monat/Jahr → 99, sonst 0). Alle Website-Sprachen. */
+export const relWeeks = (rel: string): number => {
+  const s = String(rel || "").toLowerCase();
+  if (!s) return 0;
+  if (/(month|monat|mes(es)?\b|mois|mese|mesi|maand|månad|måned|måne?d|か月|ヶ月|カ月|year|jahr|año|\ban(s)?\b|anno|anni|jaar|(^|\s)år(\s|$)|年)/.test(s)) return 99;
+  if (!/(week|woche|seman|semaine|settiman|weken|vecka|veckor|\buge|\buger|\buke|\buker|週)/.test(s)) return 0;
+  const n = s.match(/\d+/);
+  return n ? Number(n[0]) : 1;
+};
+/** Maßgeblich ist, was Google anzeigt (Entscheidung Maximilian 10.11.2026): steht dort „vor 4 Wochen" (oder älter),
+ *  gilt die Bewertung als älter als 4 Wochen – auch wenn das ISO-Datum erst 25–27 Tage zurückliegt. */
+export const ageDays = (iso: string | undefined, rel?: string): number => {
+  const d = daysSince(iso);
+  return relWeeks(rel || "") >= 4 && d >= 0 && d < 28 ? 28 : d;
+};
+/** Cache-Treffer: Alter neu rechnen (Cache bis 6 h alt). */
+const fresh = (r: FetchedReview): FetchedReview => ({ ...r, days: r.date ? ageDays(r.date, r.rel) : r.days });
 
 export async function fetchPlaceReviews(placeId: string, lang: string): Promise<FetchedReview[]> {
   const key = serpKey();
   if (!key) throw new Error("SERPAPI_KEY fehlt");
   const ck = placeId + "|" + lang;
   const hit = cache.get(ck);
-  if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data;
+  if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data.map(fresh);
 
   const maxPages = Math.min(10, Math.max(1, Number(process.env.SERPAPI_PAGES) || 3));
   const out: FetchedReview[] = [];
@@ -76,7 +94,8 @@ export async function fetchPlaceReviews(placeId: string, lang: string): Promise<
         rating: Math.round(Number(r.rating) || 0),
         text: String(r.extracted_snippet?.original || r.snippet || "").slice(0, 2000),
         date: String(r.iso_date || ""),
-        days: daysSince(r.iso_date),
+        days: ageDays(r.iso_date, r.date),
+        rel: String(r.date || "").slice(0, 60),
         link: String(r.link || ""),
       });
     }
@@ -95,14 +114,14 @@ const oneCache = new Map<string, { ts: number; r: FetchedReview | null }>();
 const mapR = (r: any, i: number): FetchedReview => ({
   id: String(r.review_id || r.link || i), name: String(r.user?.name || "Google user").slice(0, 120), photo: String(r.user?.thumbnail || ""),
   rating: Math.round(Number(r.rating) || 0), text: String(r.extracted_snippet?.original || r.snippet || "").slice(0, 2000),
-  date: String(r.iso_date || ""), days: daysSince(r.iso_date), link: String(r.link || ""),
+  date: String(r.iso_date || ""), days: ageDays(r.iso_date, r.date), rel: String(r.date || "").slice(0, 60), link: String(r.link || ""),
 });
 export async function findPlaceReview(placeId: string, reviewId: string, lang: string): Promise<FetchedReview | null> {
   const key = serpKey();
   if (!key || !placeId || !reviewId) return null;
   const ck = placeId + "|" + reviewId;
   const c = oneCache.get(ck);
-  if (c && Date.now() - c.ts < CACHE_MS) return c.r;
+  if (c && Date.now() - c.ts < CACHE_MS) return c.r ? fresh(c.r) : null;
   const hit = (l: FetchedReview[]) => l.find((x) => x.id === reviewId || (x.link && x.link.includes(reviewId))) || null;
   let found = hit(await fetchPlaceReviews(placeId, lang).catch(() => [] as FetchedReview[]));
   for (const sort of ["ratingLow", "ratingHigh"]) {

@@ -1848,7 +1848,7 @@ const LKR_COPY = {
 };
 const LKR = (code) => LKR_COPY[code] || LKR_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
-const reviewIsOld = (r) => !!r && r.days > REVIEW_OLD_DAYS;
+const reviewIsOld = (r) => !!r && r.days >= REVIEW_OLD_DAYS; // 28 Tage = Google „vor 4 Wochen" → zu alt
 /** Pause 05.11.2026: ältere (> 4 Wochen) oder textlose Bewertung → nicht wählbar („Wieder verfügbar ab Januar 2027"). */
 const reviewPaused = (r) => !!r && isPausedReview({ nt: !reviewHasText(r), days: r.days });
 /** „vor 14 Tagen" / „2 weeks ago" — eindeutiger als ein Datum im US-Format. */
@@ -1857,7 +1857,7 @@ function relAge(days, lang) {
   try {
     const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
     if (days < 14) return rtf.format(-days, "day");
-    if (days < 60) return rtf.format(-Math.round(days / 7), "week");
+    if (days < 60) return rtf.format(-Math.floor(days / 7), "week"); // wie Google: „vor 4 Wochen" erst ab Tag 28
     if (days < 730) return rtf.format(-Math.round(days / 30), "month");
     return rtf.format(-Math.round(days / 365), "year");
   } catch (e) { return days + " d"; }

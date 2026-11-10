@@ -130,7 +130,7 @@ export const REVIEWS_OTHER_PAUSED = true;
 export const isPausedReview = (r) => {
   if (!REVIEWS_OTHER_PAUSED || !r) return false;
   const d = Number(r.days);
-  return !!(r.old || r.nt || r.sw) || (r.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
+  return !!(r.old || r.nt || r.sw) || (r.days != null && Number.isFinite(d) && d >= REVIEW_OLD_DAYS);
 };
 export const REVIEW_PAUSE_COPY = {
   de: "Wieder verfügbar ab Januar 2027", en: "Available again from January 2027", es: "Disponible de nuevo a partir de enero de 2027",
@@ -181,7 +181,7 @@ export const STD_DAYS = { fresh: [3, 5], other: [1, 2] };
 /** fresh = Frisch-Preis dieses Auftrags (Land × Branche); Standard 199. */
 export const listPriceV2 = (it, fresh = PRICE_V2_FRESH) => {
   const d = Number(it && it.days);
-  const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
+  const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d >= REVIEW_OLD_DAYS);
   return it && (it.nt || it.sw || old) ? PRICE_V2_OTHER : (PRICE_V2_FRESH_TIERS.includes(fresh) ? fresh : PRICE_V2_FRESH);
 };
 export const isFreshLp = (v) => PRICE_V2_FRESH_TIERS.includes(v) || PRICE_V2_FRESH_LEGACIES.includes(v);
@@ -235,7 +235,7 @@ function reviewQuoteV1(items, lang) {
    "std"   bis 4 Wochen → Zahlung nach Löschung. */
 export function reviewMethod({ hasText, days }, country) {
   if (!hasText) return "sw";
-  if (!(days > REVIEW_OLD_DAYS)) return "std";
+  if (!(days >= REVIEW_OLD_DAYS)) return "std";
   return country === "US" ? "sw" : "legal";
 }
 const COUNTRY_RE = [[/vereinigte staaten|united states|\busa\b|états-unis|estados unidos|stati uniti|verenigde staten|förenta staterna|forenede stater|アメリカ/i, "US"],

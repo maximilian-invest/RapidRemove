@@ -806,7 +806,7 @@ function buildMeasures(c: Ctx, score: number, selfTodos: J[]): J {
   // 2) Einzelne Bewertungen (> 4,2 Sterne; 1–2 ★ mit Text, höchstens 28 Tage alt; DE/AT nur, wenn der Schnitt sichtbar steigt)
   let rev: J[] = [];
   if (!profile && r > 4.2 && n > 0) {
-    const del = list.filter((x) => Number(x.rating) <= 2 && String(x.text || "").trim() && x.days != null && x.days <= 28);
+    const del = list.filter((x) => Number(x.rating) <= 2 && String(x.text || "").trim() && x.days != null && x.days < 28);
     if (del.length) {
       const k = del.length, sum = del.reduce((s, x) => s + Number(x.rating), 0);
       const to = n - k > 0 ? Math.round(((r * n - sum) / (n - k)) * 10) / 10 : r;

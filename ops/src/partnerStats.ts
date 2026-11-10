@@ -58,7 +58,7 @@ function dist(v: (number | null)[]) {
 const DEC = ["removed", "not_possible", "software"];
 const KIND_L: Record<string, string> = { normal: "Bis 4 Wochen alt", old: "Älter als 4 Wochen", nt: "Ohne Text (nur Sterne)", profile: "Ganzes Profil" };
 const textLen = (t: T) => { const n = (t.text || "").trim().length; if (t.kind === "nt") return "Ohne Text (nur Sterne)"; if (!n) return "Unbekannt"; return n < 80 ? "Kurz (< 80 Zeichen)" : n <= 300 ? "Mittel (80–300)" : "Lang (> 300)"; };
-const ageL = (t: T) => { const d = t.age_days; if (d == null || d < 0) return t.kind === "old" ? "Älter als 4 Wochen" : t.kind === "normal" ? "Bis 4 Wochen" : "Unbekannt"; return d <= 28 ? "Bis 4 Wochen" : d <= 180 ? "1–6 Monate" : d <= 365 ? "6–12 Monate" : "Älter als 1 Jahr"; };
+const ageL = (t: T) => { const d = t.age_days; if (d == null || d < 0) return t.kind === "old" ? "Älter als 4 Wochen" : t.kind === "normal" ? "Bis 4 Wochen" : "Unbekannt"; return d < 28 ? "Bis 4 Wochen" : d <= 180 ? "1–6 Monate" : d <= 365 ? "6–12 Monate" : "Älter als 1 Jahr"; };
 const starL = (t: T) => (t.rating && t.rating >= 1 && t.rating <= 5 ? t.rating + " Stern" + (t.rating > 1 ? "e" : "") : "Unbekannt");
 const COUNTRY: Record<string, string> = { AT: "Österreich", DE: "Deutschland", CH: "Schweiz", US: "USA", GB: "Großbritannien", JP: "Japan", ES: "Spanien", FR: "Frankreich", IT: "Italien", NL: "Niederlande" };
 const vienna = (d: Date) => new Date(new Date(d).toLocaleString("en-US", { timeZone: "Europe/Vienna" }));

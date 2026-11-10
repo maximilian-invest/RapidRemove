@@ -79,7 +79,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     const rt = Math.round(Number(x.rating)), dy = Math.round(Number(x.days));
     if (rt >= 1 && rt <= 5) it.rating = rt;
     if (x.days !== undefined && x.days !== null && Number.isFinite(dy) && dy >= 0 && dy < 20000) it.days = dy;
-    if (x.old === true || (it.days !== undefined && it.days > 28)) it.old = true;
+    if (x.old === true || (it.days !== undefined && it.days >= 28)) it.old = true;
     if (x.nt === true) it.nt = true;
     if (opts.by === "admin" && cpOf(x as { cp?: unknown })) it.cp = cpOf(x as { cp?: unknown }); // individueller Preis nur vom Admin
     if (!it.nt && !it.text && it.rating && !it.url) it.nt = true; // Sterne bekannt, kein Text → reine Sternebewertung
