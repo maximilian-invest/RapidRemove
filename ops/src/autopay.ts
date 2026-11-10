@@ -953,12 +953,8 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       const si2 = ses.setup_intent;
       if (!si2 || si2.status !== "succeeded" || !si2.payment_method) return reply.code(400).send({ ok: false, error: "not_completed" });
       const pm = si2.payment_method;
-      // Prepaid-Karten: oft leer bis zur nächsten Aufladung → nicht annehmen (06.11.2026).
-      if (pm.type === "card" && pm.card?.funding === "prepaid") {
-        void sx(k.key, "POST", `payment_methods/${pm.id}/detach`, {}).catch(() => {});
-        void logCustEvent(si.email, "autopay_rejected", "Prepaid-Karte abgelehnt", { mode: k.mode });
-        return reply.code(400).send({ ok: false, error: "prepaid" });
-      }
+      // Prepaid-Karten sind erlaubt (10.11.2026, Maximilian): die Deckungsprüfung unten prüft das Guthaben in Auftragshöhe.
+      // (06.–10.11. wurden sie abgelehnt – das hat zahlungswillige Kunden blockiert.)
       // Deckungsprüfung über den offenen Auftragswert (nur bei neuer Zahlungsart).
       if (row.pm !== pm.id) {
         const cov = await coverageCheck(si.email, k, row.customer, pm).catch((e) => ({ result: "skipped", amount: 0, cur: "eur", why: String((e as Error)?.message || e).slice(0, 120) }) as Coverage);
