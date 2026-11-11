@@ -769,7 +769,7 @@ const TfLine = ({ n99, n250 }) => {
 const dashPaused = (r) => REVIEWS_OTHER_PAUSED && !!r && (!String(r.text || "").trim() || Number(r.days) >= 28);
 const lpCount = (items) => { let n99 = 0, n250 = 0; for (const it of items) { if (listPriceV2(it) === PRICE_V2_OTHER) n250++; else n99++; } return { n99, n250 }; };
 
-function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
+function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks, fromAlert }) {
   const both = !!(modes && modes.hand && modes.bulk);
   // 15.10.2026: Start = Google-Profil suchen → Bewertungen anhaken. Darunter: „Links einfügen" und „Bulk-Upload".
   const hasHand = !!(modes && modes.hand);
@@ -1138,13 +1138,13 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
           ) : step === "links" ? (
             <>
               <div className="fl-body">
-                {hasHand ? <button type="button" className="bu-back" onClick={() => { setKind("hand"); setStep("search"); }}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
-                <h2>{T("lnH1")}</h2>
-                <p>{T("lnP1")}</p>
+                {fromAlert ? null : hasHand ? <button type="button" className="bu-back" onClick={() => { setKind("hand"); setStep("search"); }}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
+                <h2>{fromAlert ? T(rows.length > 1 ? "wtH1n" : "wtH1") : T("lnH1")}</h2>
+                <p>{fromAlert ? T("wtP1") : T("lnP1")}</p>
                 <div className="ln-list">
                   {rows.map((row, i) => (
                     <div key={row.id} className={"ln-row " + row.st}>
-                      <div className="ln-in">
+                      <div className="ln-in" style={fromAlert && row.st === "ok" ? { display: "none" } : undefined}>
                         <span className="ln-n">{i + 1}</span>
                         <input ref={(el) => { inRefs.current[row.id] = el; }} value={row.url} placeholder={T("lnPh")} inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="next"
                           onChange={(e) => setUrl(row.id, e.target.value)}
@@ -1173,7 +1173,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                     </div>
                   ))}
                 </div>
-                {rows.length < 50 ? <button type="button" className="ln-add" onClick={addRow}><Plus />{T("lnAdd")}</button> : null}
+                {rows.length < 50 && !fromAlert ? <button type="button" className="ln-add" onClick={addRow}><Plus />{T("lnAdd")}</button> : null}
                 {own ? <TierTable pricing={own} tier={ownIdx >= 0 ? { idx: ownIdx } : null} /> : null}
               </div>
               <div className="fl-foot pgf">
@@ -1363,6 +1363,7 @@ export default function CustomerDashboard() {
   const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
   const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
+  const [noAlert, setNoAlert] = React.useState(false); // Neubestellung aus der Bewertungs-Wächter-Mail geöffnet
   const [noLinks, setNoLinks] = React.useState(null); // Bulk-Software-Storno → „Einzeln beauftragen" mit vorbefülltem Link
   const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
   const rep = useRep(token, !!(data && isRepPreview(data.email)), call); // Reputations-Score (Vorschau)
@@ -1581,7 +1582,7 @@ export default function CustomerDashboard() {
       const links = u.searchParams.getAll("add").map((x) => String(x || "").trim()).filter((x) => /^https?:\/\//i.test(x)).slice(0, 20);
       if (!links.length) return;
       u.searchParams.delete("add"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
-      setNoQ(""); setNoLinks(links); setNoOpen(true);
+      setNoQ(""); setNoLinks(links); setNoAlert(true); setNoOpen(true);
     } catch (e) { /* */ }
   }, [data, noOn]);
   // Tap auf einen Push (?order=RR-…) → direkt diese Bestellung öffnen; App-Badge = offene Entscheidungen.
@@ -2462,8 +2463,8 @@ export default function CustomerDashboard() {
 
       <StartFlow order={sfOrder} autopay={data.autopay} covFail={data.covFail} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
-      <NewOrderFlow open={noOpen} presetLinks={noLinks} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
-        onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />
+      <NewOrderFlow open={noOpen} presetLinks={noLinks} fromAlert={noAlert} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => { setNoOpen(false); setNoAlert(false); }}
+        onDone={async (id) => { setNoOpen(false); setNoAlert(false); await load(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
 
