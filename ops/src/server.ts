@@ -65,6 +65,7 @@ import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink 
 import { registerCustTrack } from "./custTrack";
 import { registerPriceTier, resolveTier, industryInfo, type Tier } from "./priceTier";
 import { registerProtectionWatch, startProtectionReportWorker } from "./protectionWatch";
+import { registerReviewWatch, startReviewWatchWorker } from "./reviewWatch";
 import { registerRepScore } from "./repScore";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
@@ -227,6 +228,7 @@ registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, custome
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPriceTier(app, ADMIN_TOKEN); // Preis nach Land × Branche (/price-quote) + Branchen-Auswertung (/admin/industry-*)
 registerOrderPayLinkRoute(app, ADMIN_TOKEN); // Admin: Zahlungslink eines Profil-Auftrags ändern (Upgrade)
+registerReviewWatch(app, ADMIN_TOKEN); // Bewertungs-Wächter: neue negative Bewertungen bei Bestandskunden (Versand nur mit REVIEW_WATCH_SEND=on)
 registerProtectionWatch(app, ADMIN_TOKEN); // Schutz: Überwachung im Kunden-Dashboard (/cust/protection) + wöchentlicher Schutz-Bericht
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
@@ -2960,6 +2962,7 @@ async function start() {
     // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.
     if (shotKey()) setTimeout(() => { void backfillReviewShots(14, (o, m) => app.log.info(o, m)); }, 20_000);
     startMonitorScheduler(app);   // Monitor: täglicher Scan 05:00 (Wien)
+    startReviewWatchWorker(app);      // Bewertungs-Wächter: täglich ab 07:00 (Wien), nur mit REVIEW_WATCH=on
     startProtectionReportWorker(app); // Schutz-Bericht: Montag ab 09:00 (Wien), je Kunde einmal pro Woche
   } catch (err) { app.log.error(err); process.exit(1); }
 }

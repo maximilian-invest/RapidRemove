@@ -91,6 +91,30 @@ export async function captureShot(url: string): Promise<{ buf: Buffer; mime: str
   return { buf: Buffer.from(await res.arrayBuffer()), mime: type.split(";")[0], title };
 }
 
+/** Bewertungs-Wächter: Screenshot NUR der Bewertungskarte (linke Leiste der Google-Bewertungsseite, englische Oberfläche),
+ *  doppelte Auflösung → in der Kundenmail gestochen scharf. Google Maps zeigt die Bewertung bei 1280 px Breite links in
+ *  einer ~410 px breiten Leiste; der Ausschnitt nimmt Kopf (Profilname) bis unter den Bewertungstext. Wirft bei Fehlern. */
+export async function captureReviewCard(url: string): Promise<{ buf: Buffer; mime: string }> {
+  if (!shotKey()) throw new Error("SCREENSHOTONE_KEY fehlt");
+  let u = url;
+  try { const x = new URL(url); if (/(^|\.)google\.[a-z.]+$/.test(x.hostname)) x.searchParams.set("hl", "en"); u = x.toString(); } catch { /* */ }
+  const api = new URL(apiUrl(u, false, false, "en"));
+  // Signatur hängt an den Parametern → Ausschnitt VOR dem Signieren setzen (apiUrl neu aufbauen).
+  const p = new URLSearchParams(api.search);
+  p.delete("signature");
+  p.set("device_scale_factor", "2");
+  p.set("clip_x", "8"); p.set("clip_y", "80"); p.set("clip_width", "416"); p.set("clip_height", "620");
+  const qs = p.toString();
+  const sig = shotSecret() ? "&signature=" + createHmac("sha256", shotSecret()).update(qs).digest("hex") : "";
+  const res = await fetch(api.origin + api.pathname + "?" + qs + sig, { signal: AbortSignal.timeout(100_000) });
+  const type = res.headers.get("content-type") || "";
+  if (!res.ok || !type.startsWith("image/")) {
+    const t = await res.text().catch(() => "");
+    throw new Error("HTTP " + res.status + " " + t.slice(0, 200));
+  }
+  return { buf: Buffer.from(await res.arrayBuffer()), mime: type.split(";")[0] };
+}
+
 /** Fertig geladene Seite als HTML (ScreenshotOne format=html) – für die Lösch-Erkennung ohne KI (reviewPage.ts).
  *  Englische Oberfläche wie beim eigenen Browser. Wirft bei Fehlern. */
 export async function captureHtml(url: string): Promise<string> {

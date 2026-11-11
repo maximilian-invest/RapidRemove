@@ -1572,6 +1572,18 @@ export default function CustomerDashboard() {
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
   };
   const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); if (mainRef.current) mainRef.current.scrollTop = 0; } catch (e) { /* */ } };
+  // Bewertungs-Wächter-Mail (?add=<Bewertungslink>, auch mehrfach) → Neubestellung mit vorausgefüllten Bewertungen öffnen.
+  // Der Kunde bestätigt dort wie gewohnt (Preis, AGB); abgebucht wird erst nach der Löschung.
+  React.useEffect(() => {
+    if (!data || !noOn || data.adminView) return;
+    try {
+      const u = new URL(window.location.href);
+      const links = u.searchParams.getAll("add").map((x) => String(x || "").trim()).filter((x) => /^https?:\/\//i.test(x)).slice(0, 20);
+      if (!links.length) return;
+      u.searchParams.delete("add"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
+      setNoQ(""); setNoLinks(links); setNoOpen(true);
+    } catch (e) { /* */ }
+  }, [data, noOn]);
   // Tap auf einen Push (?order=RR-…) → direkt diese Bestellung öffnen; App-Badge = offene Entscheidungen.
   React.useEffect(() => {
     if (!data) return;

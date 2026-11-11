@@ -144,3 +144,39 @@ export async function findPlaceReview(placeId: string, reviewId: string, lang: s
   if (oneCache.size > 500) oneCache.delete(oneCache.keys().next().value as string);
   return found;
 }
+
+/** Bewertungs-Wächter (reviewWatch.ts): neueste Bewertungen, ohne Cache (der tägliche Scan soll immer den aktuellen Stand
+ *  sehen und den Wizard-Cache nicht mit einer kurzen Liste überschreiben).
+ *  Regel Maximilian 11.11.2026: Sobald Google bei einer Bewertung „vor 4 Wochen" (oder älter) anzeigt, NICHT weiterblättern –
+ *  alles ab da können wir nicht löschen. Geblättert wird also nur, solange die ganze Seite jünger als 4 Wochen ist
+ *  (höchstens REVIEW_WATCH_PAGES Seiten, Standard 5). Zurück kommen nur Bewertungen jünger als 4 Wochen. */
+export const isTooOld = (r: FetchedReview): boolean => relWeeks(r.rel || "") >= 4 || r.days >= 28;
+export async function fetchNewestReviews(placeId: string, lang: string): Promise<FetchedReview[]> {
+  const key = serpKey();
+  if (!key) throw new Error("SERPAPI_KEY fehlt");
+  const maxPages = Math.min(10, Math.max(1, Number(process.env.REVIEW_WATCH_PAGES) || 5));
+  const out: FetchedReview[] = [];
+  let token: string | null = null;
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({ engine: "google_maps_reviews", place_id: placeId, sort_by: "newestFirst", hl: lang, api_key: key });
+    if (token) { params.set("next_page_token", token); params.set("num", "20"); }
+    countCall();
+    const res = await fetch((process.env.SERPAPI_BASE || "https://serpapi.com") + "/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) });
+    const data: any = await res.json().catch(() => null);
+    if (!res.ok || !data || data.error) {
+      if (out.length) break;
+      throw new Error("SerpApi " + res.status + ": " + String(data?.error || "").slice(0, 200));
+    }
+    // Geänderte Bewertungen („Edited a week ago"): Google sortiert und zeigt nach dem Änderungsdatum → das zählt hier.
+    const list: FetchedReview[] = (Array.isArray(data.reviews) ? data.reviews : []).map((x: any, i: number) => {
+      const r = mapR(x, i);
+      const ed = String(x.iso_date_of_last_edit || "");
+      return ed && Date.parse(ed) > Date.parse(r.date || "0") ? { ...r, date: ed, days: ageDays(ed, r.rel) } : r;
+    });
+    let reachedOld = false;
+    for (const r of list) { if (isTooOld(r)) { reachedOld = true; break; } out.push(r); }
+    token = data.serpapi_pagination?.next_page_token || null;
+    if (reachedOld || !token || !list.length) break; // „vor 4 Wochen" erreicht → Schluss
+  }
+  return out;
+}
