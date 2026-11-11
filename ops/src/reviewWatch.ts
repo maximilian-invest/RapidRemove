@@ -42,7 +42,6 @@ import { PRICE_V2_FRESH } from "./reviewsPricing";
 import NeueBewertung, { subject as neueBewertungSubject, type NeueBewertungItem } from "./emails/NeueBewertung";
 
 const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
-const LOCALE: Record<string, string> = { de: "de-AT", en: "en-US", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "ja-JP", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
 const EXCLUDED_COUNTRIES = ["DE", "AT"];
 const on = (k: string) => String(process.env[k] || "").toLowerCase() === "on";
 const MAX_STARS = () => Math.min(4, Math.max(1, Number(process.env.REVIEW_WATCH_MAX_STARS) || 3));
@@ -138,28 +137,17 @@ async function priceLabel(email: string, cur: string): Promise<string> {
   return fmtMoney(PRICE_V2_FRESH, cur); // Bestandskunden: 199 (€ bzw. $)
 }
 
-const fmtDate = (d: Date, lang: string) => d.toLocaleDateString(LOCALE[lang] || "en-US", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Vienna" });
-/** „Noch löschbar bis": Tag 27 nach dem (letzten) Bewertungsdatum – ab Tag 28 zeigt Google „vor 4 Wochen". */
-function untilOf(iso: string | null, lang: string): string | undefined {
-  const t = iso ? Date.parse(iso) : NaN;
-  return Number.isFinite(t) ? fmtDate(new Date(t + 27 * 86_400_000), lang) : undefined;
-}
-
 type AlertRow = { id: number; place_id: string; email: string; review_id: string; name: string | null; rating: number; text: string | null; rel: string | null; iso: string | null; link: string | null; edited: boolean; mime: string | null; img: Buffer | null; status: string };
 type ProfileRow = { place_id: string; email: string; order_id: string | null; business: string | null; lang: string; country: string | null; cur: string; first_name: string | null; baseline_at: string | null };
 
-/** Fertige Mail. inline=true → Bilder als cid-Anhänge (Versand), sonst als data:-URL (Vorschau im Browser). */
-async function buildMail(p: ProfileRow, alerts: AlertRow[], opts: { inline: boolean; withLogin: boolean }) {
+/** Fertige Mail (Screenshots als Anhang). withLogin=false → Vorschau ohne Login-Link. */
+async function buildMail(p: ProfileRow, alerts: AlertRow[], opts: { withLogin: boolean }) {
   const lang = (LANGS.includes(p.lang) ? p.lang : "en") as "en";
   const attachments: MailAttachment[] = [];
-  const items: NeueBewertungItem[] = alerts.map((a) => {
-    let img: string | undefined;
-    if (a.img && a.mime) {
-      if (opts.inline) { const cid = `rw-${a.id}@rapidremove`; attachments.push({ filename: `review-${a.id}.${a.mime.includes("png") ? "png" : "jpg"}`, content: a.img, contentType: a.mime, cid }); img = `cid:${cid}`; }
-      else img = `data:${a.mime};base64,${a.img.toString("base64")}`;
-    }
-    return { name: a.name || "Google user", rating: a.rating, rel: a.rel || undefined, text: a.text || undefined, link: a.link || undefined, img, until: untilOf(a.iso, lang) };
-  });
+  // Screenshot als ANHANG (nicht im Text) – im Text nur Name + Bewertungstext + Direktlink (Maximilian 11.11.2026).
+  const safe = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "Review";
+  for (const a of alerts) if (a.img && a.mime) attachments.push({ filename: `Screenshot-${safe(a.name || "Review")}.${a.mime.includes("png") ? "png" : "jpg"}`, content: a.img, contentType: a.mime });
+  const items: NeueBewertungItem[] = alerts.map((a) => ({ name: a.name || "Google user", rating: a.rating, text: a.text || undefined, link: a.link || undefined }));
   const base = opts.withLogin ? await dashLink(p.email, lang).catch(() => "") : "";
   const links = alerts.map((a) => a.link).filter(Boolean) as string[];
   const dashUrl = base ? base + links.map((l) => "&add=" + encodeURIComponent(l)).join("") : undefined;
@@ -234,7 +222,7 @@ async function deliver(p: ProfileRow, log: FastifyInstance["log"]): Promise<"sen
     await notifyTeam("Neue schlechte Bewertung (nur Vorschau)", `${p.business || p.place_id} · ${who} · Kunde NICHT angeschrieben (Versand aus)`, undefined, { kind: "review-watch" });
     return "preview";
   }
-  const mail = await buildMail(p, alerts, { inline: true, withLogin: true });
+  const mail = await buildMail(p, alerts, { withLogin: true });
   try {
     const sent = await sendMail({ to: p.email, subject: mail.subject, html: mail.html, attachments: mail.attachments, replyTo: process.env.MAIL_REPLY_TO });
     await pool!.query(`UPDATE rw_alerts SET status='sent', sent_at=now() WHERE id = ANY($1::int[])`, [ids]);
@@ -300,7 +288,7 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
     if (!p) return reply.code(404).send("Profil nicht überwacht");
     const a = await pool!.query(`SELECT * FROM rw_alerts WHERE place_id=$1 ORDER BY id DESC LIMIT 5`, [p.place_id]);
     if (!a.rowCount) return reply.code(404).send("Keine Treffer für dieses Profil");
-    const mail = await buildMail(p, (a.rows as AlertRow[]).reverse(), { inline: false, withLogin: false });
+    const mail = await buildMail(p, (a.rows as AlertRow[]).reverse(), { withLogin: false });
     return reply.type("text/html; charset=utf-8").send(`<!-- Betreff: ${mail.subject.replace(/--/g, "–")} -->` + mail.html);
   });
 

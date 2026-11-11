@@ -1,10 +1,10 @@
 /* Template: Bewertungs-Wächter (11.11.2026, Maximilian) – „Neue negative Bewertung auf Ihrem Profil“.
    Geht an Bestandskunden mit Bewertungs-Aufträgen, sobald auf ihrem Google-Profil eine neue (oder auf 1–3 ★ geänderte)
-   Bewertung mit Text erscheint, die noch frisch genug für die Löschung ist. Je Bewertung: Screenshot (Inline-Bild),
-   Verfasser, Sterne, Alter, Direktlink, „noch löschbar bis“. Button → Kunden-Dashboard mit vorausgefüllter Bewertung
+   Bewertung mit Text erscheint, die noch frisch genug für die Löschung ist. Je Bewertung im Text NUR Name + Bewertungstext
+   + Direktlink; der Screenshot hängt als Datei an der Mail (Maximilian 11.11.2026). Button → Kunden-Dashboard mit vorausgefüllter Bewertung
    (bestätigen dort, abgebucht wird erst nach der Löschung). Abmeldelink unten. 11 Sprachen. */
 import * as React from "react";
-import { Img, Section, Text } from "@react-email/components";
+import { Section, Text } from "@react-email/components";
 import { EmailShell, P, NoteBox, CtaButton, Support, A, brand } from "./components";
 
 type Lang = "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
@@ -162,7 +162,8 @@ const T: Record<Lang, Tx> = {
   },
 };
 const pick = (lang?: string) => T[(lang as Lang)] || T.en;
-const stars = (n: number) => "★★★★★".slice(0, Math.max(0, Math.min(5, n))) + "☆☆☆☆☆".slice(0, 5 - Math.max(0, Math.min(5, n)));
+const Q: Record<string, [string, string]> = { de: ["„", "“"], fr: ["« ", " »"], ja: ["「", "」"], sv: ["”", "”"], da: ["»", "«"], no: ["«", "»"] };
+const quote = (lang: string, txt: string) => { const [a, b] = Q[lang] || ["“", "”"]; return a + txt + b; };
 
 export function subject(p: NeueBewertungProps = {}): string {
   const items = p.items || [];
@@ -178,21 +179,10 @@ export default function NeueBewertung({ lang = "en", first, business = "Miami Lu
       <P><strong>{t.hi(first)}</strong></P>
       <P>{t.intro(business, n)}</P>
       {list.map((it, i) => (
-        <Section key={i} style={{ border: `1px solid ${brand.hr}`, borderRadius: 20, overflow: "hidden", margin: "6px 0 16px" }}>
-          {it.img ? (
-            <a href={it.link || "#"} style={{ display: "block", textDecoration: "none" }}>
-              <Img src={it.img} width="494" alt={`${it.name} · ${it.rating}★ · ${(it.text || "").slice(0, 120)}`} style={{ display: "block", width: "100%", maxWidth: 494, height: "auto", borderBottom: `1px solid ${brand.hr}` }} />
-            </a>
-          ) : it.text ? (
-            <Text style={{ margin: 0, padding: "16px 18px 0", fontSize: 15, lineHeight: "1.55", color: brand.text, fontStyle: "italic" }}>„{it.text.length > 400 ? it.text.slice(0, 400) + "…" : it.text}“</Text>
-          ) : null}
-          <Section style={{ padding: "14px 18px 16px" }}>
-            <Text style={{ margin: 0, fontSize: 15, lineHeight: "1.5", color: brand.ink }}>
-              <strong>{it.name}</strong>&nbsp;&nbsp;<span style={{ color: "#f5a623", letterSpacing: 1 }}>{stars(it.rating)}</span>{it.rel ? <span style={{ color: brand.muted }}>&nbsp;·&nbsp;{it.rel}</span> : null}
-            </Text>
-            {it.until ? <Text style={{ margin: "4px 0 0", fontSize: 14, lineHeight: "1.5", color: brand.accentDark, fontWeight: 700 }}>⏱ {t.until(it.until)}</Text> : null}
-            {it.link ? <Text style={{ margin: "6px 0 0", fontSize: 14, lineHeight: "1.5" }}><A href={it.link}>{t.view} →</A></Text> : null}
-          </Section>
+        <Section key={i} style={{ background: brand.tint, borderRadius: 20, padding: "16px 18px", margin: "6px 0 16px" }}>
+          <Text style={{ margin: 0, fontSize: 15, lineHeight: "1.5", color: brand.ink }}><strong>{it.name}</strong></Text>
+          {it.text ? <Text style={{ margin: "6px 0 0", fontSize: 15, lineHeight: "1.55", color: brand.text }}>{quote(lang, it.text)}</Text> : null}
+          {it.link ? <Text style={{ margin: "8px 0 0", fontSize: 14, lineHeight: "1.5" }}><A href={it.link}>{t.view} →</A></Text> : null}
         </Section>
       ))}
       <P>{t.why}</P>
