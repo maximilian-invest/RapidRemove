@@ -70,6 +70,25 @@ function ProtHome({ prot, T, onOpen }) {
   );
 }
 
+/* Bewertungs-Wächter (11.11.2026): neue negative Bewertungen, die wir per Mail gemeldet haben und die noch nicht beauftragt
+   sind – bleiben am Start-Bildschirm sichtbar, auch wenn der Kunde die Bestellung aus der Mail mit „X" geschlossen hat. */
+function WatchCards({ items, T, money, onOpen, onIgnore }) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{ marginBottom: 24 }}>
+      {items.map((w) => (
+        <div key={w.id} className="paycard due" style={{ marginBottom: 10, cursor: "pointer" }} role="button" tabIndex={0} onClick={() => onOpen(w)} onKeyDown={(e) => { if (e.key === "Enter") onOpen(w); }}>
+          <span className="ico pr"><AlertTriangle /></span>
+          <span><b>{T("rwT", { stars: w.rating, name: w.name })}</b>
+            <span>{T(w.daysLeft == null ? "rwS0" : w.daysLeft === 1 ? "rwS1" : "rwS", { business: w.business, d: w.daysLeft })}</span>
+            <span style={{ display: "block", marginTop: 6 }}><button type="button" className="lnk" style={{ background: "none", border: 0, padding: 0, font: "inherit", fontSize: 13, color: "inherit", opacity: 0.7, textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); onIgnore(w); }}>{T("rwIgn")}</button></span></span>
+          <button type="button" className="mini" onClick={(e) => { e.stopPropagation(); onOpen(w); }}>{T("rwBtn")} · {money(w.price, w.cur)}</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 async function call(path, body) {
   const res = await fetch(OPS + "/cust/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
   const j = await res.json().catch(() => ({}));
@@ -1363,6 +1382,7 @@ export default function CustomerDashboard() {
   const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
   const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
+  const [rw, setRw] = React.useState([]); // Bewertungs-Wächter: offene gemeldete Bewertungen
   const [noAlert, setNoAlert] = React.useState(false); // Neubestellung aus der Bewertungs-Wächter-Mail geöffnet
   const [noLinks, setNoLinks] = React.useState(null); // Bulk-Software-Storno → „Einzeln beauftragen" mit vorbefülltem Link
   const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
@@ -1431,6 +1451,8 @@ export default function CustomerDashboard() {
   }, []);
 
   React.useEffect(() => { if (token) call("new-order/info", { token }).then((r) => { setNoOn(!!r.enabled); setNoModes({ hand: !!r.hand, bulk: !!r.bulk }); }).catch(() => setNoOn(false)); }, [token]);
+  const loadRw = React.useCallback((t) => { if (t) call("review-alerts", { token: t }).then((r) => setRw(r.items || [])).catch(() => setRw([])); }, []);
+  React.useEffect(() => { loadRw(token); }, [token, loadRw]);
   // Schutz-Überwachung (06.11.2026): Status je geschütztem Profil (Monitoring ist in jedem Schutz enthalten).
   const [prot, setProt] = React.useState(null);
   React.useEffect(() => { if (token) call("protection", { token }).then((r) => setProt(r)).catch(() => setProt(null)); }, [token]);
@@ -1949,6 +1971,7 @@ export default function CustomerDashboard() {
           {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
+          <WatchCards items={rw} T={T} money={money} onOpen={(w) => { setNoQ(""); setNoLinks([w.link]); setNoAlert(true); setNoOpen(true); }} onIgnore={(w) => { setRw((x) => x.filter((y) => y.id !== w.id)); if (!adminView) call("review-alerts/dismiss", { token, id: w.id }).catch(() => {}); showToast(T("rwIgnT")); }} />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
           <ProtHome prot={prot} T={T} onOpen={(id) => { if (id && orders.some((x) => x.id === id)) setDetailId(id); }} />
@@ -2027,6 +2050,7 @@ export default function CustomerDashboard() {
               <RepTeaser />
             </>
           )}
+          <WatchCards items={rw} T={T} money={money} onOpen={(w) => { setNoQ(""); setNoLinks([w.link]); setNoAlert(true); setNoOpen(true); }} onIgnore={(w) => { setRw((x) => x.filter((y) => y.id !== w.id)); if (!adminView) call("review-alerts/dismiss", { token, id: w.id }).catch(() => {}); showToast(T("rwIgnT")); }} />
           <ProtHome prot={prot} T={T} onOpen={(id) => { if (id && orders.some((x) => x.id === id)) setDetailId(id); }} />
           <div className="sec rep-sec"><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => { setOfilter("all"); goTab("orders"); }}>{T("seeAll")}</button> : null}</div>
           <div className="rep-ords">
@@ -2464,7 +2488,7 @@ export default function CustomerDashboard() {
       <StartFlow order={sfOrder} autopay={data.autopay} covFail={data.covFail} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
       <NewOrderFlow open={noOpen} presetLinks={noLinks} fromAlert={noAlert} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => { setNoOpen(false); setNoAlert(false); }}
-        onDone={async (id) => { setNoOpen(false); setNoAlert(false); await load(token); if (id) setSfId(id); }} />
+        onDone={async (id) => { setNoOpen(false); setNoAlert(false); await load(token); loadRw(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
 

@@ -36,7 +36,7 @@ import { captureReviewCard, shotKey } from "./reviewShots";
 import { reviewIdOf } from "./reviewPage";
 import { resolveReviewLink } from "./monitor";
 import { isTestEmail } from "./testAccounts";
-import { dashLink } from "./customers";
+import { dashLink, customerSessionInfo } from "./customers";
 import { pricingFor, tierFor } from "./bulkPricing";
 import { PRICE_V2_FRESH } from "./reviewsPricing";
 import NeueBewertung, { subject as neueBewertungSubject, type NeueBewertungItem } from "./emails/NeueBewertung";
@@ -69,6 +69,7 @@ async function ensureTables(): Promise<void> {
     text text, rel text, iso text, link text, edited boolean NOT NULL DEFAULT false, mime text, img bytea,
     status text NOT NULL DEFAULT 'pending', reason text, created_at timestamptz NOT NULL DEFAULT now(), sent_at timestamptz,
     UNIQUE (place_id, review_id))`);
+  await pool.query(`ALTER TABLE rw_alerts ADD COLUMN IF NOT EXISTS dismissed_at timestamptz`);
   await pool.query(`CREATE TABLE IF NOT EXISTS rw_order_place (order_id text PRIMARY KEY, place_id text, checked_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`CREATE TABLE IF NOT EXISTS rw_unsub (email text PRIMARY KEY, at timestamptz NOT NULL DEFAULT now())`);
   tablesOk = true;
@@ -128,14 +129,15 @@ async function orderedRefs(email: string): Promise<{ ids: Set<string>; nameText:
 }
 
 /* ---------------- Preis + Mail ---------------- */
-async function priceLabel(email: string, cur: string): Promise<string> {
+async function priceOf(email: string, cur: string): Promise<{ price: number; cur: string }> {
   const p = await pricingFor(email).catch(() => null);
   if (p && p.source === "custom" && p.tiers.length) {
     const t = tierFor(p.tiers, 1);
-    if (t) return fmtMoney(t.price, p.cur);
+    if (t) return { price: t.price, cur: p.cur };
   }
-  return fmtMoney(PRICE_V2_FRESH, cur); // Bestandskunden: 199 (€ bzw. $)
+  return { price: PRICE_V2_FRESH, cur }; // Bestandskunden: 199 (€ bzw. $)
 }
+async function priceLabel(email: string, cur: string): Promise<string> { const x = await priceOf(email, cur); return fmtMoney(x.price, x.cur); }
 
 type AlertRow = { id: number; place_id: string; email: string; review_id: string; name: string | null; rating: number; text: string | null; rel: string | null; iso: string | null; link: string | null; edited: boolean; mime: string | null; img: Buffer | null; status: string };
 type ProfileRow = { place_id: string; email: string; order_id: string | null; business: string | null; lang: string; country: string | null; cur: string; first_name: string | null; baseline_at: string | null };
@@ -290,6 +292,48 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
     if (!a.rowCount) return reply.code(404).send("Keine Treffer für dieses Profil");
     const mail = await buildMail(p, (a.rows as AlertRow[]).reverse(), { withLogin: false });
     return reply.type("text/html; charset=utf-8").send(`<!-- Betreff: ${mail.subject.replace(/--/g, "–")} -->` + mail.html);
+  });
+
+  /* Kunden-Dashboard: gemeldete, noch offene Bewertungen (Karte am Start-Bildschirm – falls der Kunde die Bestellung
+   * aus der Mail mit „X" geschlossen hat). Nur verschickte Hinweise (Test-Konten: auch Vorschau), nicht ausgeblendet,
+   * nicht inzwischen beauftragt und noch mindestens 1 Tag vor „vor 4 Wochen". */
+  app.post("/cust/review-alerts", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const s = await customerSessionInfo(b.token);
+    if (!s) return reply.code(401).send({ ok: false, error: "session" });
+    if (!pool || !dbReady()) return { ok: true, items: [] };
+    await ensureTables();
+    const email = norm(s.email);
+    const st = isTestEmail(email) ? ["sent", "preview"] : ["sent"];
+    const r = await pool.query(
+      `SELECT a.id, a.review_id, a.name, a.rating, a.text, a.iso, a.link, p.business, p.cur
+         FROM rw_alerts a JOIN rw_profiles p ON p.place_id = a.place_id
+        WHERE a.email=$1 AND a.status = ANY($2::text[]) AND a.dismissed_at IS NULL AND a.created_at > now() - interval '30 days'
+        ORDER BY a.id DESC LIMIT 10`, [email, st]);
+    if (!r.rowCount) return { ok: true, items: [] };
+    const refs = await orderedRefs(email);
+    const items = [];
+    for (const a of r.rows as { id: number; review_id: string; name: string | null; rating: number; text: string | null; iso: string | null; link: string | null; business: string | null; cur: string }[]) {
+      const rid = reviewIdOf(a.link || "") || a.review_id;
+      if (refs.ids.has(rid) || refs.ids.has(a.review_id) || refs.nameText.has(`${norm(a.name)}|${norm(a.text).slice(0, 80)}`)) continue;
+      const t = a.iso ? Date.parse(a.iso) : NaN;
+      const left = Number.isFinite(t) ? 27 - Math.floor((Date.now() - t) / 86_400_000) : null;
+      if (left !== null && left < 1) continue;
+      const pr = await priceOf(email, a.cur);
+      items.push({ id: a.id, name: a.name || "Google user", rating: a.rating, text: a.text || "", link: a.link || "", business: a.business || "", daysLeft: left, price: pr.price, cur: pr.cur });
+    }
+    return { ok: true, items };
+  });
+  app.post("/cust/review-alerts/dismiss", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const s = await customerSessionInfo(b.token);
+    if (!s) return reply.code(401).send({ ok: false, error: "session" });
+    if (s.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
+    if (!pool) return { ok: true };
+    await ensureTables();
+    const ids = (Array.isArray(b.ids) ? b.ids : [b.id]).map(Number).filter((x) => Number.isFinite(x)).slice(0, 20);
+    if (ids.length) await pool.query(`UPDATE rw_alerts SET dismissed_at=now() WHERE email=$1 AND id = ANY($2::int[])`, [norm(s.email), ids]);
+    return { ok: true };
   });
 
   /* Abmeldung (Link in der Mail). */
