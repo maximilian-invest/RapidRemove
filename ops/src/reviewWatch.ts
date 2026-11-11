@@ -1,13 +1,13 @@
 /* Bewertungs-Wächter (11.11.2026, Maximilian).
  *
  * Täglich werden die Google-Profile aller Bewertungs-Kunden gescannt (SerpApi, neueste zuerst). Taucht eine neue
- * negative Bewertung auf – oder wird eine bestehende auf 1–3 ★ geändert („Edited") –, bekommt der Kunde EINE Mail
+ * negative Bewertung auf – oder wird eine bestehende auf 1–2 ★ geändert („Edited") –, bekommt der Kunde EINE Mail
  * mit Screenshot, Direktlink und Button ins Dashboard (Bewertung dort vorausgefüllt, Kunde bestätigt, abgebucht wird
  * erst nach der Löschung). Bündelt mehrere neue Bewertungen je Profil und Lauf in einer Mail.
  *
  * Regeln:
  *  - Kunden: alle Bewertungs-Aufträge außer storniert, Test-Adressen und Kunden aus DE/AT (dort kein Produkt).
- *  - Gemeldet wird nur, was wir löschen können: mit Text, 1–REVIEW_WATCH_MAX_STARS ★ (Standard 3), jünger als 4 Wochen
+ *  - Gemeldet wird nur, was wir löschen können: mit Text, 1–REVIEW_WATCH_MAX_STARS ★ (Standard 2 – Maximilian 11.11.: 1 und 2 Sterne), jünger als 4 Wochen
  *    und mindestens 2 Tage Luft bis „vor 4 Wochen". Ab der ersten Bewertung mit „vor 4 Wochen" wird nicht weitergelesen
  *    (reviewsFetch.fetchNewestReviews).
  *  - Schon beauftragte Bewertungen (gleiche Review-ID oder Name+Text in einem Auftrag des Kunden) → keine Mail.
@@ -17,7 +17,7 @@
  * Schalter (Railway):
  *  - REVIEW_WATCH=on        täglicher Lauf (ab REVIEW_WATCH_HOUR Uhr Wien, Standard 7). Ohne: Worker aus.
  *  - REVIEW_WATCH_SEND=on   Mails wirklich verschicken. Ohne: Treffer werden nur als „Vorschau" gespeichert (Admin).
- *  - REVIEW_WATCH_MAX_STARS (3), REVIEW_WATCH_PAGES (5), REVIEW_WATCH_HOUR (7)
+ *  - REVIEW_WATCH_MAX_STARS (2), REVIEW_WATCH_PAGES (5), REVIEW_WATCH_HOUR (7)
  *
  * Endpunkte:
  *  - POST /admin/review-watch { token, action: "status" | "scan" | "preview", placeId?, email?, orderId? }
@@ -44,7 +44,7 @@ import NeueBewertung, { subject as neueBewertungSubject, type NeueBewertungItem 
 const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
 const EXCLUDED_COUNTRIES = ["DE", "AT"];
 const on = (k: string) => String(process.env[k] || "").toLowerCase() === "on";
-const MAX_STARS = () => Math.min(4, Math.max(1, Number(process.env.REVIEW_WATCH_MAX_STARS) || 3));
+const MAX_STARS = () => Math.min(4, Math.max(1, Number(process.env.REVIEW_WATCH_MAX_STARS) || 2));
 /** Mindestens so viele Tage Luft bis Tag 28 („vor 4 Wochen"), sonst lohnt die Mail nicht mehr. */
 const MIN_DAYS_LEFT = 2;
 const OPS_PUBLIC = () => (process.env.OPS_PUBLIC_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? "https://" + process.env.RAILWAY_PUBLIC_DOMAIN : "")).replace(/\/+$/, "");
@@ -163,6 +163,24 @@ type ScanResult = { placeId: string; business: string | null; email: string; bas
 
 const daysLeft = (r: FetchedReview) => 27 - (r.days >= 0 ? r.days : 99);
 
+/** Reine Entscheidung (getestet in reviewWatch.test.ts): welche Bewertungen dieses Scans melden wir?
+ *  seen = beim letzten Scan gemerkte Sterne je Review-ID. Gemeldet wird eine Bewertung, wenn sie neu ist ODER von
+ *  > maxStars auf ≤ maxStars geändert wurde, Text hat, 1–maxStars ★, noch ≥ MIN_DAYS_LEFT Tage löschbar und nicht beauftragt. */
+export function pickCandidates(list: FetchedReview[], seen: Map<string, number>, refs: { ids: Set<string>; nameText: Set<string> }, maxStars: number): { r: FetchedReview; edited: boolean; why?: string }[] {
+  const out: { r: FetchedReview; edited: boolean }[] = [];
+  for (const r of list) {
+    const isNew = !seen.has(r.id);
+    const editedDown = !isNew && Number(seen.get(r.id)) > maxStars && r.rating <= maxStars;
+    if (!isNew && !editedDown) continue;
+    if (r.rating < 1 || r.rating > maxStars || !String(r.text || "").trim()) continue;
+    if (daysLeft(r) < MIN_DAYS_LEFT) continue;
+    const rid = reviewIdOf(r.link) || r.id;
+    if (refs.ids.has(rid) || refs.ids.has(r.id) || refs.nameText.has(`${norm(r.name)}|${norm(r.text).slice(0, 80)}`)) continue;
+    out.push({ r, edited: editedDown });
+  }
+  return out;
+}
+
 async function scanProfile(p: ProfileRow, log: FastifyInstance["log"]): Promise<ScanResult> {
   const res: ScanResult = { placeId: p.place_id, business: p.business, email: p.email };
   const unsub = await pool!.query(`SELECT 1 FROM rw_unsub WHERE email=$1`, [p.email]);
@@ -184,20 +202,10 @@ async function scanProfile(p: ProfileRow, log: FastifyInstance["log"]): Promise<
   }
 
   const refs = await orderedRefs(p.email);
-  const fresh: { r: FetchedReview; edited: boolean }[] = [];
-  for (const r of list) {
-    const prev = await pool!.query(`SELECT rating FROM rw_seen WHERE place_id=$1 AND review_id=$2`, [p.place_id, r.id]);
-    const isNew = !prev.rowCount;
-    const editedDown = !isNew && Number(prev.rows[0].rating) > MAX_STARS() && r.rating <= MAX_STARS();
-    await pool!.query(`INSERT INTO rw_seen (place_id, review_id, rating) VALUES ($1,$2,$3) ON CONFLICT (place_id, review_id) DO UPDATE SET rating=EXCLUDED.rating`, [p.place_id, r.id, r.rating]);
-    if (!isNew && !editedDown) continue;
-    if (r.rating < 1 || r.rating > MAX_STARS() || !String(r.text || "").trim()) continue;
-    if (daysLeft(r) < MIN_DAYS_LEFT) continue;
-    const rid = reviewIdOf(r.link) || r.id;
-    if (refs.ids.has(rid) || refs.ids.has(r.id) || refs.nameText.has(`${norm(r.name)}|${norm(r.text).slice(0, 80)}`)) continue;
-    fresh.push({ r, edited: editedDown });
-  }
-
+  const prevR = await pool!.query(`SELECT review_id, rating FROM rw_seen WHERE place_id=$1 AND review_id = ANY($2::text[])`, [p.place_id, list.map((r) => r.id)]);
+  const seen = new Map<string, number>(prevR.rows.map((x: { review_id: string; rating: number }) => [x.review_id, Number(x.rating)]));
+  for (const r of list) await pool!.query(`INSERT INTO rw_seen (place_id, review_id, rating) VALUES ($1,$2,$3) ON CONFLICT (place_id, review_id) DO UPDATE SET rating=EXCLUDED.rating`, [p.place_id, r.id, r.rating]);
+  const fresh = pickCandidates(list, seen, refs, MAX_STARS());
   for (const { r, edited } of fresh) {
     let shot: { buf: Buffer; mime: string } | null = null;
     if (shotKey() && r.link) shot = await captureReviewCard(r.link).catch((e) => { log.warn({ err: String(e) }, "Bewertungs-Wächter: Screenshot fehlgeschlagen"); return null; });
@@ -245,7 +253,7 @@ async function runAll(log: FastifyInstance["log"], only?: { placeId?: string; em
   try {
     await ensureTables();
     await syncProfiles();
-    const where = only?.placeId ? `WHERE place_id=$1` : only?.email ? `WHERE email=$1` : "";
+    const where = only?.placeId ? `WHERE place_id=$1` : only?.email ? `WHERE email=$1 AND place_id NOT LIKE 'test:%'` : `WHERE place_id NOT LIKE 'test:%'`;
     const args = only?.placeId ? [only.placeId] : only?.email ? [norm(only.email)] : [];
     const r = await pool!.query(`SELECT * FROM rw_profiles ${where} ORDER BY created_at`, args);
     const results: ScanResult[] = [];
@@ -274,6 +282,34 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
     if (action === "scan") {
       try { return { ok: true, send: on("REVIEW_WATCH_SEND"), ...(await runAll(app.log, { placeId: String(b.placeId || "") || undefined, email: String(b.email || "") || undefined })) }; }
       catch (e) { return reply.code(409).send({ ok: false, error: String((e as Error).message) }); }
+    }
+    /* Testlauf (vor dem Livegang): echtes Google-Profil, echte neueste Bewertungen, echter Screenshot – Mail geht aber NUR an
+     * eine Test-Adresse (testAccounts). Ohne Ausgangsstand: alle aktuell löschbaren 1–2★-Bewertungen gelten als „neu".
+     * Die Treffer erscheinen danach auch als Karte im Dashboard des Test-Kontos. { placeId, email, business?, lang?, dry? } */
+    if (action === "test") {
+      const email = norm(b.email), placeId = String(b.placeId || "").trim();
+      if (!isTestEmail(email)) return reply.code(400).send({ ok: false, error: "Nur an Test-Adressen (testAccounts)" });
+      if (!placeId) return reply.code(400).send({ ok: false, error: "placeId fehlt" });
+      const lang = LANGS.includes(String(b.lang || "")) ? String(b.lang) : "en";
+      const list = await fetchNewestReviews(placeId, lang);
+      const cands = pickCandidates(list, new Map(), { ids: new Set(), nameText: new Set() }, MAX_STARS());
+      const out = { scanned: list.length, until: list.length ? list[list.length - 1].rel : null, found: cands.map((c) => ({ name: c.r.name, rating: c.r.rating, rel: c.r.rel, days: c.r.days, text: c.r.text.slice(0, 160), link: c.r.link })) };
+      if (b.dry === true || !cands.length) return { ok: true, sent: false, ...out };
+      const key = "test:" + placeId;
+      await pool.query(`INSERT INTO rw_profiles (place_id, email, business, lang, cur, first_name, baseline_at) VALUES ($1,$2,$3,$4,$5,$6,now())
+        ON CONFLICT (place_id) DO UPDATE SET email=EXCLUDED.email, business=EXCLUDED.business, lang=EXCLUDED.lang`, [key, email, String(b.business || "Test-Profil").slice(0, 200), lang, String(b.cur || "usd") === "eur" ? "eur" : "usd", String(b.first || "") || null]);
+      await pool.query(`DELETE FROM rw_alerts WHERE place_id=$1`, [key]);
+      for (const { r, edited } of cands.slice(0, 5)) {
+        const shot = shotKey() && r.link ? await captureReviewCard(r.link).catch(() => null) : null;
+        await pool.query(`INSERT INTO rw_alerts (place_id, email, review_id, name, rating, text, rel, iso, link, edited, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [key, email, r.id, r.name, r.rating, r.text, r.rel || null, r.date || null, r.link || null, edited, shot?.mime || null, shot?.buf || null]);
+      }
+      const p = (await pool.query(`SELECT * FROM rw_profiles WHERE place_id=$1`, [key])).rows[0] as ProfileRow;
+      const al = (await pool.query(`SELECT * FROM rw_alerts WHERE place_id=$1 ORDER BY id`, [key])).rows as AlertRow[];
+      const mail = await buildMail(p, al, { withLogin: true });
+      const sent = await sendMail({ to: email, subject: "[TEST] " + mail.subject, html: mail.html, attachments: mail.attachments, replyTo: process.env.MAIL_REPLY_TO });
+      await pool.query(`UPDATE rw_alerts SET status='sent', sent_at=now() WHERE place_id=$1`, [key]);
+      return { ok: true, sent: true, trace: mailTrace(sent), screenshots: al.filter((x) => x.img).length, ...out };
     }
     if (action === "sync") return { ok: true, profiles: await syncProfiles() };
     const prof = await pool.query(`SELECT place_id, email, order_id, business, lang, country, baseline_at, last_scan_at, last_error, last_found FROM rw_profiles ORDER BY business`);

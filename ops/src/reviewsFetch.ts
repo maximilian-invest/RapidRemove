@@ -151,6 +151,12 @@ export async function findPlaceReview(placeId: string, reviewId: string, lang: s
  *  alles ab da können wir nicht löschen. Geblättert wird also nur, solange die ganze Seite jünger als 4 Wochen ist
  *  (höchstens REVIEW_WATCH_PAGES Seiten, Standard 5). Zurück kommen nur Bewertungen jünger als 4 Wochen. */
 export const isTooOld = (r: FetchedReview): boolean => relWeeks(r.rel || "") >= 4 || r.days >= 28;
+/** Neueste-zuerst-Liste bis zur ersten Bewertung mit „vor 4 Wochen" (oder älter) – ab da wird nichts mehr genommen. */
+export function takeUntilOld(list: FetchedReview[]): { keep: FetchedReview[]; reachedOld: boolean } {
+  const keep: FetchedReview[] = [];
+  for (const r of list) { if (isTooOld(r)) return { keep, reachedOld: true }; keep.push(r); }
+  return { keep, reachedOld: false };
+}
 export async function fetchNewestReviews(placeId: string, lang: string): Promise<FetchedReview[]> {
   const key = serpKey();
   if (!key) throw new Error("SERPAPI_KEY fehlt");
@@ -173,8 +179,8 @@ export async function fetchNewestReviews(placeId: string, lang: string): Promise
       const ed = String(x.iso_date_of_last_edit || "");
       return ed && Date.parse(ed) > Date.parse(r.date || "0") ? { ...r, date: ed, days: ageDays(ed, r.rel) } : r;
     });
-    let reachedOld = false;
-    for (const r of list) { if (isTooOld(r)) { reachedOld = true; break; } out.push(r); }
+    const { keep, reachedOld } = takeUntilOld(list);
+    out.push(...keep);
     token = data.serpapi_pagination?.next_page_token || null;
     if (reachedOld || !token || !list.length) break; // „vor 4 Wochen" erreicht → Schluss
   }
