@@ -1,6 +1,7 @@
 /* Tests für den Bewertungs-Wächter (nur Entscheidungslogik, ohne Netz/Datenbank).  Start: npx tsx src/reviewWatch.test.ts */
 import assert from "node:assert/strict";
-import { pickCandidates, isDue, scanWeekday } from "./reviewWatch";
+import { pickCandidates, isDue, scanWeekday, checkOriginalDates } from "./reviewWatch";
+import { parseReviewDates } from "./reviewShots";
 import { takeUntilOld, type FetchedReview } from "./reviewsFetch";
 
 let n = 0;
@@ -92,4 +93,34 @@ ok("am eigenen Wochentag schon gescannt → nicht nochmal", () => {
   assert.equal(isDue(pid, new Date("2026-11-01"), new Date(now.getTime() - 5 * 3_600_000), now), false);
 });
 
-console.log(`\n${n} Tests ok`);
+// ---- Ursprüngliches Datum bei geänderten Bewertungen (Maximilian 12.11.) ----
+const okA = async (name: string, fn: () => Promise<void>) => { await fn(); n++; console.log("✓", name); };
+(async () => {
+  const now = Date.parse("2026-11-12T10:00:00Z");
+  const michelle = { r: R("CMich", 1, 9, { rel: "Edited a week ago", name: "Michelle Rodriguez" }), edited: false };
+  const daniella = { r: R("CDan", 1, 13, { rel: "a week ago", name: "Daniella Rocha" }), edited: false };
+  await okA("Miami: Michelle (geändert, ursprünglich 23.08.) fliegt raus, Daniella bleibt", async () => {
+    const res = await checkOriginalDates([michelle, daniella], async (_l, id) => id === "CMich" ? { created: "2026-08-23T03:24:23Z", edited: "2026-11-02T18:17:54Z" } : null, now);
+    assert.deepEqual(res.keep.map((c) => c.r.name), ["Daniella Rocha"]);
+    assert.match(res.dropped[0].why, /2026-08-23/);
+  });
+  await okA("geändert, aber ursprünglich erst 10 Tage alt → bleibt (Alter = Erstelldatum)", async () => {
+    const res = await checkOriginalDates([michelle], async () => ({ created: "2026-11-02T10:00:00Z", edited: "2026-11-05T10:00:00Z" }), now);
+    assert.equal(res.keep.length, 1); assert.equal(res.keep[0].r.days, 10);
+  });
+  await okA("geändert, Erstelldatum nicht ermittelbar → sicherheitshalber raus", async () => {
+    const res = await checkOriginalDates([michelle], async () => null, now);
+    assert.equal(res.keep.length, 0);
+  });
+  await okA("nicht geändert → keine Google-Abfrage nötig", async () => {
+    let calls = 0;
+    await checkOriginalDates([daniella], async () => { calls++; return null; }, now);
+    assert.equal(calls, 0);
+  });
+  await okA("Zeitstempel aus dem Seiten-HTML lesen (µs → Datum)", async () => {
+    const d = parseReviewDates('<head><meta name="rr-dates" content="1787455463064922,1793643474194970"></head>');
+    assert.equal(d?.created.slice(0, 10), "2026-08-23"); assert.equal(d?.edited.slice(0, 10), "2026-11-02");
+    assert.equal(parseReviewDates('<meta name="rr-dates" content="none">'), null);
+  });
+  console.log(`\n${n} Tests ok`);
+})();

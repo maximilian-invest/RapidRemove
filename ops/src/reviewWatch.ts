@@ -34,7 +34,7 @@ import { pool, dbReady, insertEvent } from "./db";
 import { sendMail, mailTrace, type MailAttachment } from "./mailer";
 import { notifyTeam, fmtMoney } from "./notify";
 import { fetchNewestReviews, serpKey, type FetchedReview } from "./reviewsFetch";
-import { captureReviewCard, shotKey } from "./reviewShots";
+import { captureReviewCard, captureReviewDates, shotKey } from "./reviewShots";
 import { reviewIdOf } from "./reviewPage";
 import { resolveReviewLink } from "./monitor";
 import { isTestEmail } from "./testAccounts";
@@ -188,7 +188,7 @@ async function scanProfile(p: ProfileRow, log: FastifyInstance["log"]): Promise<
   const unsub = await pool!.query(`SELECT 1 FROM rw_unsub WHERE email=$1`, [p.email]);
   if (unsub.rowCount) return { ...res, skipped: "abgemeldet" };
   let list: FetchedReview[];
-  try { list = await fetchNewestReviews(p.place_id, p.lang || "en"); }
+  try { list = await fetchNewestReviews(p.place_id, "en"); } // englisch: „Edited …“ erkennbar (Text kommt im Original)
   catch (e) {
     const msg = String((e as Error).message || e).slice(0, 300);
     await pool!.query(`UPDATE rw_profiles SET last_scan_at=now(), last_error=$2 WHERE place_id=$1`, [p.place_id, msg]);
@@ -207,7 +207,9 @@ async function scanProfile(p: ProfileRow, log: FastifyInstance["log"]): Promise<
   const prevR = await pool!.query(`SELECT review_id, rating FROM rw_seen WHERE place_id=$1 AND review_id = ANY($2::text[])`, [p.place_id, list.map((r) => r.id)]);
   const seen = new Map<string, number>(prevR.rows.map((x: { review_id: string; rating: number }) => [x.review_id, Number(x.rating)]));
   for (const r of list) await pool!.query(`INSERT INTO rw_seen (place_id, review_id, rating) VALUES ($1,$2,$3) ON CONFLICT (place_id, review_id) DO UPDATE SET rating=EXCLUDED.rating`, [p.place_id, r.id, r.rating]);
-  const fresh = pickCandidates(list, seen, refs, MAX_STARS());
+  const picked = await checkOriginalDates(pickCandidates(list, seen, refs, MAX_STARS()), captureReviewDates);
+  if (picked.dropped.length) log.info({ place: p.place_id, dropped: picked.dropped }, "Bewertungs-Wächter: aussortiert");
+  const fresh = picked.keep;
   for (const { r, edited } of fresh) {
     let shot: { buf: Buffer; mime: string } | null = null;
     if (shotKey() && r.link) shot = await captureReviewCard(r.link).catch((e) => { log.warn({ err: String(e) }, "Bewertungs-Wächter: Screenshot fehlgeschlagen"); return null; });
@@ -262,6 +264,24 @@ export function isDue(placeId: string, baselineAt: Date | null, lastScanAt: Date
   return wd === scanWeekday(placeId) && ageH >= 20;
 }
 
+/** Geänderte Bewertung? (Wir lesen mit englischer Oberfläche → Google schreibt „Edited a week ago“.) */
+export const isEdited = (r: FetchedReview): boolean => /^\s*edited\b/i.test(r.rel || "");
+type DatesFn = (link: string, reviewId: string) => Promise<{ created: string; edited: string } | null>;
+/** Maßgeblich ist das URSPRÜNGLICHE Datum (Maximilian 12.11.2026). Bei geänderten Bewertungen wird es von der
+ *  Google-Seite gelesen: zu alt → raus; nicht ermittelbar → raus (lieber keine Mail als eine falsche). */
+export async function checkOriginalDates(cands: { r: FetchedReview; edited: boolean }[], getDates: DatesFn, now = Date.now()): Promise<{ keep: { r: FetchedReview; edited: boolean }[]; dropped: { name: string; why: string }[] }> {
+  const keep: { r: FetchedReview; edited: boolean }[] = [], dropped: { name: string; why: string }[] = [];
+  for (const c of cands) {
+    if (!isEdited(c.r)) { keep.push(c); continue; }
+    const d = await getDates(c.r.link, c.r.id).catch(() => null);
+    if (!d) { dropped.push({ name: c.r.name, why: "geändert, Erstelldatum nicht ermittelbar" }); continue; }
+    const days = Math.floor((now - Date.parse(d.created)) / 86_400_000);
+    if (27 - days < MIN_DAYS_LEFT) { dropped.push({ name: c.r.name, why: `geändert, ursprünglich vom ${d.created.slice(0, 10)} (${days} Tage alt)` }); continue; }
+    keep.push({ ...c, r: { ...c.r, date: d.created, days } });
+  }
+  return { keep, dropped };
+}
+
 let running = false;
 async function runAll(log: FastifyInstance["log"], only?: { placeId?: string; email?: string; force?: boolean }): Promise<{ profiles: number; scanned: number; results: ScanResult[] }> {
   if (running) throw new Error("läuft schon");
@@ -311,9 +331,10 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
       if (!isTestEmail(email)) return reply.code(400).send({ ok: false, error: "Nur an Test-Adressen (testAccounts)" });
       if (!placeId) return reply.code(400).send({ ok: false, error: "placeId fehlt" });
       const lang = LANGS.includes(String(b.lang || "")) ? String(b.lang) : "en";
-      const list = await fetchNewestReviews(placeId, lang);
-      const cands = pickCandidates(list, new Map(), { ids: new Set(), nameText: new Set() }, MAX_STARS());
-      const out = { scanned: list.length, until: list.length ? list[list.length - 1].rel : null, found: cands.map((c) => ({ name: c.r.name, rating: c.r.rating, rel: c.r.rel, days: c.r.days, text: c.r.text.slice(0, 160), link: c.r.link })) };
+      const list = await fetchNewestReviews(placeId, "en");
+      const picked = await checkOriginalDates(pickCandidates(list, new Map(), { ids: new Set(), nameText: new Set() }, MAX_STARS()), captureReviewDates);
+      const cands = picked.keep;
+      const out = { scanned: list.length, until: list.length ? list[list.length - 1].rel : null, dropped: picked.dropped, found: cands.map((c) => ({ name: c.r.name, rating: c.r.rating, rel: c.r.rel, days: c.r.days, created: c.r.date, text: c.r.text.slice(0, 160), link: c.r.link })) };
       if (b.dry === true || !cands.length) return { ok: true, sent: false, ...out };
       const key = "test:" + placeId;
       await pool.query(`INSERT INTO rw_profiles (place_id, email, business, lang, cur, first_name, baseline_at) VALUES ($1,$2,$3,$4,$5,$6,now())

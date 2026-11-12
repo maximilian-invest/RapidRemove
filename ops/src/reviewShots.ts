@@ -115,6 +115,37 @@ export async function captureReviewCard(url: string): Promise<{ buf: Buffer; mim
   return { buf: Buffer.from(await res.arrayBuffer()), mime: type.split(";")[0] };
 }
 
+/** Bewertungs-Wächter: ursprüngliches Erstell- und letztes Änderungsdatum einer Bewertung. Google zeigt bei geänderten
+ *  Bewertungen nur „Edited …“, und SerpApi liefert nur das Änderungsdatum. In den Seitendaten von Google Maps
+ *  (APP_INITIALIZATION_STATE) steht aber direkt nach der Review-ID [placeHex, null, ERSTELLT_µs, GEÄNDERT_µs].
+ *  Die Bewertungsseite wird über ScreenshotOne in einem echten Browser geladen; ein eingeschleustes Skript schreibt die
+ *  zwei Zeitstempel in ein <meta>-Tag, das im zurückgegebenen HTML steht. null = nicht gefunden (dann NICHT melden). */
+export async function captureReviewDates(url: string, reviewId: string): Promise<{ created: string; edited: string } | null> {
+  if (!shotKey() || !reviewId || !/^[A-Za-z0-9_-]{10,200}$/.test(reviewId)) return null;
+  let u = url;
+  try { const x = new URL(url); if (/(^|\.)google\.[a-z.]+$/.test(x.hostname)) x.searchParams.set("hl", "en"); u = x.toString(); } catch { /* */ }
+  const script = `(function(){var id=${JSON.stringify(reviewId)},n=0;var t=setInterval(function(){n++;try{var s=JSON.stringify(window.APP_INITIALIZATION_STATE||[]);var parts=s.split(id),m=null;for(var k=1;k<parts.length&&!m;k++){m=parts[k].slice(0,400).match(/^\\\\?",\\[\\\\?"0x[0-9a-f]+:0x[0-9a-f]+\\\\?",null,(\\d{13,17}),(\\d{13,17})/);}if(m||n>60){clearInterval(t);var d=document.createElement('meta');d.setAttribute('name','rr-dates');d.setAttribute('content',m?m[1]+','+m[2]:'none');document.head.appendChild(d);}}catch(e){}},250);})();`;
+  const api = new URL(apiUrl(u, false, true, "en"));
+  const p = new URLSearchParams(api.search);
+  p.delete("signature");
+  p.set("scripts", script);
+  p.set("delay", "12");
+  const qs = p.toString();
+  const sig = shotSecret() ? "&signature=" + createHmac("sha256", shotSecret()).update(qs).digest("hex") : "";
+  const res = await fetch(api.origin + api.pathname + "?" + qs + sig, { signal: AbortSignal.timeout(100_000) });
+  const html = await res.text().catch(() => "");
+  if (!res.ok) throw new Error("HTTP " + res.status + " " + html.slice(0, 200));
+  return parseReviewDates(html);
+}
+/** <meta name="rr-dates" content="ERSTELLT_µs,GEÄNDERT_µs"> → ISO-Daten (getestet). */
+export function parseReviewDates(html: string): { created: string; edited: string } | null {
+  const m = html.match(/<meta[^>]*name="rr-dates"[^>]*content="(\d{13,17}),(\d{13,17})"/) || html.match(/<meta[^>]*content="(\d{13,17}),(\d{13,17})"[^>]*name="rr-dates"/);
+  if (!m) return null;
+  const iso = (v: string) => { const n = Number(v); const ms = v.length >= 16 ? n / 1000 : n; return Number.isFinite(ms) && ms > 1.2e12 ? new Date(ms).toISOString() : ""; };
+  const created = iso(m[1]), edited = iso(m[2]);
+  return created && edited ? { created, edited } : null;
+}
+
 /** Fertig geladene Seite als HTML (ScreenshotOne format=html) – für die Lösch-Erkennung ohne KI (reviewPage.ts).
  *  Englische Oberfläche wie beim eigenen Browser. Wirft bei Fehlern. */
 export async function captureHtml(url: string): Promise<string> {
