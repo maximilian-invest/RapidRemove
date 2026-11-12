@@ -4,6 +4,8 @@
  * und optional TEST_EMAILS (Komma-Liste) in der Umgebung. */
 import crypto from "crypto";
 
+/** SHA-256 der Inhaber-Adresse (Ziel für interne Prüf-Mails, ohne die Adresse im öffentlichen Repo zu nennen). */
+export const OWNER_EMAIL_SHA = "101d9a7baf3732fb357fd1315c44cb0bf28e07b00d17fd83b880d6ef10746e4a";
 const TEST_EMAIL_SHA = new Set([
   "101d9a7baf3732fb357fd1315c44cb0bf28e07b00d17fd83b880d6ef10746e4a", // Inhaber
   "66e53db523debfe02203f7360703ffef8da9ae845973ac938df2df9634329a27", // Team-Testkonto (helpdesk@)

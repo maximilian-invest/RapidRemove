@@ -14,7 +14,12 @@
  *  - Datum nicht ermittelbar → bis zu 3 Versuche, danach Team-Push „bitte selbst prüfen“.
  * Ergebnis je Bewertung in orders.raw.reviewsDateCheck[key] = { at, created?, edited?, tries, tooOld? }.
  *
- * Schalter: REVIEW_DATECHECK=off schaltet ab. Ältere Aufträge (vor SINCE) werden NICHT automatisch angefasst –
+ * Schalter REVIEW_DATECHECK (Maximilian 12.11.: „vorerst nur an mich senden, damit ich prüfen kann“):
+ *  - preview (Standard): NICHTS wird storniert, der Kunde bekommt nichts. Die Mail, die der Kunde bekäme, geht an den
+ *    Inhaber („[PRÜFUNG] an …“), dazu Team-Push. Ziel: REVIEW_DATECHECK_PREVIEW_TO, sonst die Inhaber-Adresse (aus den
+ *    Aufträgen über den SHA in testAccounts – steht nicht im öffentlichen Repo).
+ *  - live: stornieren + Kunden-Mail (auch alle Treffer, die vorher nur als Prüfung gemeldet wurden).
+ *  - off: aus. Ältere Aufträge (vor SINCE) werden NICHT automatisch angefasst –
  * dafür POST /admin/review-datecheck { token, orderIds?, days?, apply? } (ohne apply = nur Liste).
  */
 import type { FastifyInstance } from "fastify";
@@ -24,15 +29,27 @@ import { notifyTeam } from "./notify";
 import { captureReviewDates, shotKey } from "./reviewShots";
 import { reviewIdOf } from "./reviewPage";
 import { keyOf, dashLink } from "./customers";
-import { isTestEmail } from "./testAccounts";
+import crypto from "node:crypto";
+import { isTestEmail, OWNER_EMAIL_SHA } from "./testAccounts";
 import { renderTemplate } from "./renderTemplate";
 
 const SINCE = () => process.env.REVIEW_DATECHECK_SINCE || "2026-11-12T11:00:00Z";
 const DAY = 86_400_000;
 const MAX_TRIES = 3;
+type Mode = "off" | "preview" | "live";
+const mode = (): Mode => { const v = String(process.env.REVIEW_DATECHECK || "preview").toLowerCase(); return v === "off" ? "off" : v === "live" ? "live" : "preview"; };
+let ownerCache = "";
+async function previewTo(): Promise<string> {
+  const env = String(process.env.REVIEW_DATECHECK_PREVIEW_TO || "").trim();
+  if (env) return env;
+  if (ownerCache) return ownerCache;
+  const r = await pool!.query(`SELECT DISTINCT lower(email) AS e FROM orders WHERE email IS NOT NULL ORDER BY 1`).catch(() => null);
+  ownerCache = (r?.rows || []).map((x: { e: string }) => x.e).find((e: string) => crypto.createHash("sha256").update(e).digest("hex") === OWNER_EMAIL_SHA) || "";
+  return ownerCache;
+}
 
 type Item = { url?: string; name?: string; text?: string; rating?: number; days?: number };
-type Check = { at: string; created?: string; edited?: string; tries: number; tooOld?: boolean; note?: string };
+type Check = { at: string; created?: string; edited?: string; tries: number; tooOld?: boolean; previewed?: string; note?: string };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; status: string | null; created_at: string; raw: Record<string, any> | null };
 
 /** Reine Entscheidung (getestet): zu alt = ursprünglich ≥ 28 Tage vor der Bestellung veröffentlicht. */
@@ -56,7 +73,7 @@ async function itemState(o: OrderRow, key: string): Promise<"removed" | "partner
 type Found = { key: string; it: Item; created: string; edited: string; state: "removed" | "partner" | "open" };
 
 /** Einen Auftrag prüfen. apply=false → nur ermitteln (nichts speichern, keine Mail). */
-async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log"]): Promise<{ checked: number; tooOld: Found[]; failed: string[] }> {
+async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log"], m: Mode = mode()): Promise<{ checked: number; tooOld: Found[]; failed: string[] }> {
   const raw = o.raw || {};
   const items = (Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as Item[];
   const done = { ...((raw.reviewsDateCheck as Record<string, Check>) || {}) };
@@ -66,7 +83,13 @@ async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log
   for (const it of items) {
     const key = keyOf(it);
     const prev = done[key];
-    if (gone[key] || (prev && (prev.created || prev.tries >= MAX_TRIES))) continue;
+    if (gone[key]) continue;
+    if (prev?.created) {
+      // schon geprüft: in „live“ die vorher nur gemeldeten (Prüfmodus) jetzt wirklich stornieren
+      if (prev.tooOld && m === "live") tooOld.push({ key, it, created: prev.created, edited: prev.edited || prev.created, state: await itemState(o, key) });
+      continue;
+    }
+    if (prev && prev.tries >= MAX_TRIES) continue;
     const rid = reviewIdOf(String(it.url || ""));
     if (!it.url || !rid) { if (apply) { done[key] = { at: new Date().toISOString(), tries: MAX_TRIES, note: "kein Direktlink mit Review-ID" }; dirty = true; } continue; }
     checked++;
@@ -84,6 +107,27 @@ async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log
   if (!apply) return { checked, tooOld, failed };
 
   const cancel = tooOld.filter((f) => f.state === "open");
+  if (m === "preview") {
+    // Prüfmodus: nichts stornieren – die Kunden-Mail geht an den Inhaber (je Bewertung nur einmal).
+    const fresh = cancel.filter((f) => !done[f.key]?.previewed);
+    for (const f of fresh) { done[f.key] = { ...(done[f.key] || { at: new Date().toISOString(), tries: 1 }), previewed: new Date().toISOString() }; dirty = true; }
+    if (dirty) await setOrderRawField(o.id, "reviewsDateCheck", done);
+    const to = fresh.length ? await previewTo() : "";
+    if (fresh.length && to) {
+      const lang = String(o.lang || "en").slice(0, 2);
+      const props = { lang, name: String(o.name || "").trim().split(/\s+/)[0] || "", orderId: o.id, others: items.length - Object.keys(gone).length - fresh.length,
+        items: fresh.map((f) => ({ name: f.it.name, text: f.it.text, url: f.it.url, created: f.created })) };
+      try {
+        const { html, subject } = await renderTemplate("storno-bewertung-bearbeitet", props as Record<string, unknown>);
+        const note = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:12px auto;padding:12px 16px;background:#fff3cd;border-radius:12px;font-size:14px;color:#664d03"><b>PRÜFUNG – nicht an den Kunden geschickt, nichts storniert.</b><br>Auftrag ${o.id} · Kunde: ${o.email}<br>${fresh.map((f) => `${f.it.name || "?"}: ursprünglich ${f.created.slice(0, 10)}, bearbeitet ${f.edited.slice(0, 10)}`).join("<br>")}<br>Live schalten: Railway REVIEW_DATECHECK=live</div>`;
+        await sendMail({ to, subject: `[PRÜFUNG] an ${o.email}: ${subject}`, html: html.replace(/<body([^>]*)>/i, (x) => x + note) });
+        await insertEvent({ orderId: o.id, email: o.email, type: "note", auto: true, title: "Datums-Prüfung (Prüfmodus): Bewertung wäre storniert worden – nur an Inhaber gemeldet",
+          detail: fresh.map((f) => `${f.it.name || "?"} (ursprünglich ${f.created.slice(0, 10)}, bearbeitet ${f.edited.slice(0, 10)})`).join(" · ") });
+      } catch (e) { log.error({ err: e, order: o.id }, "Datums-Prüfung: Prüf-Mail fehlgeschlagen"); }
+      await notifyTeam("Prüfung: Bewertung wäre storniert worden", `${o.id} · ${fresh.map((f) => `${f.it.name || "?"}, ursprünglich ${f.created.slice(0, 10)}`).join(" · ")} · Kunde NICHT informiert`, o.id, { kind: "review-datecheck" }).catch(() => {});
+    }
+    return { checked, tooOld, failed };
+  }
   for (const f of cancel) gone[f.key] = { at: new Date().toISOString(), created: f.created, edited: f.edited };
   if (dirty) await setOrderRawField(o.id, "reviewsDateCheck", done);
   if (cancel.length) {
@@ -109,7 +153,7 @@ async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log
 
 let running = false;
 async function tick(log: FastifyInstance["log"]): Promise<void> {
-  if (running || !pool || !dbReady() || !shotKey() || String(process.env.REVIEW_DATECHECK || "").toLowerCase() === "off") return;
+  if (running || !pool || !dbReady() || !shotKey() || mode() === "off") return;
   running = true;
   try {
     const r = await pool.query(
@@ -125,6 +169,7 @@ async function tick(log: FastifyInstance["log"]): Promise<void> {
 
 export function registerReviewDateCheck(app: FastifyInstance, adminToken: string): void {
   /* Admin: Aufträge (auch ältere) prüfen. Ohne apply nur Liste – nichts wird gespeichert, keine Mail.
+   * Mit apply wie der Worker je nach Modus (preview: Mail an Inhaber · live: stornieren + Kunden-Mail).
    * { token, orderIds?: string[], days?: number (Standard 30), apply?: boolean } */
   app.post("/admin/review-datecheck", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
@@ -142,7 +187,7 @@ export function registerReviewDateCheck(app: FastifyInstance, adminToken: string
       const res = await checkOrder(o, apply, app.log);
       if (res.tooOld.length || res.failed.length) out.push({ orderId: o.id, checked: res.checked, failed: res.failed, tooOld: res.tooOld.map((f) => ({ name: f.it.name, created: f.created.slice(0, 10), edited: f.edited.slice(0, 10), state: f.state })) });
     }
-    return { ok: true, apply, orders: r.rowCount, hits: out };
+    return { ok: true, apply, mode: mode(), orders: r.rowCount, hits: out };
   });
 }
 
