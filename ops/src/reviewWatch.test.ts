@@ -1,6 +1,6 @@
 /* Tests für den Bewertungs-Wächter (nur Entscheidungslogik, ohne Netz/Datenbank).  Start: npx tsx src/reviewWatch.test.ts */
 import assert from "node:assert/strict";
-import { pickCandidates } from "./reviewWatch";
+import { pickCandidates, isDue, scanWeekday } from "./reviewWatch";
 import { takeUntilOld, type FetchedReview } from "./reviewsFetch";
 
 let n = 0;
@@ -64,6 +64,32 @@ ok("schon beauftragt (Name + Text gleich, Link ohne ID) → keine Meldung", () =
 ok("Miami: beide neuen 1★ schon beauftragt → keine Mail", () => {
   const d = R("CDaniella", 1, 12), m = R("CMichelle", 1, 8, { rel: "Edited a week ago" });
   assert.equal(pickCandidates([m, d, R("Cx5", 5, 7)], new Map([["CMichelle", 5]]), { ids: new Set(["CDaniella", "CMichelle"]), nameText: new Set() }, 2).length, 0);
+});
+
+// ---- 1× pro Woche je Profil ----
+ok("neues Profil (kein Ausgangsstand) → sofort fällig", () => assert.equal(isDue("P1", null, null, new Date()), true));
+ok("jedes Profil genau an 1 Tag der Woche fällig, alle Wochentage genutzt", () => {
+  const base = new Date("2026-11-16T09:00:00+01:00"); // Montag
+  const days = new Set<number>();
+  for (let i = 0; i < 70; i++) {
+    const pid = "Place" + i; days.add(scanWeekday(pid));
+    let due = 0;
+    for (let d = 0; d < 7; d++) {
+      const now = new Date(base.getTime() + d * 86_400_000);
+      if (isDue(pid, new Date("2026-11-01"), new Date(now.getTime() - 24 * 3_600_000), now)) due++;
+    }
+    assert.equal(due, 1, pid);
+  }
+  assert.equal(days.size, 7);
+});
+ok("letzter Scan > 7 Tage her (z. B. Ausfall) → sofort fällig", () => {
+  const now = new Date("2026-11-16T09:00:00+01:00");
+  assert.equal(isDue("PlaceX", new Date("2026-11-01"), new Date(now.getTime() - 7 * 86_400_000), now), true);
+});
+ok("am eigenen Wochentag schon gescannt → nicht nochmal", () => {
+  const now = new Date("2026-11-16T15:00:00+01:00");
+  const pid = Array.from({ length: 50 }, (_, i) => "Q" + i).find((p) => scanWeekday(p) === 1)!;
+  assert.equal(isDue(pid, new Date("2026-11-01"), new Date(now.getTime() - 5 * 3_600_000), now), false);
 });
 
 console.log(`\n${n} Tests ok`);

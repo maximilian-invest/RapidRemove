@@ -1,6 +1,7 @@
 /* Bewertungs-Wächter (11.11.2026, Maximilian).
  *
- * Täglich werden die Google-Profile aller Bewertungs-Kunden gescannt (SerpApi, neueste zuerst). Taucht eine neue
+ * Jedes Google-Profil aller Bewertungs-Kunden wird mindestens 1× pro Woche gescannt (SerpApi, neueste zuerst; Maximilian
+ * 12.11.2026: „jeden Tag brauchen wir nicht“). Die Profile sind fix auf die 7 Wochentage verteilt (je ~1/7 pro Tag). Taucht eine neue
  * negative Bewertung auf – oder wird eine bestehende auf 1–2 ★ geändert („Edited") –, bekommt der Kunde EINE Mail
  * mit Screenshot, Direktlink und Button ins Dashboard (Bewertung dort vorausgefüllt, Kunde bestätigt, abgebucht wird
  * erst nach der Löschung). Bündelt mehrere neue Bewertungen je Profil und Lauf in einer Mail.
@@ -15,9 +16,10 @@
  *  - Jede Bewertung höchstens einmal (rw_alerts UNIQUE). Abgemeldete Kunden (rw_unsub) bekommen nichts.
  *
  * Schalter (Railway):
- *  - REVIEW_WATCH=on        täglicher Lauf (ab REVIEW_WATCH_HOUR Uhr Wien, Standard 7). Ohne: Worker aus.
+ *  - REVIEW_WATCH=on        Lauf jeden Tag ab REVIEW_WATCH_HOUR Uhr Wien (Standard 7) – scannt nur die heute fälligen Profile
+ *                           (eigener Wochentag, neu ohne Ausgangsstand, oder letzter Scan > REVIEW_WATCH_DAYS Tage). Ohne: Worker aus.
  *  - REVIEW_WATCH_SEND=on   Mails wirklich verschicken. Ohne: Treffer werden nur als „Vorschau" gespeichert (Admin).
- *  - REVIEW_WATCH_MAX_STARS (2), REVIEW_WATCH_PAGES (5), REVIEW_WATCH_HOUR (7)
+ *  - REVIEW_WATCH_MAX_STARS (2), REVIEW_WATCH_PAGES (5), REVIEW_WATCH_HOUR (7), REVIEW_WATCH_DAYS (7)
  *
  * Endpunkte:
  *  - POST /admin/review-watch { token, action: "status" | "scan" | "preview", placeId?, email?, orderId? }
@@ -246,8 +248,22 @@ async function deliver(p: ProfileRow, log: FastifyInstance["log"]): Promise<"sen
   }
 }
 
+/** Fester Scan-Wochentag je Profil (0–6), damit sich die Profile gleichmäßig auf die Woche verteilen. */
+export function scanWeekday(placeId: string): number {
+  return parseInt(crypto.createHash("sha1").update(placeId).digest("hex").slice(0, 8), 16) % 7;
+}
+/** Heute fällig? Neu (noch kein Ausgangsstand) → sofort; sonst am eigenen Wochentag (höchstens 1× pro Tag);
+ *  und spätestens, wenn der letzte Scan länger als maxDays her ist (z. B. Ausfall). */
+export function isDue(placeId: string, baselineAt: Date | null, lastScanAt: Date | null, now: Date, maxDays = 7): boolean {
+  if (!baselineAt || !lastScanAt) return true;
+  const ageH = (now.getTime() - lastScanAt.getTime()) / 3_600_000;
+  if (ageH >= maxDays * 24) return true;
+  const wd = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Vienna" })).getDay();
+  return wd === scanWeekday(placeId) && ageH >= 20;
+}
+
 let running = false;
-async function runAll(log: FastifyInstance["log"], only?: { placeId?: string; email?: string }): Promise<{ profiles: number; results: ScanResult[] }> {
+async function runAll(log: FastifyInstance["log"], only?: { placeId?: string; email?: string; force?: boolean }): Promise<{ profiles: number; scanned: number; results: ScanResult[] }> {
   if (running) throw new Error("läuft schon");
   running = true;
   try {
@@ -256,14 +272,18 @@ async function runAll(log: FastifyInstance["log"], only?: { placeId?: string; em
     const where = only?.placeId ? `WHERE place_id=$1` : only?.email ? `WHERE email=$1 AND place_id NOT LIKE 'test:%'` : `WHERE place_id NOT LIKE 'test:%'`;
     const args = only?.placeId ? [only.placeId] : only?.email ? [norm(only.email)] : [];
     const r = await pool!.query(`SELECT * FROM rw_profiles ${where} ORDER BY created_at`, args);
+    const maxDays = Math.max(1, Number(process.env.REVIEW_WATCH_DAYS) || 7);
+    const now = new Date();
+    // Täglicher Lauf: nur fällige Profile. Admin-Scan (gezielt oder „alle") scannt sofort alles Ausgewählte.
+    const rows = (r.rows as (ProfileRow & { last_scan_at: string | null })[]).filter((p) => only?.force || isDue(p.place_id, p.baseline_at ? new Date(p.baseline_at) : null, p.last_scan_at ? new Date(p.last_scan_at) : null, now, maxDays));
     const results: ScanResult[] = [];
-    for (const p of r.rows as ProfileRow[]) {
+    for (const p of rows) {
       try { results.push(await scanProfile(p, log)); }
       catch (e) { results.push({ placeId: p.place_id, business: p.business, email: p.email, error: String((e as Error).message).slice(0, 200) }); }
     }
     const found = results.reduce((s, x) => s + (x.found || 0), 0);
-    log.info(`Bewertungs-Wächter: ${results.length} Profile gescannt, ${found} neue negative Bewertung(en)`);
-    return { profiles: results.length, results };
+    log.info(`Bewertungs-Wächter: ${results.length} von ${r.rowCount} Profilen gescannt (fällig), ${found} neue negative Bewertung(en)`);
+    return { profiles: r.rowCount || 0, scanned: results.length, results };
   } finally { running = false; }
 }
 
@@ -280,7 +300,7 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
     await ensureTables();
     const action = String(b.action || "status");
     if (action === "scan") {
-      try { return { ok: true, send: on("REVIEW_WATCH_SEND"), ...(await runAll(app.log, { placeId: String(b.placeId || "") || undefined, email: String(b.email || "") || undefined })) }; }
+      try { return { ok: true, send: on("REVIEW_WATCH_SEND"), ...(await runAll(app.log, { placeId: String(b.placeId || "") || undefined, email: String(b.email || "") || undefined, force: b.force !== false })) }; }
       catch (e) { return reply.code(409).send({ ok: false, error: String((e as Error).message) }); }
     }
     /* Testlauf (vor dem Livegang): echtes Google-Profil, echte neueste Bewertungen, echter Screenshot – Mail geht aber NUR an
@@ -387,7 +407,7 @@ export function registerReviewWatch(app: FastifyInstance, adminToken: string): v
   });
 }
 
-/** Täglicher Lauf ab REVIEW_WATCH_HOUR (Wien), einmal pro Tag (ops_flags schützt auch über Neustarts). */
+/** Lauf ab REVIEW_WATCH_HOUR (Wien), einmal pro Tag (ops_flags schützt auch über Neustarts) – scannt nur fällige Profile. */
 export function startReviewWatchWorker(app: FastifyInstance): void {
   if (!dbReady() || !on("REVIEW_WATCH")) { app.log.info("Bewertungs-Wächter: Worker aus (REVIEW_WATCH≠on)"); return; }
   const hour = Math.min(23, Math.max(0, Number(process.env.REVIEW_WATCH_HOUR) || 7));
