@@ -6,7 +6,7 @@
 import React from "react";
 import { ArrowLeft, Search, Filter, Loader, Send, MailPlus, Mail, RefreshCw, Globe, MapPin, ArrowRight, Check, Star, Store, ChevronRight } from "lucide-react";
 import { dedupeChecks, SRC_LABEL, SOCIAL_KINDS, srcLabelOf, CHECK_DROP, checkStepOf, checkMapsUrl, checkWebSearchUrl } from "@/components/admin/AdminApp";
-import { saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendTemplate, fetchOffers } from "@/lib/admin-api";
+import { saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendTemplate, fetchOffers, resendOffer } from "@/lib/admin-api";
 import { fetchProfileById } from "@/lib/places";
 
 const SRCS = [["google_ads", "Google Ads"], ["ms_ads", "Microsoft Ads"], ["social", "Social Media"], ["affiliate", "Affiliate"], ["utm", "UTM"], ["organic", "Organisch"], ["referral", "Verweis"], ["direct", "Direkt"], ["none", "Unbekannt"]];
@@ -51,6 +51,16 @@ export function OfferTimeline({ o }) {
     </div>
   );
 }
+function ResendRow({ o }) {
+  const [st, setSt] = React.useState("");
+  return (
+    <div style={{ marginTop: 6, fontSize: 12.5, color: "#b42318" }}>
+      {o.mail_err ? <div style={{ marginBottom: 4, wordBreak: "break-word" }}>Fehler: {String(o.mail_err).slice(0, 220)}</div> : null}
+      <button type="button" className="achip" disabled={st === "…"} onClick={async () => { setSt("…"); try { const r = await resendOffer(o.id); setSt(r.ok ? "Gesendet ✓" : "Wieder fehlgeschlagen: " + String(r.mailErr || "").slice(0, 120)); } catch (e) { setSt("Fehler: " + e.message); } }}>Erneut senden</button>
+      {st ? <span style={{ marginLeft: 8 }}>{st}</span> : null}
+    </div>
+  );
+}
 function OffersCard({ offers, onHot, hot }) {
   if (!offers || !offers.length) return null;
   const since = Date.now() - 30 * 864e5;
@@ -77,6 +87,7 @@ function OffersCard({ offers, onHot, hot }) {
           </div>
           <div style={{ marginTop: 6 }}><OfferTimeline o={o} /></div>
           {offerHot(o) ? <div style={{ marginTop: 6, fontSize: 12.5 }}><a href={"mailto:" + o.email} style={{ fontWeight: 600 }}>Nachfassen per E-Mail</a></div> : null}
+          {o.mail_ok === false ? <ResendRow o={o} /> : null}
         </div>
       ))}
     </div>

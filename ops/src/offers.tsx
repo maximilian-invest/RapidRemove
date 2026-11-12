@@ -67,6 +67,8 @@ export async function initOffers(): Promise<void> {
       unsub_at timestamptz, expired_at timestamptz
     )`);
   await pool.query(`CREATE INDEX IF NOT EXISTS offers_created ON offers (created_at DESC)`);
+  // Fehlerdiagnose + automatische Wiederholung (12.11.2026: erstes echtes Angebot scheiterte beim Versand).
+  await pool.query(`ALTER TABLE offers ADD COLUMN IF NOT EXISTS mail_err text, ADD COLUMN IF NOT EXISTS mail_tries integer NOT NULL DEFAULT 0`);
   ready = true;
 }
 
@@ -336,24 +338,40 @@ function r1Html(o: Offer, c: OfferCopy): string {
 async function sendOfferMail(o: Offer, kind: "offer" | "r1" | "r2" | "r3", log: (o: object, m: string) => void): Promise<boolean> {
   const c = offerCopy(o.lang);
   const until = fmtDateO(o, o.valid_until);
-  try {
-    if (kind === "offer") {
-      let pdf: Buffer | null = null;
-      try { pdf = await offerPdf(o); } catch (e) { log({ err: String((e as Error)?.message || e).slice(0, 300), id: o.id }, "Angebot: PDF fehlgeschlagen – Mail mit Link"); }
-      const html = withPixel(await render(<OfferMail o={o} c={c} hasPdf={!!pdf} />), o);
-      const r = await sendMail({ to: o.email, subject: c.mail.subject(o.profile, until), html, attachments: pdf ? [{ filename: `${o.id}.pdf`, content: pdf, contentType: "application/pdf" }] : undefined });
-      await pool!.query(`UPDATE offers SET mail_ok=true, pdf_ok=$2 WHERE id=$1`, [o.id, !!pdf]);
-      log({ id: o.id, trace: mailTrace(r) }, "Angebot gesendet");
-      return true;
+  const errStr = (e: unknown) => String((e as Error)?.message || e).slice(0, 900);
+  if (kind === "offer") {
+    await pool!.query(`UPDATE offers SET mail_tries=mail_tries+1 WHERE id=$1`, [o.id]).catch(() => {});
+    const subject = c.mail.subject(o.profile, until);
+    let pdf: Buffer | null = null;
+    let lastErr = "";
+    try { pdf = await offerPdf(o); } catch (e) { lastErr = "PDF: " + errStr(e); log({ err: lastErr, id: o.id }, "Angebot: PDF fehlgeschlagen – Mail mit Link"); }
+    // 1. Versuch mit PDF-Anhang, bei Fehler 2. Versuch ohne Anhang (Link zum PDF) – das Angebot soll auf jeden Fall ankommen.
+    for (const withPdf of pdf ? [true, false] : [false]) {
+      try {
+        const html = withPixel(await render(<OfferMail o={o} c={c} hasPdf={withPdf} />), o);
+        const r = await sendMail({ to: o.email, subject, html, attachments: withPdf && pdf ? [{ filename: `${o.id}.pdf`, content: pdf, contentType: "application/pdf" }] : undefined });
+        await pool!.query(`UPDATE offers SET mail_ok=true, pdf_ok=$2, mail_err=$3 WHERE id=$1`, [o.id, withPdf, lastErr || null]);
+        log({ id: o.id, withPdf, trace: mailTrace(r) }, "Angebot gesendet");
+        return true;
+      } catch (e) {
+        lastErr = (withPdf ? "Mit PDF: " : "Ohne PDF: ") + errStr(e) + (lastErr ? " | " + lastErr : "");
+        log({ err: lastErr, id: o.id }, "Angebot: Versand fehlgeschlagen");
+      }
     }
+    const r = await pool!.query(`UPDATE offers SET mail_ok=false, mail_err=$2 WHERE id=$1 RETURNING mail_tries`, [o.id, lastErr]).catch(() => null);
+    const tries = Number(r && r.rows[0] && r.rows[0].mail_tries) || 1;
+    if (tries === 1 || tries >= 3) void notifyTeam(tries >= 3 ? "Angebot: Versand endgültig fehlgeschlagen" : "Angebot: Mail fehlgeschlagen – neuer Versuch folgt", `${o.profile} · ${o.email} · ${o.id} · ${lastErr.slice(0, 140)}`, `${SITE()}/admin`, { kind: "customer" });
+    return false;
+  }
+  try {
     const subject = kind === "r1" ? c.r1.subject(o.profile) : kind === "r2" ? c.r2.subject : c.r3.subject(o.profile, until);
     const html = withPixel(kind === "r1" ? r1Html(o, c) : await render(kind === "r2" ? <R2Mail o={o} c={c} /> : <R3Mail o={o} c={c} />), o);
     await sendMail({ to: o.email, subject, html });
     await pool!.query(`UPDATE offers SET ${kind}_at=now() WHERE id=$1`, [o.id]);
     return true;
   } catch (e) {
-    log({ err: String((e as Error)?.message || e).slice(0, 300), id: o.id, kind }, "Angebot: Mail fehlgeschlagen");
-    if (kind === "offer") { await pool!.query(`UPDATE offers SET mail_ok=false WHERE id=$1`, [o.id]).catch(() => {}); void notifyTeam("Angebot: Mail fehlgeschlagen", `${o.profile} · ${o.email} · ${o.id}`, `${SITE()}/admin`, { kind: "customer" }); }
+    log({ err: errStr(e), id: o.id, kind }, "Angebot: Erinnerung fehlgeschlagen");
+    await pool!.query(`UPDATE offers SET mail_err=$2 WHERE id=$1`, [o.id, kind + ": " + errStr(e)]).catch(() => {});
     return false;
   }
 }
@@ -491,12 +509,22 @@ export function registerOffers(app: FastifyInstance, adminOk: (t: unknown) => bo
     return reply.send(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.h)}</title></head><body style="margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#f4f4f4;color:#111"><div style="max-width:440px;margin:15vh auto;background:#fff;border-radius:24px;padding:28px"><h1 style="margin:0 0 8px;font-size:24px">${esc(c.h)}</h1><p style="margin:0;color:#555;line-height:1.55">${esc(c.p)}</p></div></body></html>`);
   });
 
+  app.post("/admin/offer-resend", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const o = await getOffer(clip(b.id, 40));
+    if (!o) return reply.code(404).send({ ok: false, error: "not found" });
+    const ok = await sendOfferMail(o, "offer", (x, m) => app.log.info(x, m));
+    const after = await getOffer(o.id);
+    return { ok, mailErr: after ? (after as Offer & { mail_err?: string }).mail_err || null : null };
+  });
+
   app.post("/admin/offers", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return { ok: true, offers: [] };
     await initOffers();
-    const r = await pool.query(`SELECT id, created_at, valid_until, check_id, place_id, profile, category, addr, country, lang, email, reminders, service, amount, cur, prem, rating, reviews, source, status, mail_ok, pdf_ok, opened_at, open_count, pdf_at, clicked_at, click_count, accepted_at, order_id, r1_at, r2_at, r3_at, unsub_at FROM offers ORDER BY created_at DESC LIMIT 300`);
+    const r = await pool.query(`SELECT id, created_at, valid_until, check_id, place_id, profile, category, addr, country, lang, email, reminders, service, amount, cur, prem, rating, reviews, source, status, mail_ok, pdf_ok, mail_err, mail_tries, opened_at, open_count, pdf_at, clicked_at, click_count, accepted_at, order_id, r1_at, r2_at, r3_at, unsub_at FROM offers ORDER BY created_at DESC LIMIT 300`);
     return { ok: true, offers: r.rows.map((x) => ({ ...x, status: x.status === "sent" && new Date(x.valid_until).getTime() < Date.now() ? "expired" : x.status })) };
   });
 }
@@ -511,6 +539,9 @@ export async function offerTick(log: (o: object, m: string) => void): Promise<vo
   if (!pool || process.env.OFFER_REMINDERS === "off") return;
   await initOffers();
   await pool.query(`UPDATE offers SET status='expired', expired_at=now() WHERE status='sent' AND valid_until < now()`);
+  // Fehlgeschlagene Angebots-Mails automatisch erneut senden (max. 3 Versuche, nur jünger als 48 h).
+  const failed = await pool.query(`SELECT * FROM offers WHERE mail_ok IS FALSE AND mail_tries < 3 AND status='sent' AND created_at > now() - interval '48 hours' ORDER BY created_at LIMIT 10`);
+  for (const row of failed.rows as Offer[]) await sendOfferMail(row, "offer", log);
   const base = `status='sent' AND reminders AND unsub_at IS NULL AND mail_ok IS TRUE AND valid_until > now()`;
   const due = await pool.query(
     `SELECT * FROM (SELECT *, CASE

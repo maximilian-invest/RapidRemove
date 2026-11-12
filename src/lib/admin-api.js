@@ -797,3 +797,10 @@ export async function fetchOffers() {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j.offers || [];
 }
+/** Angebots-Mail erneut senden (z. B. nach Versandfehler). */
+export async function resendOffer(id) {
+  const res = await fetch(OPS + "/admin/offer-resend", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN, id }) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
