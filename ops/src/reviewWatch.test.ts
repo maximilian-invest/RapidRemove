@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { pickCandidates, isDue, scanWeekday, checkOriginalDates } from "./reviewWatch";
 import { parseReviewDates } from "./reviewShots";
+import { tooOldAtOrder } from "./reviewDateCheck";
 import { takeUntilOld, type FetchedReview } from "./reviewsFetch";
 
 let n = 0;
@@ -121,6 +122,16 @@ const okA = async (name: string, fn: () => Promise<void>) => { await fn(); n++; 
     const d = parseReviewDates('<head><meta name="rr-dates" content="1787455463064922,1793643474194970"></head>');
     assert.equal(d?.created.slice(0, 10), "2026-08-23"); assert.equal(d?.edited.slice(0, 10), "2026-11-02");
     assert.equal(parseReviewDates('<meta name="rr-dates" content="none">'), null);
+  });
+  await okA("Bestellung: ursprünglich 23.08., bestellt 05.11. → zu alt (Michelle im Miami-Auftrag)", async () => {
+    assert.equal(tooOldAtOrder("2026-08-23T03:24:23Z", "2026-11-05T01:47:49Z"), true);
+  });
+  await okA("Bestellung: ursprünglich 30.10., bestellt 05.11. → nicht zu alt (Daniella)", async () => {
+    assert.equal(tooOldAtOrder("2026-10-30T01:18:00Z", "2026-11-05T01:47:49Z"), false);
+  });
+  await okA("Bestellung: genau 28 Tage → zu alt (Google zeigt „vor 4 Wochen“)", async () => {
+    assert.equal(tooOldAtOrder("2026-10-08T10:00:00Z", "2026-11-05T10:00:00Z"), true);
+    assert.equal(tooOldAtOrder("2026-10-09T10:00:00Z", "2026-11-05T10:00:00Z"), false);
   });
   console.log(`\n${n} Tests ok`);
 })();

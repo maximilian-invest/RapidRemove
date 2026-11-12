@@ -41,6 +41,7 @@ export function reviewRowsOf(o, tasks, now) {
     const key = keyOfItem(it);
     if (acc && !acc.has(key)) return; // vom Team abgelehnt
     if (billed.has(key)) return;
+    if (o.reviewsTooOld && o.reviewsTooOld[key]) return; // automatisch storniert (bearbeitet, ursprünglich zu alt)
     const t = byKey.get(key) || null;
     if (t && (t.status === "removed" || t.paid || t.test)) return;
     const days0 = it.days !== null && it.days !== undefined && it.days !== "" && Number.isFinite(Number(it.days)) ? Number(it.days) : null;

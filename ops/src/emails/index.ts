@@ -40,6 +40,7 @@ import { StornoPresseImpossible, StornoPresseCustomer, StornoPresseNoreply, Stor
 import KeineRueckmeldung, { subject as keineRueckmeldungSubject } from "./KeineRueckmeldung";
 import MahnungReviews, { subject as mahnungReviewsSubject, T as mahnungReviewsTexts } from "./MahnungReviews";
 import NeueBewertung, { subject as neueBewertungSubject } from "./NeueBewertung";
+import StornoReviewEdited, { subject as stornoReviewEditedSubject } from "./StornoReviewEdited";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
@@ -401,6 +402,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: Fragebogen,
     subject: fragebogenSubject,
     sample: { lang: "de", formUrl: "https://www.rapid-remove.com/auftrag/RR-000000" },
+  },
+  "storno-bewertung-bearbeitet": {
+    label: "Storno einzelne Bewertung (bearbeitet, ursprünglich älter als 4 Wochen – automatisch)",
+    group: "Storno",
+    component: StornoReviewEdited,
+    subject: stornoReviewEditedSubject,
+    sample: { lang: "en" },
   },
   "neue-bewertung": {
     label: "Bewertungs-Wächter: neue negative Bewertung",

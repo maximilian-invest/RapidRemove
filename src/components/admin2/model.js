@@ -89,6 +89,7 @@ export function revState(o, tasks) {
   let started = o.status !== "new";
   for (const it of items) {
     const k = rvKey(it); const t = byKey.get(k); const s = t ? t.status : null;
+    if (o.reviewsTooOld && o.reviewsTooOld[k] && !billed.has(k) && s !== "removed") { c.notPossible++; continue; } // automatisch storniert (zu alt)
     if (s && s !== "new") started = true;
     if (billed.has(k) || s === "removed") {
       c.removed++;

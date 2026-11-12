@@ -530,6 +530,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   };
   const cancelled = o.status === "storniert";
   const bulkSw = ((raw.bulkSw as Record<string, unknown>) || {});
+  const tooOld = ((raw.reviewsTooOld as Record<string, { created?: string }>) || {}); // automatisch storniert: bearbeitet, ursprünglich ≥ 4 Wochen (reviewDateCheck.ts)
   const view = items.map((it) => {
     const k = keyOf(it);
     const pt = partner.get(k);
@@ -539,6 +540,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     const swBulk = !!bulkSw[k]; // Bulk: braucht Software → aus der Bulk-Bestellung storniert, einzeln beauftragen
     const cov = lpOf(it) === PRICE_V2_OTHER; // 250er: Software ist im Preis – der Kunde sieht davon nichts („In Bearbeitung")
     if (rem.has(k) || ps === "removed") status = "removed";
+    else if (tooOld[k]) status = "cancelled";
     else if (cov && !cancelled && !swBulk && (ps === "software" || sw.has(k) || dec === "accepted" || swPaidFor(k))) status = dec === "declined" ? "sw_declined" : "working";
     else if (cancelled || swBulk) status = "cancelled";
     else if (dec === "declined") status = "sw_declined";
@@ -572,6 +574,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       xDue: xOn && pt?.expressAt ? expressCustomerDue(pt.expressAt) : null, // Zusage: gelöscht bis … (30 Std. bzw. Di 24:00 Wiener Zeit bei Wochenend-Start)
       swWant: status === "software" && !!swWant[k],
       swBulk: !!bulkSw[k],
+      tooOld: tooOld[k] ? String(tooOld[k].created || "").slice(0, 10) || true : null, // ursprüngliches Datum der bearbeiteten Bewertung
       pre: !lpOf(it) && (!!it.nt || !!it.sw), // Software-Fall laut Partner-Regel (nur Preismodell 1): Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
       // Bestätigter Software-Fall (bei Bestellung zugestimmt): Platz 5 Std. reserviert → Frist fürs Dashboard (Countdown).
       swDue: status === "software" && (it.nt || it.sw || swWant[k]) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,

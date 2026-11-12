@@ -108,6 +108,7 @@ function mapOrder(r) {
       : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
     // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
+    reviewsTooOld: r.raw && r.raw.reviewsTooOld && typeof r.raw.reviewsTooOld === "object" ? r.raw.reviewsTooOld : null, // automatisch storniert: bearbeitet, ursprünglich ≥ 4 Wochen
     reviewsPayReq: r.raw && r.raw.reviewsPayReq && typeof r.raw.reviewsPayReq === "object" ? r.raw.reviewsPayReq : null, // automatisch zur Zahlung aufgefordert (je Bewertung)
     payHold: r.raw && r.raw.payHold && typeof r.raw.payHold === "object" ? r.raw.payHold : null,
     policyConsent: r.raw && r.raw.policyConsent && typeof r.raw.policyConsent === "object" ? r.raw.policyConsent : null, // Zusicherung „verstößt gegen Google-Richtlinien"

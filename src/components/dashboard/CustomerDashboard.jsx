@@ -2473,7 +2473,7 @@ export default function CustomerDashboard() {
               <h3>{r.name || T("googleReview")}</h3>
               <div className="meta">{o.business} · #{o.id}</div>
               <div className="q">{r.text ? "“" + r.text + "”" : <i>{T("noText")}</i>}</div>
-              <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{r.swBulk ? T("why_swBulk") : st.why}</span></span></div>
+              <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{r.swBulk ? T("why_swBulk") : r.tooOld && r.status === "cancelled" ? T("why_tooOld", { d: typeof r.tooOld === "string" ? new Date(r.tooOld).toLocaleDateString(LOC, { day: "numeric", month: "long", year: "numeric" }) : "—" }) : st.why}</span></span></div>
               {r.swBulk && noOn && !adminView && r.url ? <button className="cta or" onClick={() => orderOne(r.url)}>{T("swBulkBtn")}<ArrowRight /></button> : null}
               {isSw ? <button className="cta or" onClick={openFlow}>{T(r.pre ? "payNow" : "showProblem")}<ArrowRight /></button> : null}
               {r.url ? <a className={"cta" + (isSw ? " gh" : "")} href={r.url} target="_blank" rel="noopener noreferrer"><ExternalLink />{T("openGoogle")}</a>
