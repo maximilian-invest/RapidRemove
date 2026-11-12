@@ -5,8 +5,8 @@
  * Bearbeitungsdatum. Maßgeblich ist das URSPRÜNGLICHE Veröffentlichungsdatum – ist es ≥ 28 Tage vor der Bestellung,
  * können wir die Bewertung nicht übernehmen.
  *
- * Ablauf (alle 30 Min.): neue Bewertungs-Aufträge (ab REVIEW_DATECHECK_SINCE) → jede noch nicht geprüfte Bewertung mit
- * Link einmal über die Google-Seitendaten prüfen (reviewShots.captureReviewDates: Erstell- + Bearbeitungsdatum).
+ * Ablauf (alle 30 Min.): neue Bewertungs-Aufträge (ab REVIEW_DATECHECK_SINCE) → jede noch nicht geprüfte, zum FRISCH-Preis
+ * bestellte Bewertung mit Link einmal über die Google-Seitendaten prüfen (reviewShots.captureReviewDates: Erstell- + Bearbeitungsdatum).
  *  - ursprünglich ≥ 28 Tage vor der Bestellung → automatisch storniert (orders.raw.reviewsTooOld[key]): Status
  *    „storniert“ im Dashboard/Admin, wird nicht abgerechnet; Kunde bekommt EINE Mail je Auftrag (StornoReviewEdited),
  *    Eintrag im Auftragsprotokoll, Team-Push.
@@ -29,6 +29,7 @@ import { notifyTeam } from "./notify";
 import { captureReviewDates, shotKey } from "./reviewShots";
 import { reviewIdOf } from "./reviewPage";
 import { keyOf, dashLink } from "./customers";
+import { PRICE_V2_OTHER } from "./reviewsPricing";
 import crypto from "node:crypto";
 import { isTestEmail, OWNER_EMAIL_SHA } from "./testAccounts";
 import { renderTemplate } from "./renderTemplate";
@@ -48,7 +49,9 @@ async function previewTo(): Promise<string> {
   return ownerCache;
 }
 
-type Item = { url?: string; name?: string; text?: string; rating?: number; days?: number };
+type Item = { url?: string; name?: string; text?: string; rating?: number; days?: number; lp?: number; old?: boolean };
+/** Nur Bewertungen, die zum Frisch-Preis bestellt wurden (199/179/99). Bewusst als alte Bewertung bestellte (250 bzw. old) bleiben unberührt. */
+export const boughtAsFresh = (it: Item): boolean => !it.old && Number(it.lp) !== PRICE_V2_OTHER;
 type Check = { at: string; created?: string; edited?: string; tries: number; tooOld?: boolean; previewed?: string; note?: string };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; status: string | null; created_at: string; raw: Record<string, any> | null };
 
@@ -83,7 +86,7 @@ async function checkOrder(o: OrderRow, apply: boolean, log: FastifyInstance["log
   for (const it of items) {
     const key = keyOf(it);
     const prev = done[key];
-    if (gone[key]) continue;
+    if (gone[key] || !boughtAsFresh(it)) continue;
     if (prev?.created) {
       // schon geprüft: in „live“ die vorher nur gemeldeten (Prüfmodus) jetzt wirklich stornieren
       if (prev.tooOld && m === "live") tooOld.push({ key, it, created: prev.created, edited: prev.edited || prev.created, state: await itemState(o, key) });

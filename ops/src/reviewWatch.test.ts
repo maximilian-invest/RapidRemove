@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { pickCandidates, isDue, scanWeekday, checkOriginalDates } from "./reviewWatch";
 import { parseReviewDates } from "./reviewShots";
-import { tooOldAtOrder } from "./reviewDateCheck";
+import { tooOldAtOrder, boughtAsFresh } from "./reviewDateCheck";
 import { takeUntilOld, type FetchedReview } from "./reviewsFetch";
 
 let n = 0;
@@ -132,6 +132,12 @@ const okA = async (name: string, fn: () => Promise<void>) => { await fn(); n++; 
   await okA("Bestellung: genau 28 Tage → zu alt (Google zeigt „vor 4 Wochen“)", async () => {
     assert.equal(tooOldAtOrder("2026-10-08T10:00:00Z", "2026-11-05T10:00:00Z"), true);
     assert.equal(tooOldAtOrder("2026-10-09T10:00:00Z", "2026-11-05T10:00:00Z"), false);
+  });
+  await okA("bewusst als alte Bewertung bestellt (250 / old) → wird nicht geprüft", async () => {
+    assert.equal(boughtAsFresh({ lp: 250, old: true }), false);
+    assert.equal(boughtAsFresh({ lp: 250 }), false);
+    assert.equal(boughtAsFresh({ lp: 199 }), true);
+    assert.equal(boughtAsFresh({ lp: 179 }), true);
   });
   console.log(`\n${n} Tests ok`);
 })();
