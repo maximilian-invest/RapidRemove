@@ -17,7 +17,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
 import { flatRows, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews, GoneList } from "./OpenReviews";
-import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reasonsSet, payGateTransfer, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -263,14 +263,16 @@ export function OrderDetail({ ctx, id }) {
         <div className="disc due">
           <span className="di"><CalendarClock /></span>
           <span className="t"><b>Zahlungsdaten fehlen · Storno am {new Date(o.pgStale.cancelAt).toLocaleDateString("de-AT")}</b>
-            <span>Alle Erinnerungen sind raus, der Kunde hat die finale Mail. Hinterlegt er bis dahin keine Zahlungsart, wird {o.pgStale.keys ? "die Nachbestellung" : "der Auftrag"} automatisch storniert (Storno-Mail, keine Kosten).</span></span>
+            <span>Alle Erinnerungen sind raus, der Kunde hat die finale Mail. Hinterlegt er bis dahin keine Zahlungsart, wird {o.pgStale.keys ? "die Nachbestellung" : "der Auftrag"} automatisch storniert (Storno-Mail, keine Kosten).</span>
+            {!o.payGate ? <TransferBtn o={o} ctx={ctx} /> : null}</span>
         </div>
       ) : null}
       {o.payGate && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><CreditCard /></span>
           <span className="t"><b>Wartet auf Zahlungsart des Kunden</b>
-            <span>{o.payGate.keys ? `${o.payGate.keys.length} ${o.payGate.keys.length === 1 ? "nachbestellte Bewertung startet" : "nachbestellte Bewertungen starten"} erst, wenn der Kunde im Dashboard eine Zahlungsart hinterlegt hat. Die übrigen laufen weiter.` : "Der Auftrag startet, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat."}</span></span>
+            <span>{o.payGate.keys ? `${o.payGate.keys.length} ${o.payGate.keys.length === 1 ? "nachbestellte Bewertung startet" : "nachbestellte Bewertungen starten"} erst, wenn der Kunde im Dashboard eine Zahlungsart hinterlegt hat. Die übrigen laufen weiter.` : "Der Auftrag startet, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat."}</span>
+            <TransferBtn o={o} ctx={ctx} /></span>
         </div>
       ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}
@@ -343,6 +345,27 @@ export function OrderDetail({ ctx, id }) {
 /** Gründe je Bewertung (Dashboard): Kunde muss je Bewertung den Richtlinien-Verstoß angeben + bestätigen → erst dann Start.
  *  Admin kann überspringen (Gründe liegen schon vor, z. B. per Mail). */
 export const REASON_L = { fake: "Kein echter Kunde / Fake", conflict: "Mitbewerber / (Ex-)Mitarbeiter", false: "Falsche Behauptungen", insult: "Beleidigung / Belästigung", offtopic: "Themenfremd", hate: "Hassrede / Diskriminierung", personal: "Persönliche Daten", offensive: "Anstößig / illegal", impersonation: "Identitätsbetrug", legal: "Rechtliche Meldung", other: "Anderer Grund" };
+/** „Zahlt per Überweisung" (z. B. Telefon-Bestellung): Zahlungsart-Schritt entfällt, keine automatische Abbuchung,
+ *  Erinnerungen/Auto-Storno aus → Auftrag startet (Pending → Neu). 2× tippen zur Bestätigung. */
+function TransferBtn({ o, ctx }) {
+  const [busy, setBusy] = React.useState(false);
+  const [arm, setArm] = React.useState(false);
+  const go = async () => {
+    if (!arm) { setArm(true); setTimeout(() => setArm(false), 4000); return; }
+    setBusy(true);
+    try {
+      const r = await payGateTransfer(o.id);
+      const w = (r.waiting || []).length ? ` · wartet noch auf: ${r.waiting.join(" + ")}` : "";
+      if (ctx.toast) ctx.toast(`Zahlt per Überweisung${r.started ? ` – ${r.started} ans Partner-Board` : ""}${w}`);
+      if (ctx.reload) await ctx.reload(true); if (ctx.loadPtasks) ctx.loadPtasks();
+    } catch (e) { if (ctx.toast) ctx.toast("Fehler: " + (e.message || e)); }
+    setBusy(false); setArm(false);
+  };
+  return (
+    <span className="vfy-b"><button type="button" className={arm ? "go" : ""} disabled={busy} onClick={go}>{busy ? "…" : arm ? "Wirklich? Keine Abbuchung, Rechnung per Überweisung" : "Zahlt per Überweisung"}</button></span>
+  );
+}
+
 function ReasonsBox({ o, ctx }) {
   const g = o.reasons || {};
   const [busy, setBusy] = React.useState(false);

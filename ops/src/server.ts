@@ -30,7 +30,7 @@ import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
 import { registerBulkRules } from "./bulkRules";
-import { startOrderIfReady } from "./orderStart";
+import { startOrderIfReady, waitingFor } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
@@ -2814,6 +2814,32 @@ app.post("/admin/order-mark-paid", async (req, reply) => {
   void sendPurchaseForOrder(id, app.log);
   await insertEvent({ orderId: id, type: "pay", title: "Zahlung eingegangen (manuell erfasst)", detail: method ? `Manuell im Dashboard als bezahlt markiert · ${method}` : "Manuell im Dashboard als bezahlt markiert" });
   return { ok: true };
+});
+
+// Admin: „Zahlt per Überweisung" (z. B. Telefon-Bestellung) → Schritt „Zahlungsart hinterlegen" entfällt.
+// payGate/pgStale weg (keine Erinnerungen, kein Auto-Storno), payMethod = invoice (keine automatische Abbuchung,
+// normaler Weg: Rechnung/Zahlungslink, „Als bezahlt markieren"), danach Start wie nach dem Hinterlegen einer Zahlungsart.
+app.post("/admin/paygate-transfer", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const id = clip(b.orderId, 40);
+  const o = (await pool.query(`SELECT id, email, status, service, raw FROM orders WHERE id=$1`, [id])).rows[0];
+  if (!o) return reply.code(404).send({ ok: false, error: "Auftrag nicht gefunden" });
+  if (o.status === "storniert") return reply.code(409).send({ ok: false, error: "Auftrag ist storniert" });
+  const raw = (o.raw || {}) as Record<string, unknown>;
+  const pg = raw.payGate as { status?: string; rights?: boolean } | undefined;
+  if (!(pg && pg.status === "pending") && !raw.pgStale) return reply.code(409).send({ ok: false, error: "Auftrag wartet nicht auf eine Zahlungsart" });
+  const at = new Date().toISOString();
+  await setOrderRawField(id, "payGate", null);
+  await setOrderRawField(id, "pgStale", null);
+  await setOrderRawField(id, "payMethod", "invoice");
+  await setOrderRawField(id, "payTransfer", { at, by: "admin" });
+  await insertEvent({ orderId: id, email: o.email, type: "note", title: "Zahlt per Überweisung (Admin) – Zahlungsart-Schritt entfällt", detail: "Keine automatische Abbuchung; nach der Löschung Rechnung/Zahlungslink, Zahlungseingang „Als bezahlt markieren\"" }).catch(() => {});
+  // „Keine Rechte": Auftrag läuft schon → nicht neu starten (wie releasePayGates).
+  const started = pg && pg.rights ? 0 : await startOrderIfReady(id).catch((e) => { app.log.error({ err: e, orderId: id }, "Start nach Überweisung fehlgeschlagen"); return 0; });
+  const after = (await pool.query(`SELECT raw FROM orders WHERE id=$1`, [id])).rows[0];
+  return { ok: true, started, waiting: waitingFor((after && after.raw) || {}) };
 });
 
 // Monitor: Überwachung gelöschter Profile (Admin → Monitor), eigene Routen in monitor.ts.

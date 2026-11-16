@@ -766,6 +766,8 @@ export const setPayDue = (orderId, due) => adminPost("/admin/pay-due", { orderId
 export const verifyDoc = (orderId) => adminPost("/admin/verify-doc", { orderId });
 export const verifySet = (orderId, action, reason) => adminPost("/admin/verify-set", { orderId, action, reason });
 export const reasonsSet = (orderId, action, note) => adminPost("/admin/reasons-set", { orderId, action, note });
+/** „Zahlt per Überweisung": Zahlungsart-Schritt entfällt (keine Abbuchung), Auftrag startet → { started, waiting[] }. */
+export const payGateTransfer = (orderId) => adminPost("/admin/paygate-transfer", { orderId });
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });
 /** Globaler Aktivitäten-Feed aller Kunden → { stats, seen[], items[], nextCursor }. */
 export const activityFeed = (p) => adminPost("/admin/activity/feed", p);
