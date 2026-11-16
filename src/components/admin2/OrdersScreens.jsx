@@ -214,6 +214,8 @@ export function OrderDetail({ ctx, id }) {
     : b === "work" && !isRev && o.autoPay && !o.payGate && o.pay !== "paid" ? <button type="button" className="cta ok" onClick={() => openSheet({ kind: "autodone", forId: o.id })}><CheckCircle2 />Löschung abgeschlossen · wird abgebucht</button>
     // Zahlungsart fehlt noch (Dashboard) → warten, nichts senden.
     : b === "work" && !isRev && o.autoPay && o.payGate ? <button type="button" className="cta gh" disabled><CreditCard />Wartet auf Zahlungsart des Kunden</button>
+    // Zahlt per Überweisung → kein Zahlungslink: als gelöscht markieren → „Zahlung offen", dort händisch „Als bezahlt markieren".
+    : b === "work" && !isRev && o.payTransfer && o.pay !== "paid" ? doneBtn("Löschung abgeschlossen · zahlt per Überweisung")
     // Profil gelöscht → Zahlungslink senden (Link vorher ansehen/ändern); „ohne Link erledigt" steckt im Sheet.
     : b === "work" && !isRev ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
     // Bewertungen ohne Partner-Aufgaben (manuell bearbeitet) → wie früher abschließen.
@@ -267,6 +269,13 @@ export function OrderDetail({ ctx, id }) {
             {!o.payGate ? <TransferBtn o={o} ctx={ctx} /> : null}</span>
         </div>
       ) : null}
+      {o.payTransfer && !o.payGate && o.pay !== "paid" && o.status !== "storniert" ? (
+        <div className="disc">
+          <span className="di"><Receipt /></span>
+          <span className="t"><b>Zahlt per Überweisung</b>
+            <span>Keine automatische Abbuchung, kein Zahlungslink. {b === "pay" || b === "inkasso" ? "Sobald das Geld da ist: unten „Als bezahlt markieren“." : "Nach der Löschung „Löschung abgeschlossen“ → Auftrag kommt in „Zahlung offen“, dort händisch als bezahlt markieren."}</span></span>
+        </div>
+      ) : null}
       {o.payGate && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><CreditCard /></span>
@@ -277,7 +286,7 @@ export function OrderDetail({ ctx, id }) {
       ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}
         {/* Profil vor der Zahlung: Zahlungslink ändern (z. B. Upgrade auf Lebenslang) – im Zahlung-offen-Block steckt er in PayActions. */}
-        {!isRev && o.pay !== "paid" && o.status !== "storniert" && (b === "new" || b === "work") ? <button type="button" className="paylk" onClick={() => openSheet({ kind: "paylinkchg", forId: o.id })}><RefreshCw />Zahlungslink ändern{o.payLink ? " · manuell gewählt" : ""}</button> : null}
+        {!isRev && !o.payTransfer && o.pay !== "paid" && o.status !== "storniert" && (b === "new" || b === "work") ? <button type="button" className="paylk" onClick={() => openSheet({ kind: "paylinkchg", forId: o.id })}><RefreshCw />Zahlungslink ändern{o.payLink ? " · manuell gewählt" : ""}</button> : null}
       </div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
