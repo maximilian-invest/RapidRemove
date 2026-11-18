@@ -620,7 +620,8 @@ export const monitorDetail = (id) => monitorPost("detail", { id });
 export const monitorScan = (id) => monitorPost("scan", id ? { id } : {});
 export const monitorCancel = () => monitorPost("cancel");
 export const monitorAction = (id, action, extra) => monitorPost("action", { id, action, ...(extra || {}) });
-export const monitorInform = (id) => monitorPost("inform", { id });
+/** kind: undefined = „wieder aufgetaucht, wir kümmern uns" · "removed" = „schon wieder entfernt" (Mail mit Screenshot + Profil-Link, Status → Erneut entfernt). */
+export const monitorInform = (id, kind) => monitorPost("inform", { id, kind });
 export const monitorLookup = (q) => monitorPost("lookup", q);
 export const monitorAdd = (data) => monitorPost("add", data);
 /** Bild-URL eines Monitor-Screenshots (Token als Query für <img>). */

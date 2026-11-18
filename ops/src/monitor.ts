@@ -24,6 +24,7 @@ import { sendMail } from "./mailer";
 import { captureShot, shotKey } from "./reviewShots";
 import { serpKey } from "./reviewsFetch";
 import ProfilWiedererschienen, { subject as reappearedSubject } from "./emails/ProfilWiedererschienen";
+import ProfilWiederEntfernt, { subject as reRemovedSubject } from "./emails/ProfilWiederEntfernt";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 const ALERT_TO = () => (process.env.MONITOR_ALERT_TO || "helpdesk@rapid-remove.com").trim();
@@ -698,12 +699,35 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
     if (!p) return reply.code(404).send({ ok: false, error: "nicht gefunden" });
     if (!p.cust_email) return reply.code(400).send({ ok: false, error: "Keine Kunden-E-Mail hinterlegt" });
     const lang = (p.lang || "de") as any;
+    const actor = String(b.actor || "Admin").slice(0, 40);
+    // kind "removed": Profil war kurz wieder online, wir haben es schon wieder entfernt → Mail mit Screenshot (inline) + Profil-Link.
+    if (b.kind === "removed") {
+      const shot = (await pool!.query(`SELECT img, mime, checked_at FROM monitor_checks WHERE profile_id = $1 AND img IS NOT NULL AND result = 'found' ORDER BY checked_at DESC LIMIT 1`, [id])).rows[0] as { img: Buffer; mime: string | null; checked_at: string } | undefined;
+      const profileUrl = p.found_url || p.maps_url || (p.place_id ? mapsFromId(p.place_id) : "");
+      const at = p.found_at || (shot && shot.checked_at);
+      let when = "";
+      try { if (at) when = new Intl.DateTimeFormat(lang === "no" ? "nb" : lang, { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Vienna" }).format(new Date(at)); } catch { /* ohne Datum */ }
+      const mime = (shot && shot.mime) || "image/jpeg";
+      const props = { lang, business: p.business_name, shotCid: shot ? "profilshot" : undefined, profileUrl: profileUrl || undefined, when: when || undefined };
+      const html = await render(React.createElement(ProfilWiederEntfernt as any, props as any));
+      try {
+        await sendMail({ to: p.cust_email, subject: reRemovedSubject(props), html, replyTo: process.env.MAIL_REPLY_TO,
+          attachments: shot ? [{ filename: "profil." + (mime.includes("png") ? "png" : "jpg"), content: shot.img, contentType: mime, cid: "profilshot" }] : undefined });
+      } catch (e) { return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) }); }
+      await addCheck(id, "mail", "Kunde informiert: „Wieder aufgetaucht – bereits wieder entfernt“" + (shot ? " (mit Screenshot)" : " (ohne Screenshot – keiner vorhanden)") + " an " + p.cust_email, { actor });
+      // Mail sagt „schon wieder entfernt" → Status passend auf „Erneut entfernt" (wie Aktion „re").
+      if (p.status === "found") {
+        await pool!.query(`UPDATE monitor_profiles SET status = 're' WHERE id = $1`, [id]);
+        await addCheck(id, "re", "Erneut bei Google gemeldet und entfernt · " + actor, { actor });
+      }
+      return { ok: true, shot: !!shot };
+    }
     const props = { lang, business: p.business_name };
     const html = await render(React.createElement(ProfilWiedererschienen as any, props as any));
     try {
       await sendMail({ to: p.cust_email, subject: reappearedSubject(props), html, replyTo: process.env.MAIL_REPLY_TO });
     } catch (e) { return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) }); }
-    await addCheck(id, "mail", "Kunde informiert: „Profil wieder erschienen“ an " + p.cust_email, { actor: String(b.actor || "Admin") });
+    await addCheck(id, "mail", "Kunde informiert: „Profil wieder erschienen“ an " + p.cust_email, { actor });
     return { ok: true };
   });
 

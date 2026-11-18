@@ -747,8 +747,12 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         <><h3 style={{ paddingBottom: 2 }}>{p.name}</h3><p className="shp" style={{ color: s[1], fontWeight: 600 }}>{s[0]} · zuletzt {fmtDT(p.lastCheckAt || p.foundAt)}</p>
           {p.status === "fail" && p.lastNote ? <p className="shp" style={{ fontSize: 13, wordBreak: "break-word" }}>{p.lastNote}</p> : null}
           {sheet.inform ? (
-            <><p className="shp">Kunde {p.custName || ""} {p.custEmail ? `(${p.custEmail})` : ""} per Mail informieren, dass das Profil wieder online ist?</p>
-              <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta" disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id), "Kunde informiert")}><Mail />Informieren</button></div></>
+            <><p className="shp">Kunde {p.custName || ""} {p.custEmail ? `(${p.custEmail})` : ""} per Mail informieren – welche Mail?</p>
+              <div className="opts">
+                <Opt disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id, "removed"), "Kunde informiert · bereits wieder entfernt")}><span className="ico"><CheckCircle2 /></span><span><b>Bereits wieder entfernt</b><br /><small>Mit Screenshot{p.lastShotId ? "" : " (keiner vorhanden)"} + Link zum Profil · Status → Erneut entfernt</small></span></Opt>
+                <Opt disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id), "Kunde informiert")}><span className="ico"><Mail /></span><span><b>Wieder online – wir kümmern uns</b><br /><small>Ohne Screenshot · Löschung läuft noch</small></span></Opt>
+              </div>
+              <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button></div></>
           ) : (
             <div className="opts">
               <Opt onClick={() => (p.lastShotId ? openViewer({ src: monitorShotUrl(p.lastShotId), dl: monitorShotUrl(p.lastShotId, true), title: p.name, sub: "Screenshot · " + fmtDT(p.foundAt || p.lastCheckAt) }) : toast("Kein Screenshot vorhanden"))}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
