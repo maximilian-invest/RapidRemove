@@ -2275,6 +2275,9 @@ export default function CustomerDashboard() {
             );
           })()}
           <div className="sec" style={{ marginTop: 18 }}><h2>{T("pAmount")}</h2></div>
+          {p.firstSub > 0 && p.total ? (
+            <div className="paycard" style={{ marginBottom: 10 }}><span className="ico"><Wallet /></span><span><b>{T("pTotal")}</b><span>{T(p.protection === "yearly" ? "pTotalSY" : "pTotalSM", { one: money(p.amount, o.cur), sub: money(p.firstSub, o.cur) })}</span></span><span className="amt"><b>{money(p.total, o.cur)}</b></span></div>
+          ) : null}
           <div className="paycard"><span className="ico"><Receipt /></span><span><b>{svc}</b><span>{p.protection === "lifetime" ? T("pProt_lifetime") : T("pOneS")}</span></span><span className="amt">{money(p.amount, o.cur)}</span></div>
           {(p.protection === "monthly" || p.protection === "monitor" || p.protection === "yearly") && p.protAmount > 0 ? (
             <div className="paycard" style={{ marginTop: 10 }}><span className="ico"><ShieldCheck /></span><span><b>{T("pSubT_" + p.protection)}</b><span>{T("pSubS")}</span></span><span className="amt">{T(p.protection === "yearly" ? "pSubAmtY" : "pSubAmt", { amount: money(p.protAmount, o.cur) })}</span></div>

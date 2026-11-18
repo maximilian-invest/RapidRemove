@@ -228,7 +228,7 @@ export function OrderDetail({ ctx, id }) {
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p>{o.addr ? <p className="ploc">{profLoc(o)}</p> : null}</div></div>
       <div className="amt"><div className="k">{orderParts(o).parts.length > 1 ? "Gesamt" : "Bestellwert"}</div><div className="v">{orderMoney(o)}</div>
         {orderParts(o).parts.length > 1 ? <div className="amtp">{orderParts(o).parts.map(([l, v]) => `${l} ${money(v, cur(o))}`).join(" + ")}</div> : null}
-        {aboOf(o) && aboOf(o).recurring ? <div className="abo"><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).price ? <span>+ {aboOf(o).price}</span> : null}</div> : null}
+        {aboOf(o) && aboOf(o).recurring ? <div className="abo"><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).next ? <span>{aboOf(o).next}</span> : null}</div> : null}
         <div className="r">{bs.map((x) => <span key={x} className="st"><span className={"dt d-" + x} />{ST[x].l}</span>)}<span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div>
         {r ? (
           <div className="rvst">

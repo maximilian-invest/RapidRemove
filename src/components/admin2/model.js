@@ -189,6 +189,8 @@ export function orderParts(o) {
   if (o.service !== "reviews") {
     if (o.express && Number(o.expressAmount)) parts.push(["Express", Number(o.expressAmount)]);
     if (o.protection === "lifetime" && Number(o.protAmount)) parts.push(["Lifetime", Number(o.protAmount)]);
+    // Abo: die erste Periode wird mit der Löschung abgerechnet (erste Rechnung / Zahlungslink inkl. Schutz) → gehört zur Gesamtsumme.
+    else if (["monthly", "monitor", "yearly"].includes(o.protection) && Number(o.protAmount)) parts.push([o.protection === "yearly" ? "Schutz 1. Jahr" : "Schutz 1. Monat", Number(o.protAmount)]);
   }
   return { parts, total: parts.reduce((s, x) => s + x[1], 0), c };
 }
@@ -240,7 +242,7 @@ export function aboOf(o) {
   if (!p || p === "none") return null;
   const c = cur(o), amt = Number(o.protAmount) || 0;
   if (p === "lifetime") return { kind: p, short: "Lifetime", label: "Lebenslanger Schutz", price: amt ? money(amt, c) + " einmalig" : "", recurring: false };
-  return { kind: p, short: p === "yearly" ? "Jahresabo" : "Abo", label: p === "monitor" ? "Schutz-Abo + tägliche Überwachung" : p === "yearly" ? "Schutz-Jahresabo (inkl. Monitoring)" : "Schutz-Abo", price: amt ? money(amt, c) + (p === "yearly" ? " / Jahr" : " / Monat") : "", recurring: true };
+  return { kind: p, short: p === "yearly" ? "Jahresabo" : "Abo", label: p === "monitor" ? "Schutz-Abo + tägliche Überwachung" : p === "yearly" ? "Schutz-Jahresabo (inkl. Monitoring)" : "Schutz-Abo", price: amt ? money(amt, c) + (p === "yearly" ? " / Jahr" : " / Monat") : "", next: amt ? "danach " + money(amt, c) + (p === "yearly" ? " / Jahr" : " / Monat") : "", recurring: true };
 }
 
 /** Kunde will mit Wise/PayPal zahlen (Rabatt-Abfrage bzw. Fragebogen) → 10 % Rabatt. Wie payPrefName im alten Admin. */

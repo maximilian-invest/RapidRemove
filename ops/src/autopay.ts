@@ -845,9 +845,9 @@ async function openOrderValue(email: string): Promise<{ amount: number; cur: str
   const { orders } = await loadCustomerOrders(email);
   const by = new Map<string, { amount: number; ids: Set<string> }>();
   const addTo = (cur: string, v: number, id: string) => { if (!(v > 0)) return; const x = by.get(cur) || { amount: 0, ids: new Set<string>() }; x.amount += v; x.ids.add(id); by.set(cur, x); };
-  for (const o of orders as (typeof orders[number] & { kind?: string; autoPay?: boolean; profileOrder?: { paid?: boolean; amount?: number; status?: string } })[]) {
+  for (const o of orders as (typeof orders[number] & { kind?: string; autoPay?: boolean; profileOrder?: { paid?: boolean; amount?: number; total?: number; status?: string } })[]) {
     if (o.cancelled) continue;
-    if (o.kind === "profile") { const p = o.profileOrder; if (o.autoPay && p && !p.paid && p.status !== "cancelled") addTo(String(o.cur), Number(p.amount) || 0, o.id); continue; }
+    if (o.kind === "profile") { const p = o.profileOrder; if (o.autoPay && p && !p.paid && p.status !== "cancelled") addTo(String(o.cur), Number(p.total ?? p.amount) || 0, o.id); continue; }
     const v = (o.items || []).filter((it) => !it.paid && !["cancelled", "sw_declined", "notpossible"].includes(String(it.status)) && !(it as { waived?: boolean }).waived)
       .reduce((s, it) => s + (Number((it as { price?: number }).price) || 0) + ((it as { x?: boolean; xFee?: number }).x ? Number((it as { xFee?: number }).xFee) || 0 : 0), 0);
     addTo(String(o.cur), v, o.id);

@@ -625,6 +625,8 @@ type OrderView = ReturnType<typeof orderView> & { kind?: "reviews" | "profile"; 
 type ProfileInfo = {
   service: string; status: "new" | "working" | "removed" | "cancelled"; paid: boolean; open: number;
   amount: number; protAmount: number; protection: string | null; express: boolean; doneAt: string | null; addr: string | null;
+  /** Gesamtsumme, die der Kunde nach der Löschung zahlt: Löschung (+Express/Lifetime) + erste Abo-Periode (erste Rechnung inkl. Schutz). */
+  total: number; firstSub: number;
 };
 type ProfileRow = OrderRow & { service: string | null; amount: number | string | null; prot_amount: number | string | null; protection: string | null; done_at: string | null };
 /** „Keine Rechte"-Angebot eines Profil-Auftrags für das Dashboard (nur offene/angenommene). */
@@ -643,14 +645,17 @@ function profileView(o: ProfileRow): OrderView {
   const expressAmount = express ? Number(raw.expressAmount) || 0 : 0;
   const oneTime = profileOneTime(amount, express, expressAmount) + (o.protection === "lifetime" ? protAmount : 0); // Altbestand: amount inkl. Express nicht doppelt
   const paid = o.pay === "paid";
+  const firstSub = ["monthly", "monitor", "yearly"].includes(String(o.protection)) ? protAmount : 0;
+  const total = Math.round((oneTime + firstSub) * 100) / 100;
   const info: ProfileInfo = {
-    service: o.service || "remove", status: st, paid, open: st === "removed" && !paid ? oneTime : 0,
+    service: o.service || "remove", status: st, paid, open: st === "removed" && !paid ? total : 0,
     amount: oneTime, protAmount, protection: o.protection || null, express, doneAt: o.done_at || null, addr: (raw.addr as string) || null,
+    total, firstSub,
   };
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.profile || o.company || "", cancelled: st === "cancelled",
     pct: 0, swPrice: 0, swDeposit: 0, toPay: 0, items: [],
-    history: paid && oneTime ? [{ id: "p-" + o.id, kind: "profile" as never, amount: oneTime, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
+    history: paid && total ? [{ id: "p-" + o.id, kind: "profile" as never, amount: total, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
     deposits: [], kind: "profile", profileOrder: info,
     payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
     // „Keine Rechte" (10/2026): Kunde entscheidet im Dashboard – fortfahren (+Aufpreis bei Erfolg, Zahlungsart hinterlegen) oder stornieren.
