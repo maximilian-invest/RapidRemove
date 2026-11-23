@@ -841,7 +841,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
  * kann keine Reservierung, Stripe-Fehler) → durchlassen, Vermerk im Verlauf. Abschalten: AUTOPAY_COVERAGE=off. */
 type Coverage = { result: "ok" | "declined" | "skipped"; amount: number; cur: string; why?: string; reason?: ReasonKey };
 /** Offener Auftragswert (netto) je Währung: unbezahlte, nicht stornierte/abgelehnte Bewertungen + unbezahlte Profil-Aufträge mit Autopay. */
-async function openOrderValue(email: string): Promise<{ amount: number; cur: string; orderIds: string[] }> {
+async function openOrderValue(email: string, want?: string): Promise<{ amount: number; cur: string; orderIds: string[] }> {
   const { orders } = await loadCustomerOrders(email);
   const by = new Map<string, { amount: number; ids: Set<string> }>();
   const addTo = (cur: string, v: number, id: string) => { if (!(v > 0)) return; const x = by.get(cur) || { amount: 0, ids: new Set<string>() }; x.amount += v; x.ids.add(id); by.set(cur, x); };
@@ -852,12 +852,17 @@ async function openOrderValue(email: string): Promise<{ amount: number; cur: str
       .reduce((s, it) => s + (Number((it as { price?: number }).price) || 0) + ((it as { x?: boolean; xFee?: number }).x ? Number((it as { xFee?: number }).xFee) || 0 : 0), 0);
     addTo(String(o.cur), v, o.id);
   }
+  if (want) { const x = by.get(want); return { amount: x ? Math.round(x.amount * 100) / 100 : 0, cur: want, orderIds: x ? [...x.ids] : [] }; }
   let best = { amount: 0, cur: "eur", orderIds: [] as string[] };
   for (const [cur, x] of by) if (x.amount > best.amount) best = { amount: Math.round(x.amount * 100) / 100, cur, orderIds: [...x.ids] };
   return best;
 }
-export async function coverageCheck(email: string, k: { key: string; mode: Mode }, customer: string, pm: any): Promise<Coverage> {
-  const { amount, cur } = await openOrderValue(email).catch(() => ({ amount: 0, cur: "eur", orderIds: [] as string[] }));
+/** opts.extra: Wert einer Bestellung, die noch nicht gespeichert ist (in opts.extraCur) – wird zum offenen Auftragswert dieser Währung addiert.
+ *  opts.idem: eigener Idempotenz-Schlüssel (sonst würde Stripe bei derselben Zahlungsart + gleichem Betrag binnen 24 h das alte Ergebnis liefern). */
+export async function coverageCheck(email: string, k: { key: string; mode: Mode }, customer: string, pm: any, opts: { extra?: number; extraCur?: string; idem?: string } = {}): Promise<Coverage> {
+  const extra = Math.max(0, Number(opts.extra) || 0);
+  const open = await openOrderValue(email, extra > 0 ? opts.extraCur || "eur" : undefined).catch(() => ({ amount: 0, cur: opts.extraCur || "eur", orderIds: [] as string[] }));
+  const amount = Math.round((open.amount + extra) * 100) / 100, cur = open.cur;
   if (String(process.env.AUTOPAY_COVERAGE || "").toLowerCase() === "off") return { result: "skipped", amount, cur, why: "abgeschaltet" };
   if (!(amount > 0)) return { result: "skipped", amount, cur, why: "kein offener Auftragswert" };
   const cents = Math.round(amount * 100);
@@ -867,7 +872,7 @@ export async function coverageCheck(email: string, k: { key: string; mode: Mode 
       amount: cents, currency: cur, customer, payment_method: pm.id, payment_method_types: [pm.type], capture_method: "manual",
       confirm: true, off_session: true, description: "Deckungsprüfung – wird sofort freigegeben, nichts abgebucht",
       metadata: { rr_check: "coverage", rr_email: email },
-    }, `rr-cov-${pm.id}-${cents}`);
+    }, opts.idem ? `rr-cov-${pm.id}-${opts.idem}-${cents}` : `rr-cov-${pm.id}-${cents}`);
   } catch (e) {
     const err = e as StripeErr;
     const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 200);
@@ -882,6 +887,42 @@ export async function coverageCheck(email: string, k: { key: string; mode: Mode 
     return { result: "ok", amount, cur, why: "sofort erstattet" };
   }
   return { result: "skipped", amount, cur, why: `Status ${pi?.status || "?"}` };
+}
+
+/* ---- Deckungsprüfung bei NEUER Bestellung mit SCHON hinterlegter Zahlungsart (Maximilian 23.11.2026, Anlass RR-237394) ----
+ * Bisher lief die Prüfung nur beim Hinterlegen einer neuen Zahlungsart. Bestandskunden mit Dashboard + Zahlungsart konnten
+ * neu bestellen, ohne dass die Karte den neuen Betrag deckt → Abbuchung bei „Löschung abgeschlossen" scheiterte.
+ * Jetzt: jede neue Bestellung/Nachbestellung prüft die hinterlegte Zahlungsart über offenen Auftragswert + neue Bestellung.
+ * Abgelehnt → Auftrag wartet (payGate), Zahlungsart gilt als ungültig (wird aus cust_autopay genommen, Dashboard verlangt eine
+ * neue – die dann wie gewohnt geprüft wird), Mail „Karte abgelehnt", Team-Push. Nicht prüfbar (3-D-Secure, Fehler) → durchlassen. */
+export type NewOrderCoverage = Coverage & { label: string };
+export async function coverageForNewOrder(email0: string, extra: number, extraCur: string, ref: string): Promise<NewOrderCoverage | null> {
+  const email = String(email0 || "").trim().toLowerCase();
+  const k = keyFor(email); if (!k || !pool) return null;
+  const row = await rowOf(email).catch(() => null);
+  if (!row || !row.pm || row.mode !== k.mode) return null; // keine Zahlungsart → normaler Ablauf (payGate beim Hinterlegen)
+  const pm = { id: row.pm, type: row.pm_type || "card" };
+  const cov = await coverageCheck(email, k, row.customer, pm, { extra, extraCur, idem: ref })
+    .catch((e) => ({ result: "skipped", amount: extra, cur: extraCur, why: String((e as Error)?.message || e).slice(0, 120) }) as Coverage);
+  return { ...cov, label: row.label || pmLabel(pm) };
+}
+/** Nach dem Speichern der Bestellung: Ergebnis vermerken; abgelehnt → Zahlungsart raus, Hinweis/Mail/Team. */
+export async function coverageForNewOrderDone(email0: string, orderId: string, cov: NewOrderCoverage | null): Promise<void> {
+  if (!cov || !pool) return;
+  const email = String(email0 || "").trim().toLowerCase();
+  const money = fmtReviewMoney(cov.amount, cov.cur);
+  if (cov.result !== "declined") {
+    await insertEvent({ orderId, email, type: "note", title: cov.result === "ok" ? `Deckungsprüfung bestanden (${money} reserviert und sofort freigegeben)` : `Deckungsprüfung übersprungen${cov.amount > 0 ? ` (${money})` : ""}`, detail: `Hinterlegte Zahlungsart ${cov.label}${cov.why ? " · " + cov.why : ""} · neue Bestellung`, auto: true }).catch(() => {});
+    return;
+  }
+  const reason = cov.reason || "bank";
+  await pool.query(`UPDATE cust_autopay SET pm=NULL, label=NULL, pm_type=NULL, last_error=$2, updated_at=now() WHERE email=$1`, [email, `Deckungsprüfung abgelehnt (${money}) – neue Zahlungsart nötig`]).catch(() => {});
+  await pool.query(`INSERT INTO cust_cov_fail (email, at, amount, cur, label, reason) VALUES ($1, now(), $2, $3, $4, $5)
+    ON CONFLICT (email) DO UPDATE SET at=now(), amount=EXCLUDED.amount, cur=EXCLUDED.cur, label=EXCLUDED.label, reason=EXCLUDED.reason`, [email, cov.amount, cov.cur, cov.label, reason]).catch(() => {});
+  await insertEvent({ orderId, email, type: "note", title: `Deckungsprüfung abgelehnt (${money}) – Auftrag wartet auf neue Zahlungsart`, detail: `Hinterlegte Zahlungsart ${cov.label} deckt offenen Auftragswert + neue Bestellung nicht · ${cov.why || ""} · Zahlungsart entfernt, Kunde muss im Dashboard eine neue hinterlegen`, auto: true }).catch(() => {});
+  void logCustEvent(email, "autopay_rejected", `Deckungsprüfung abgelehnt (neue Bestellung) · ${money}`, { amount: cov.amount, cur: cov.cur });
+  await sendCoverageMail(email, cov.amount, cov.cur, cov.label, reason).catch((e) => console.error("Mail „Karte abgelehnt“ (neue Bestellung) fehlgeschlagen", e));
+  void notifyTeam(`${isTestEmail(email) ? "TEST · " : ""}Deckungsprüfung abgelehnt · neue Bestellung`, `${email} · ${orderId} · ${cov.label} · ${money} · Auftrag wartet auf neue Zahlungsart`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "customer" });
 }
 
 /** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */

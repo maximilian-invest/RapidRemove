@@ -9,7 +9,7 @@ import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
-import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY, retryProfileCharge } from "./autopay";
+import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY, retryProfileCharge, coverageForNewOrder, coverageForNewOrderDone } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf, loadCustomerOrders } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
@@ -105,10 +105,16 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
 
   // 3) Zahlungsart-Pflicht nur für die neuen Bewertungen (laufende laufen weiter)
   const prefNoGate = ["wise", "paypal"].includes(String(raw.payPref || ""));
-  const gate = opts.gate !== "off" && !prefNoGate && autopayAvailable(email) && !(await hasSavedMethod(email).catch(() => false));
+  let gate = opts.gate !== "off" && !prefNoGate && autopayAvailable(email) && !(await hasSavedMethod(email).catch(() => false));
   const newKeys = fresh.map((it) => keyOf(it));
   const items = [...(Array.isArray(raw.reviewItems) ? (raw.reviewItems as AddItem[]) : []), ...fresh];
   const cur = country === "US" ? "usd" : "eur";
+  // Deckungsprüfung auch bei schon hinterlegter Zahlungsart (23.11.2026): offener Auftragswert + die neuen Bewertungen.
+  // Abgelehnt → nur die neuen Bewertungen warten (wie ohne Zahlungsart), Kunde hinterlegt im Dashboard eine neue.
+  const covNew = opts.gate !== "off" && !prefNoGate && !gate && autopayAvailable(email)
+    ? await coverageForNewOrder(email, quoteReviews(fresh, cur, items.length, "full", chatPctOf(raw), payPctOf(raw)).total, cur, `add-${orderId}-${Date.now()}`).catch(() => null)
+    : null;
+  if (covNew?.result === "declined") gate = true;
   const total = quoteReviews(items, cur, undefined, "full", chatPctOf(raw), payPctOf(raw)).total;
   await setOrderRawField(orderId, "reviewItems", items);
   await setOrderRawField(orderId, "amount", total);
@@ -129,6 +135,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
   if (rGate) await setOrderRawField(orderId, "reasons", rGate);
   const who = opts.by === "admin" ? "Admin" : "Kunde im Dashboard";
   const list = fresh.map((it) => (it.name ? `${it.name}${it.rating ? ` (${it.rating}★)` : ""}` : it.url)).join(" · ");
+  if (covNew) await coverageForNewOrderDone(email, orderId, covNew).catch(() => {});
   await insertEvent({ orderId, email, type: "order", title: `${fresh.length === 1 ? "Bewertung" : fresh.length + " Bewertungen"} nachbestellt (${who})`, detail: list + (rGate ? " · wartet auf Gründe" : "") + (gate ? " · wartet auf Zahlungsart" : "") + (skipped.length ? ` · schon beauftragt: ${skipped.join(", ")}` : "") });
 
   // 4) Partner-Board – sofort, außer die Neuen (bzw. der Auftrag) warten noch

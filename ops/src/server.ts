@@ -35,7 +35,7 @@ import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker, pgNextFor } from "./pgRemind";
-import { registerAutopayRoutes, savedMethodLabel, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
+import { registerAutopayRoutes, savedMethodLabel, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder, coverageForNewOrder, coverageForNewOrderDone, type NewOrderCoverage } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { payoutTick } from "./payouts";
 import { initPartnerRegistry } from "./partnerRegistry";
@@ -521,7 +521,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // PayPal/Wise −10 % in den Einstellungen für diese Kategorie aus → Wunsch ignorieren (normale Zahlung).
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
   // Bulk-Upload: geht IMMER erst nach hinterlegter Zahlungsart zum Partner (auch bei PayPal/Wise-Wunsch).
-  const payGate = isReviews && (bulk || !["wise", "paypal"].includes(String(b.payPref || ""))) && email ? await payGateNeeded(email).catch(() => false) : false;
+  let payGate = isReviews && (bulk || !["wise", "paypal"].includes(String(b.payPref || ""))) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   // Profil-Löschung (10/2026): nicht deutschsprachige Kunden + alle Schweizer → gleicher Ablauf wie Einzelbewertungen:
   // Konto + Dashboard (direkt nach der Bestellung), Zahlungsart hinterlegen, abgebucht wird erst bei „Löschung abgeschlossen"
@@ -530,7 +530,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   const profCH = ruleCountry === "CH" || /(schweiz|switzerland|suisse|svizzera)\s*$/i.test(String(b.addr || ""));
   const profDash = isProfileOrder && !!email && (tlang !== "de" || profCH);
   const profAuto = profDash && !["wise", "paypal"].includes(String(b.payPref || "")) && autopayAvailable(email);
-  const profGate = profAuto ? !(await hasSavedMethod(email).catch(() => false)) : false;
+  let profGate = profAuto ? !(await hasSavedMethod(email).catch(() => false)) : false;
   if (profAuto) (b as Record<string, unknown>).payMethod = "auto";
   if (profGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   // Zahlungsart schon hinterlegt → in der Bestätigung nennen („wird nach der Löschung automatisch abgebucht").
@@ -670,6 +670,20 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   if (isReviews && !bulk && !pricing) (b as Record<string, unknown>).saleTotal = revQ.total; // Affiliate-Sale = Server-Preis (Land × Branche)
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
+  // Deckungsprüfung auch bei SCHON hinterlegter Zahlungsart (23.11.2026, Maximilian – RR-237394): offener Auftragswert + diese
+  // Bestellung kurz reservieren. Abgelehnt → Auftrag wartet wie ohne Zahlungsart (payGate), Kunde hinterlegt im Dashboard eine neue.
+  let covNew: NewOrderCoverage | null = null;
+  const covCand = !!email && !bulk && !isPress && (
+    (isReviews && !payGate && !["wise", "paypal"].includes(String(b.payPref || "")) && autopayAvailable(email)) ||
+    (profAuto && !profGate));
+  if (covCand) {
+    const extra = isReviews ? revQ.total : (Number(b.amount) || 0) + (Number(b.expressAmount) || 0) + (Number(b.protAmount) || 0);
+    covNew = await coverageForNewOrder(email, extra, revCur, `new-${orderId || Date.now()}`).catch((e) => { app.log.error({ err: e }, "Deckungsprüfung (neue Bestellung) fehlgeschlagen"); return null; });
+    if (covNew?.result === "declined") {
+      if (isReviews) payGate = true; else profGate = true;
+      (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString(), cov: true };
+    }
+  }
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
   let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
   let autologin: string | null = null;
@@ -853,6 +867,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       // → Kunde bekommt die Zahlungsaufforderung im Dashboard → nach Zahlung „Customer paid – start now".
       const vInfo = (b as Record<string, unknown>).verify as { by?: string; from?: string; keys?: string[] } | undefined;
       if (vInfo && vInfo.by === "reuse") await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis schon vorhanden (gleiches Profil)", detail: `Freigegeben in Auftrag ${vInfo.from} – kein neuer Nachweis nötig`, auto: true }).catch(() => {});
+      if (covNew) await coverageForNewOrderDone(email, id, covNew).catch((e) => app.log.error({ err: e, orderId: id }, "Deckungsprüfung vermerken fehlgeschlagen"));
       if (reasonsGate || verifyNeeded || payGate) {
         if (reasonsGate) await insertEvent({ orderId: id, type: "note", title: "Wartet auf Gründe je Bewertung (Dashboard)", detail: "Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an und bestätigt (AGB 3.4) – Start erst danach", auto: true }).catch(() => {});
         if (verifyNeeded) await insertEvent({ orderId: id, type: "note", title: `Inhaber-Nachweis nötig für ${vInfo?.keys?.length || 1} Bewertung(en) mit 4–5 Sternen`, detail: payGate ? "Reihenfolge: erst Zahlungsart, dann laufen die übrigen; diese erst nach dem Nachweis" : "Die übrigen gehen jetzt ans Partner-Board, diese erst nach dem Nachweis", auto: true }).catch(() => {});
@@ -965,7 +980,10 @@ app.post("/admin/orders/create", async (req, reply) => {
   const pay = ["auto", "link", "paypal", "invoice"].includes(String(b.payment)) ? String(b.payment) : "link";
   // „auto": Kunde hinterlegt im Dashboard seine Zahlungsart → Auftrag startet erst danach, abgebucht wird bei Löschung.
   const autoPay = pay === "auto" && autopayAvailable(email);
-  const gate = autoPay && !(await hasSavedMethod(email).catch(() => false));
+  let gate = autoPay && !(await hasSavedMethod(email).catch(() => false));
+  // Deckungsprüfung auch bei schon hinterlegter Zahlungsart (23.11.2026) – abgelehnt → wartet auf neue Zahlungsart.
+  const covNew = autoPay && !gate ? await coverageForNewOrder(email, amount, cur, `adm-${Date.now()}`).catch(() => null) : null;
+  if (covNew?.result === "declined") gate = true;
   const staff = ["max", "matthias"].includes(String(b.staff)) ? String(b.staff) : null;
   // Gründe je Bewertung im Dashboard abfragen (Standard). Abwählbar, wenn sie schon vorliegen (z. B. per Mail).
   const askReasons = type === "reviews" && b.askReasons !== false;
@@ -988,6 +1006,7 @@ app.post("/admin/orders/create", async (req, reply) => {
     });
     if (staff) await setOrderAssignee(id, staff).catch(() => false);
     await insertEvent({ orderId: id, type: "order", title: "Auftrag manuell angelegt (Admin)", detail: `${id} · ${type === "reviews" ? items.length + " Bewertung(en)" : "Profil löschen" + (reason ? " · " + reason : "")} · ${autoPay ? "automatische Abbuchung" + (gate ? " (wartet auf Zahlungsart)" : "") : pay === "paypal" ? "PayPal (−10 %)" : pay === "invoice" ? "Rechnung" : "Zahlungslink"}` });
+    if (covNew) await coverageForNewOrderDone(email, id, covNew).catch(() => {});
     // Outgoing webhook notification (fire-and-forget)
     void sendOrderWebhook(id, { name, email, company, profile: company || mapsUri, country, service, amount, raw }, (msg, extra) => app.log.info({ orderId: id, ...extra }, `orderWebhook: ${msg}`)).catch(() => {});
   } catch (e) {
