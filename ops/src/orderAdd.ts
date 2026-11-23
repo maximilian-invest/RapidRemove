@@ -9,7 +9,7 @@ import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
-import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY, retryProfileCharge, coverageForNewOrder, coverageForNewOrderDone } from "./autopay";
+import { autopayAvailable, hasSavedMethod, chargeDue, ADMIN_RETRY, retryProfileCharge, coverageForNewOrder, coverageForNewOrderDone, coverageAdminCheck } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf, loadCustomerOrders } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
@@ -360,6 +360,21 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     bumpChange();
     const due = (await loadCustomerOrders(String(o.email).toLowerCase())).orders.reduce((s, v) => s + (Number(v.toPay) || 0), 0);
     return { ok: true, charged, due: Math.round(due * 100) / 100 };
+  });
+  /** POST /admin/coverage-check { orderId } → hinterlegte Zahlungsart des Kunden jetzt prüfen (Admin-Knopf „Deckungsprüfung", 23.11.2026).
+   *  Abgelehnt → Zahlungsart entfernt + Mail „Karte abgelehnt" an den Kunden (sofort, ohne 30-Min.-Sperre). */
+  app.post("/admin/coverage-check", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const o = await loadOrder(clip(b.orderId, 40));
+    if (!o || !o.email) return reply.code(404).send({ ok: false, error: "Auftrag nicht gefunden" });
+    const raw = (o.raw || {}) as Record<string, unknown>;
+    const cur = String(o.country || "").toUpperCase() === "US" ? "usd" : "eur";
+    const fallback = (Number(raw.amount) || 0) + (o.service === "reviews" ? 0 : (Number(raw.expressAmount) || 0) + (Number(raw.protAmount) || 0));
+    const r = await coverageAdminCheck(String(o.email), o.id, fallback, cur).catch((e) => ({ ok: false as const, error: String((e as Error)?.message || e).slice(0, 200) }));
+    if (!r.ok) return reply.code(400).send({ ok: false, error: r.error });
+    bumpChange();
+    return { ok: true, result: r.cov.result, amount: r.cov.amount, cur: r.cov.cur, label: r.cov.label, why: r.cov.why || "", reasonText: r.reasonText || "" };
   });
   app.post("/admin/orders/prices", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;

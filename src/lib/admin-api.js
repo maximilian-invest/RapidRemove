@@ -748,6 +748,8 @@ export const setOrderPricesApi = (p) => adminPost("/admin/orders/prices", p);
 export const reviewsBillInfoApi = (orderId) => adminPost("/admin/reviews/bill-info", { orderId });
 export const reviewsBillApi = (p) => adminPost("/admin/reviews/bill", p);
 export const reviewsChargeRetryApi = (orderId) => adminPost("/admin/reviews/charge-retry", { orderId });
+/** Deckungsprüfung der hinterlegten Zahlungsart jetzt (abgelehnt → Kunde bekommt Mail, muss neue Karte hinterlegen). */
+export const coverageCheckApi = (orderId) => adminPost("/admin/coverage-check", { orderId });
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */

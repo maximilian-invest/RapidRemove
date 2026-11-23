@@ -17,7 +17,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
 import { flatRows, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews, GoneList } from "./OpenReviews";
-import { custImpersonate, verifyDoc, verifySet, reasonsSet, payGateTransfer, reviewShotUrl } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reasonsSet, payGateTransfer, reviewShotUrl, coverageCheckApi } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -310,6 +310,7 @@ export function OrderDetail({ ctx, id }) {
         {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
         <MailRow o={o} ctx={ctx} payOpen={payOpen(o, now, ptasks)} />
         {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("prices", o.id)}><span className="ico"><Percent /></span><span className="t"><span>Preis</span><b>{orderMoney(o)} · anpassen</b></span><ChevronRight /></button> : null}
+        {o.status !== "storniert" && o.email && (isRev || o.autoPay) ? <CovCheckRow o={o} ctx={ctx} /> : null}
         {!isRev && o.status !== "storniert" && !(o.rights && o.rights.status === "accepted") ? <button type="button" className="ir" disabled={!o.email} onClick={() => openSheet({ kind: "tplsend", forId: o.id, key: "keine-rechte", label: "Keine Rechte" })}><span className="ico"><KeyRound /></span><span className="t"><span>Keine Rechte</span><b>{o.rights && o.rights.status === "pending" ? "Gesendet · wartet auf Entscheidung im Dashboard · erneut senden" : `Mail senden · +${cur(o) === "$" ? "$290" : "290 €"} bei Erfolg, ${(o.lang || "de") === "de" ? "Kunde antwortet per Mail" : "Kunde entscheidet im Dashboard"}`}</b></span><ChevronRight /></button> : null}
       </div>
       <div className="cact">
@@ -650,3 +651,35 @@ export function ReviewsScreen({ ctx, id, focus }) {
   );
 }
 export { keyOf };
+
+/* Deckungsprüfung auf Knopfdruck (23.11.2026): hinterlegte Zahlungsart des Kunden über den offenen Betrag prüfen.
+   Zweimal tippen (löst beim Kunden ggf. Mail + Kartenwechsel aus). Abgelehnt → Kunde bekommt sofort „Karte abgelehnt",
+   die Zahlungsart wird entfernt und er muss im Dashboard eine neue Karte hinterlegen. */
+function CovCheckRow({ o, ctx }) {
+  const [busy, setBusy] = React.useState(false);
+  const [arm, setArm] = React.useState(false);
+  const [last, setLast] = React.useState(null);
+  React.useEffect(() => { if (!arm) return undefined; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  const run = async () => {
+    if (busy) return;
+    if (!arm) { setArm(true); return; }
+    setArm(false); setBusy(true);
+    try {
+      const r = await coverageCheckApi(o.id);
+      const m = money(r.amount, r.cur === "usd" ? "$" : "€");
+      const msg = r.result === "ok" ? `Deckung ok · ${m} auf ${r.label} reserviert und sofort freigegeben`
+        : r.result === "declined" ? `Abgelehnt (${r.reasonText || r.why}) · ${m} · Kunde hat Mail bekommen und muss eine neue Karte hinterlegen`
+        : `Nicht prüfbar${r.why ? ": " + r.why : ""}`;
+      setLast(msg); ctx.toast(msg);
+      if (ctx.refresh) ctx.refresh(true);
+    } catch (e) { ctx.toast("Deckungsprüfung: " + e.message); }
+    setBusy(false);
+  };
+  return (
+    <button type="button" className="ir" disabled={busy} onClick={run}>
+      <span className="ico"><ShieldCheck /></span>
+      <span className="t"><span>Deckungsprüfung</span><b>{busy ? "Prüft …" : arm ? "Nochmal tippen – Karte jetzt prüfen" : last || "Karte jetzt prüfen · offener Betrag wird kurz reserviert"}</b></span>
+      {busy ? <Loader className="spin" /> : <ChevronRight />}
+    </button>
+  );
+}

@@ -170,10 +170,10 @@ async function info(email: string): Promise<{ available: boolean; test?: boolean
 }
 
 /** Mail „Karte abgelehnt – nichts abgebucht" nach abgelehnter Deckungsprüfung (max. 1× je 30 Min. je Kunde). */
-async function sendCoverageMail(email: string, amount: number, cur: string, label: string, reason: ReasonKey): Promise<boolean> {
+async function sendCoverageMail(email: string, amount: number, cur: string, label: string, reason: ReasonKey, force = false): Promise<boolean> {
   if (!pool) return false;
   const r = (await pool.query(`SELECT mailed_at FROM cust_cov_fail WHERE email=$1`, [email])).rows[0];
-  if (r?.mailed_at && Date.now() - new Date(r.mailed_at).getTime() < 30 * 60e3) return false;
+  if (!force && r?.mailed_at && Date.now() - new Date(r.mailed_at).getTime() < 30 * 60e3) return false;
   const o = (await pool.query(`SELECT id, name, lang, service FROM orders WHERE lower(email)=$1 AND COALESCE(status,'') <> 'storniert' ORDER BY created_at DESC LIMIT 1`, [email])).rows[0] || {};
   const lang = String(o.lang || "en").slice(0, 2);
   const props = { lang, name: o.name || "", amount: fmtReviewMoney(amount, cur), pm: label, reason: reasonText(lang, reason), dashUrl: await dashLink(email, lang), kind: (o.service === "reviews" ? "reviews" : "profile") as "reviews" | "profile" };
@@ -907,12 +907,23 @@ export async function coverageForNewOrder(email0: string, extra: number, extraCu
   return { ...cov, label: row.label || pmLabel(pm) };
 }
 /** Nach dem Speichern der Bestellung: Ergebnis vermerken; abgelehnt → Zahlungsart raus, Hinweis/Mail/Team. */
-export async function coverageForNewOrderDone(email0: string, orderId: string, cov: NewOrderCoverage | null): Promise<void> {
+export async function coverageForNewOrderDone(email0: string, orderId: string, cov: NewOrderCoverage | null, via: "order" | "admin" = "order"): Promise<void> {
   if (!cov || !pool) return;
   const email = String(email0 || "").trim().toLowerCase();
   const money = fmtReviewMoney(cov.amount, cov.cur);
+  const adm = via === "admin";
   if (cov.result !== "declined") {
-    await insertEvent({ orderId, email, type: "note", title: cov.result === "ok" ? `Deckungsprüfung bestanden (${money} reserviert und sofort freigegeben)` : `Deckungsprüfung übersprungen${cov.amount > 0 ? ` (${money})` : ""}`, detail: `Hinterlegte Zahlungsart ${cov.label}${cov.why ? " · " + cov.why : ""} · neue Bestellung`, auto: true }).catch(() => {});
+    await insertEvent({ orderId, email, type: "note", title: `Deckungsprüfung${adm ? " (Admin)" : ""} ${cov.result === "ok" ? `bestanden (${money} reserviert und sofort freigegeben)` : `übersprungen${cov.amount > 0 ? ` (${money})` : ""}`}`, detail: `Hinterlegte Zahlungsart ${cov.label}${cov.why ? " · " + cov.why : ""} · ${adm ? "im Admin angestoßen" : "neue Bestellung"}`, auto: !adm }).catch(() => {});
+    return;
+  }
+  if (adm) {
+    const reasonA = cov.reason || "bank";
+    await pool.query(`UPDATE cust_autopay SET pm=NULL, label=NULL, pm_type=NULL, last_error=$2, updated_at=now() WHERE email=$1`, [email, `Deckungsprüfung abgelehnt (${money}) – neue Zahlungsart nötig`]).catch(() => {});
+    await pool.query(`INSERT INTO cust_cov_fail (email, at, amount, cur, label, reason) VALUES ($1, now(), $2, $3, $4, $5)
+      ON CONFLICT (email) DO UPDATE SET at=now(), amount=EXCLUDED.amount, cur=EXCLUDED.cur, label=EXCLUDED.label, reason=EXCLUDED.reason`, [email, cov.amount, cov.cur, cov.label, reasonA]).catch(() => {});
+    await insertEvent({ orderId, email, type: "note", title: `Deckungsprüfung (Admin) abgelehnt (${money}) – Zahlungsart entfernt, Kunde muss neue Karte hinterlegen`, detail: `${cov.label} · ${cov.why || ""}`, auto: false }).catch(() => {});
+    void logCustEvent(email, "autopay_rejected", `Deckungsprüfung abgelehnt (Admin) · ${money}`, { amount: cov.amount, cur: cov.cur });
+    await sendCoverageMail(email, cov.amount, cov.cur, cov.label, reasonA, true).catch((e) => console.error("Mail „Karte abgelehnt“ (Admin-Prüfung) fehlgeschlagen", e));
     return;
   }
   const reason = cov.reason || "bank";
@@ -923,6 +934,24 @@ export async function coverageForNewOrderDone(email0: string, orderId: string, c
   void logCustEvent(email, "autopay_rejected", `Deckungsprüfung abgelehnt (neue Bestellung) · ${money}`, { amount: cov.amount, cur: cov.cur });
   await sendCoverageMail(email, cov.amount, cov.cur, cov.label, reason).catch((e) => console.error("Mail „Karte abgelehnt“ (neue Bestellung) fehlgeschlagen", e));
   void notifyTeam(`${isTestEmail(email) ? "TEST · " : ""}Deckungsprüfung abgelehnt · neue Bestellung`, `${email} · ${orderId} · ${cov.label} · ${money} · Auftrag wartet auf neue Zahlungsart`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "customer" });
+}
+
+/** Admin-Knopf „Deckungsprüfung" (23.11.2026): hinterlegte Zahlungsart jetzt über den offenen Auftragswert prüfen (fehlt der,
+ *  über den Wert des Auftrags). Abgelehnt → Zahlungsart raus, Kunde bekommt sofort die Mail „Karte abgelehnt" und muss im
+ *  Dashboard eine neue Karte hinterlegen (die wird wieder geprüft; offene Fehlschlag-Rechnungen werden dann sofort belastet). */
+export async function coverageAdminCheck(email0: string, orderId: string, fallback: number, cur: string): Promise<{ ok: true; cov: NewOrderCoverage; reasonText?: string } | { ok: false; error: string }> {
+  const email = String(email0 || "").trim().toLowerCase();
+  const k = keyFor(email);
+  if (!k || !pool) return { ok: false, error: "Automatisch bezahlen ist für diesen Kunden nicht freigeschaltet" };
+  const row = await rowOf(email).catch(() => null);
+  if (!row || !row.pm || row.mode !== k.mode) return { ok: false, error: "Kunde hat keine Zahlungsart hinterlegt" };
+  const pm = { id: row.pm, type: row.pm_type || "card" };
+  const ref = `adm-chk-${Date.now()}`;
+  let cov = await coverageCheck(email, k, row.customer, pm, { idem: ref });
+  if (cov.result === "skipped" && !(cov.amount > 0) && fallback > 0) cov = await coverageCheck(email, k, row.customer, pm, { extra: fallback, extraCur: cur, idem: ref });
+  const full: NewOrderCoverage = { ...cov, label: row.label || pmLabel(pm) };
+  await coverageForNewOrderDone(email, orderId, full, "admin");
+  return { ok: true, cov: full, ...(full.result === "declined" ? { reasonText: reasonText("de", full.reason || "bank") } : {}) };
 }
 
 /** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */
