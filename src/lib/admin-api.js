@@ -288,12 +288,12 @@ export async function fetchPayLinks() {
 
 /** Verschickt einen BESTEHENDEN Stripe-Zahlungslink an den Kunden.
  *  Entweder direkt per `url` (aus der Liste) oder per Szenario (Betrag-Match). */
-export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express, expressLabel, template, lang, url, celebrate, stage }) {
+export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express, expressLabel, template, lang, url, celebrate, stage, method, payTotal, preview }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express: !!express, expressLabel, template, lang, url, celebrate: !!celebrate, stage: stage || undefined }),
+    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express: !!express, expressLabel, template, lang, url, celebrate: !!celebrate, stage: stage || undefined, method: method || undefined, payTotal: payTotal || undefined, preview: preview === true ? true : undefined }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

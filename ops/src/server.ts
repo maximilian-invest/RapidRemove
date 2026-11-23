@@ -2209,8 +2209,11 @@ app.post("/admin/paylink", async (req, reply) => {
   const protection = clip(b.protection, 20) || "none";
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const express = b.express === true || b.express === "true" || b.express === 1 || b.express === "1";
-  const r = await resolvePayLink(b);
-  if (!r.url) return reply.code(r.code || 400).send({ ok: false, error: r.error, available: r.available });
+  // PayPal/Wise-Wunsch (10 % Rabatt) – wie bei den Bewertungen (23.11.2026, Maximilian): KEIN Stripe-Link, sondern
+  // rabattierter Betrag + PayPal-Button (paypal.me mit Betrag) bzw. Wise-Kontodaten. Danach laufen die PayPal-/Wise-Mahnungen automatisch.
+  const ppMethod = (clip(b.template, 40) || "zahlungslink") === "zahlungslink" && (b.method === "paypal" || b.method === "wise") ? (b.method as "paypal" | "wise") : undefined;
+  const r = ppMethod ? { url: "" } as Awaited<ReturnType<typeof resolvePayLink>> : await resolvePayLink(b);
+  if (!ppMethod && !r.url) return reply.code(r.code || 400).send({ ok: false, error: r.error, available: r.available });
   const url = r.url;
   const orderId = clip(b.orderId, 40);
   let total = Number(b.total) || 0;
@@ -2233,18 +2236,26 @@ app.post("/admin/paylink", async (req, reply) => {
     // Mahnstufe 1–4 (nur für die Mahnung). Default 1 (freundliche Zahlungserinnerung).
     const stage = tplKey === "mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
     const dueDate = tplKey === "mahnung" ? clip(b.dueDate, 40) || undefined : undefined; // Zahlungsziel abgelaufen (automatisch)
-    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage, dueDate };
+    // PayPal/Wise: rabattierter Betrag (vom Admin, sonst Gesamt −10 %), paypal.me-Link bzw. Wise-Konto des Kunden.
+    const ppNum = ppMethod ? Math.round((Number(b.payTotal) > 0 ? Number(b.payTotal) : total * 0.9) * 100) / 100 : 0;
+    const bankLines = ppMethod === "wise" ? wiseBankFor(to) : [];
+    if (ppMethod === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
+    const payTotal = ppMethod ? fmtReviewMoney(ppNum, currency === "usd" ? "usd" : "eur") : "";
+    const ppUrl = ppMethod === "paypal" ? `https://www.paypal.me/${(process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "")}/${ppNum % 1 ? ppNum.toFixed(2) : ppNum}${currency === "usd" ? "USD" : "EUR"}` : "";
+    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage, dueDate,
+      ...(ppMethod ? { method: ppMethod, payTotal, ppUrl, bankLines } : {}) };
     const html = await render(React.createElement(t.component, props as any));
     // Vorschau (Admin neu): genau die Mail, wie sie der Kunde bekäme – ohne Versand/Protokoll.
     if (b.preview === true) return { ok: true, preview: true, html, subject: t.subject(props as any), url };
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
     const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
-    const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})${b.auto === true ? " · automatisch" : ""}`) : "Zahlungslink gesendet";
+    const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})${b.auto === true ? " · automatisch" : ""}`)
+      : ppMethod ? `Zahlungslink gesendet (${ppMethod === "wise" ? "Wise" : "PayPal"}, −10 %)` : "Zahlungslink gesendet";
     // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
     // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
     // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
-    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title, detail: ppMethod ? `${money} − 10 % = ${payTotal} via ${ppMethod === "wise" ? "Wise" : "PayPal"}${ppMethod === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail"} · ${service}${express ? "+express" : ""}|${protection} · an ${to}` : `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
 
     // 🤑 Hype-Push fürs Team, wenn ein ECHTER Zahlungslink rausgeht (NICHT bei Mahnung/Storno).
     // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.

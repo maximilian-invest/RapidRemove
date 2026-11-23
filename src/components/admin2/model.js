@@ -225,7 +225,7 @@ export function computeOffer(o) {
   const subReg = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 12 * 100) / 100, subPP = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 10 * 100) / 100;
   const regTotal = Math.round((oneTimeReg + subReg) * 100) / 100, ppTotal = Math.round((oneTimePP + subPP) * 100) / 100;
   const m = (n) => money(n, c);
-  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub && !yearly ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null }; // Jahresabo: keine „12 zum Preis von 10"-Zeile
+  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub && !yearly ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null, regNum: regTotal, ppNum: ppTotal, monthlySub: isSub && !yearly }; // Jahresabo: keine „12 zum Preis von 10"-Zeile
 }
 
 /** Vorlagen-Nutzung (gleicher Speicher wie das alte Admin → „Am häufigsten“ bleibt konsistent). */

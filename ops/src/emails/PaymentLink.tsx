@@ -2,7 +2,8 @@
    Betrag, Schutz-Label, Fälligkeit und Stripe-Link kommen als Parameter rein. */
 import * as React from "react";
 import { Column, Hr, Row, Section, Text } from "@react-email/components";
-import { EmailShell, P, CtaButton, brand } from "./components";
+import { EmailShell, P, CtaButton, NoteBox, brand } from "./components";
+import { VIA } from "./LoeschbestaetigungReviews";
 
 export interface PaymentLinkProps {
   lang?: "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
@@ -22,6 +23,15 @@ export interface PaymentLinkProps {
    *  wird die reine Lösch-Formulierung durch „gelöscht und neu aufgesetzt – frischer
    *  Start mit 0 Bewertungen" ersetzt. Alle anderen Werte → Standard-Lösch-Text. */
   service?: string;
+  /** Kunde will per PayPal/Wise zahlen (10 % Rabatt) → KEIN Stripe-Link, sondern wie bei den Bewertungen:
+   *  rabattierter Betrag + PayPal-Button (paypal.me mit Betrag, „Freunde & Familie") bzw. Wise-Kontodaten (23.11.2026). */
+  method?: "paypal" | "wise";
+  /** Rabattierter Betrag, vorformatiert. */
+  payTotal?: string;
+  /** PayPal.me-Link mit Betrag. */
+  ppUrl?: string;
+  /** Wise-Kontodaten, je Zeile „Bezeichnung: Wert". */
+  bankLines?: string[];
 }
 
 const T = {
@@ -279,8 +289,10 @@ export function subject(p: PaymentLinkProps): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl, service }: PaymentLinkProps) {
+export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl, service, method, payTotal = "", ppUrl = "", bankLines = [] }: PaymentLinkProps) {
   const base = T[lang] || T.de;
+  const v = VIA[lang] || VIA.en;
+  const via = (x: string) => x.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total);
   const t = service === "reset" ? { ...base, ...(RESET[lang] || RESET.de) } : base;
   const label = { fontSize: 14, fontWeight: 700, color: brand.text, margin: 0 } as const;
   const val = { fontSize: 14, color: brand.text, margin: 0 } as const;
@@ -295,6 +307,7 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, expre
         <Column style={{ textAlign: "right" }}><Text style={{ fontSize: 26, fontWeight: 700, color: brand.accent, margin: "8px 0" }}>{total}</Text></Column>
       </Row>
       <Hr style={{ borderColor: brand.hr, margin: "4px 0 14px" }} />
+      {method ? <P><strong style={{ color: brand.tintText }}>{via(v.disc)}</strong></P> : null}
 
       {expressLabel ? (
         <Row style={{ marginBottom: 8 }}>
@@ -316,9 +329,30 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, expre
         <Column><Text style={val}>{due}</Text></Column>
       </Row>
 
-      <Section style={{ textAlign: "center", margin: "22px 0 14px" }}>
-        <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton>
-      </Section>
+      {method === "paypal" ? (
+        ppUrl ? (
+          <>
+            <P>{v.ppNow}</P>
+            <Section style={{ textAlign: "center", margin: "10px 0 14px" }}>
+              <CtaButton variant="pay" href={ppUrl} full>{v.ppBtn}</CtaButton>
+            </Section>
+            <P><strong>{v.pp2}</strong></P>
+            <P muted>{v.conf}</P>
+          </>
+        ) : <P>{v.pp1}<br /><strong>{v.pp2}</strong></P>
+      ) : method === "wise" ? (
+        <>
+          <NoteBox>
+            <strong>{via(v.wise1)}</strong><br />
+            {bankLines.map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
+          </NoteBox>
+          <P muted>{v.conf}</P>
+        </>
+      ) : (
+        <Section style={{ textAlign: "center", margin: "22px 0 14px" }}>
+          <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton>
+        </Section>
+      )}
 
       <P><strong>{t.importantBold}</strong>{t.important}</P>
     </EmailShell>
