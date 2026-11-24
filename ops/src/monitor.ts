@@ -611,7 +611,7 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
       SELECT p.*, lc.id AS last_shot_id, ln.note AS last_note
         FROM monitor_profiles p
         LEFT JOIN LATERAL (SELECT id FROM monitor_checks c WHERE c.profile_id = p.id AND c.img IS NOT NULL AND c.result = 'found' ORDER BY checked_at DESC LIMIT 1) lc ON true
-        LEFT JOIN LATERAL (SELECT note FROM monitor_checks c WHERE c.profile_id = p.id ORDER BY checked_at DESC LIMIT 1) ln ON true
+        LEFT JOIN LATERAL (SELECT note FROM monitor_checks c WHERE c.profile_id = p.id AND c.result <> 'contact' ORDER BY checked_at DESC LIMIT 1) ln ON true
       WHERE p.source NOT IN ('deleted','archived')
        ORDER BY p.id`);
     const last = await pool!.query(`SELECT id, kind, started_at, finished_at, total, done, found, failed, cancelled FROM monitor_runs WHERE finished_at IS NOT NULL ORDER BY started_at DESC LIMIT 1`);
@@ -673,6 +673,17 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
       await addCheck(id, "resumed", "Überwachung fortgesetzt · " + actor, { actor });
     } else if (a === "note") {
       await pool!.query(`UPDATE monitor_profiles SET note = $2 WHERE id = $1`, [id, String(b.note || "").slice(0, 2000)]);
+    } else if (a === "contact") {
+      // Kunden-Kontakt nachtragen/ändern – v. a. für manuell aufgenommene Profile ohne Auftrag (sonst kein „Informieren" möglich).
+      const email = String(b.custEmail || "").trim().toLowerCase().slice(0, 200);
+      if (email && !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/.test(email)) return reply.code(400).send({ ok: false, error: "Ungültige E-Mail-Adresse" });
+      const name = (b.custName === undefined ? String(p.cust_name || "") : String(b.custName || "")).trim().slice(0, 120);
+      const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
+      const lang = LANGS.includes(String(b.lang)) ? String(b.lang) : (p.lang || "de");
+      await pool!.query(`UPDATE monitor_profiles SET cust_email = $2, cust_name = $3, lang = $4 WHERE id = $1`, [id, email || null, name || null, lang]);
+      if (email !== (p.cust_email || "") || name !== (p.cust_name || "") || lang !== (p.lang || "de")) {
+        await addCheck(id, "contact", "Kontakt hinterlegt: " + (email || "—") + (name ? " · " + name : "") + " · " + lang + " · " + actor, { actor });
+      }
     } else if (a === "type") {
       const t = b.type === "lifetime" ? "lifetime" : "monthly";
       await pool!.query(`UPDATE monitor_profiles SET type = $2 WHERE id = $1`, [id, t]);

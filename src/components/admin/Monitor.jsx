@@ -88,7 +88,7 @@ function Thumb({ p }) {
 const HM = {
   ok: ["ok", "checkC", "Nicht gefunden"], found: ["bad", "alert", "Wieder erschienen"], re: ["info", "redo", "Erneut gelöscht"],
   fail: ["warn", "off", "Prüfung fehlgeschlagen"], mail: ["", "mail", "Kunde informiert"], added: ["", "plus", "Hinzugefügt"],
-  paused: ["", "pause", "Pausiert"], resumed: ["", "play", "Fortgesetzt"],
+  paused: ["", "pause", "Pausiert"], resumed: ["", "play", "Fortgesetzt"], contact: ["", "mail", "Kontakt hinterlegt"],
 };
 
 function Drawer({ p, onClose, onChanged, toast, onOpenOrder, scanning }) {

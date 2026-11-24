@@ -7,7 +7,7 @@ import useLive from "@/lib/useLive";
 import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
   RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake, FlaskConical,
-  Search, Settings, LogOut, Activity as ActIcon,
+  Search, Settings, LogOut, Activity as ActIcon, Globe,
   MessageCircle as MsgCircle,
 } from "lucide-react";
 import {
@@ -532,6 +532,36 @@ function AssignSheet({ o, keys, ctx, close }) {
   );
 }
 
+/* Monitor → „Informieren": E-Mail/Name/Sprache direkt hier hinterlegen (manuell aufgenommene Profile haben keinen Auftrag → keine Mail).
+   Geänderter Kontakt wird vor dem Versand am Monitor-Profil gespeichert. */
+const MON_LANGS = [["de", "Deutsch"], ["en", "Englisch"], ["fr", "Französisch"], ["it", "Italienisch"], ["es", "Spanisch"], ["nl", "Niederländisch"], ["pt", "Portugiesisch"], ["sv", "Schwedisch"], ["da", "Dänisch"], ["no", "Norwegisch"], ["ja", "Japanisch"]];
+const MAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
+function MonInform({ p, busy, run, close }) {
+  const [email, setEmail] = React.useState(p.custEmail || "");
+  const [name, setName] = React.useState(p.custName || "");
+  const [lang, setLang] = React.useState(p.lang || "de");
+  const em = email.trim().toLowerCase();
+  const valid = MAIL_RE.test(em);
+  const changed = em !== (p.custEmail || "") || name.trim() !== (p.custName || "") || lang !== (p.lang || "de");
+  const save = () => monitorAction(p.id, "contact", { custEmail: em, custName: name.trim(), lang });
+  const send = (kind, msg) => run(async () => { if (changed) await save(); await monitorInform(p.id, kind); }, msg + " · " + em);
+  return (
+    <><p className="shp">{p.custEmail ? "Kunde per Mail informieren – Adresse bei Bedarf anpassen." : "Für dieses Profil ist noch keine E-Mail hinterlegt (manuell aufgenommen). Hier eintragen – wird am Profil gespeichert."}</p>
+      <div className="usrch in-sheet" style={{ marginBottom: 8 }}><Mail /><input type="email" inputMode="email" autoComplete="off" placeholder="E-Mail des Kunden" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus={!p.custEmail} /></div>
+      <div className="usrch in-sheet" style={{ marginBottom: 8 }}><User /><input placeholder="Name (optional)" value={name} onChange={(e) => setName(e.target.value)} /></div>
+      <div className="usrch in-sheet" style={{ marginBottom: 12 }}><Globe /><select value={lang} onChange={(e) => setLang(e.target.value)} style={{ flex: 1, border: 0, background: "transparent", font: "inherit", outline: "none" }} aria-label="Sprache der Mail">{MON_LANGS.map(([k, l]) => <option key={k} value={k}>Mail auf {l}</option>)}</select></div>
+      {email && !valid ? <p className="shp" style={{ color: "var(--danger)", marginTop: -4 }}>E-Mail-Adresse prüfen</p> : null}
+      <div className="opts">
+        <button type="button" className="aopt" disabled={busy || !valid} onClick={() => send("removed", "Kunde informiert · bereits wieder entfernt")}><span className="ico"><CheckCircle2 /></span><span><b>Bereits wieder entfernt</b><br /><small>Mit Screenshot{p.lastShotId ? "" : " (keiner vorhanden)"} + Link zum Profil · Status → Erneut entfernt</small></span></button>
+        <button type="button" className="aopt" disabled={busy || !valid} onClick={() => send(undefined, "Kunde informiert")}><span className="ico"><Mail /></span><span><b>Wieder online – wir kümmern uns</b><br /><small>Ohne Screenshot · Löschung läuft noch</small></span></button>
+      </div>
+      <div className="ctas2">
+        <button type="button" className="cta gh" onClick={close}>Abbrechen</button>
+        {changed && (valid || !em) ? <button type="button" className="cta gh" disabled={busy} onClick={() => run(save, em ? "Kontakt gespeichert" : "E-Mail entfernt")}>Nur speichern</button> : null}
+      </div></>
+  );
+}
+
 function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
   const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now, doStatus, reload, closeDrawer } = ctx; // doStatus/reload/closeDrawer: „Löschung abgeschlossen & abbuchen"
   const [cat, setCat] = React.useState(null);
@@ -747,18 +777,13 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         <><h3 style={{ paddingBottom: 2 }}>{p.name}</h3><p className="shp" style={{ color: s[1], fontWeight: 600 }}>{s[0]} · zuletzt {fmtDT(p.lastCheckAt || p.foundAt)}</p>
           {p.status === "fail" && p.lastNote ? <p className="shp" style={{ fontSize: 13, wordBreak: "break-word" }}>{p.lastNote}</p> : null}
           {sheet.inform ? (
-            <><p className="shp">Kunde {p.custName || ""} {p.custEmail ? `(${p.custEmail})` : ""} per Mail informieren – welche Mail?</p>
-              <div className="opts">
-                <Opt disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id, "removed"), "Kunde informiert · bereits wieder entfernt")}><span className="ico"><CheckCircle2 /></span><span><b>Bereits wieder entfernt</b><br /><small>Mit Screenshot{p.lastShotId ? "" : " (keiner vorhanden)"} + Link zum Profil · Status → Erneut entfernt</small></span></Opt>
-                <Opt disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id), "Kunde informiert")}><span className="ico"><Mail /></span><span><b>Wieder online – wir kümmern uns</b><br /><small>Ohne Screenshot · Löschung läuft noch</small></span></Opt>
-              </div>
-              <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button></div></>
+            <MonInform key={p.id} p={p} busy={busy} run={run} close={close} />
           ) : (
             <div className="opts">
               <Opt onClick={() => (p.lastShotId ? openViewer({ src: monitorShotUrl(p.lastShotId), dl: monitorShotUrl(p.lastShotId, true), title: p.name, sub: "Screenshot · " + fmtDT(p.foundAt || p.lastCheckAt) }) : toast("Kein Screenshot vorhanden"))}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
               <Opt onClick={() => { close(); monScan(p.id); }}><span className="ico"><RefreshCw /></span>Jetzt prüfen</Opt>
               {p.mapsUrl || p.foundUrl ? <a className="aopt" href={p.foundUrl || p.mapsUrl} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span>In Google Maps öffnen</a> : null}
-              {p.custEmail ? <Opt onClick={() => ctx.openSheet({ kind: "mon", id: p.id, inform: true })}><span className="ico"><Mail /></span>Kunde informieren</Opt> : null}
+              <Opt onClick={() => ctx.openSheet({ kind: "mon", id: p.id, inform: true })}><span className="ico"><Mail /></span><span>Kunde informieren<br /><small>{p.custEmail || "Noch keine E-Mail – im nächsten Schritt hinterlegen"}</small></span></Opt>
               <Opt onClick={() => run(() => monitorAction(p.id, paused ? "resume" : "pause"), paused ? "Fortgesetzt" : "Pausiert")}><span className="ico">{paused ? <Play /> : <Pause />}</span>{paused ? "Fortsetzen" : "Pausieren"}</Opt>
             </div>
           )}</>
