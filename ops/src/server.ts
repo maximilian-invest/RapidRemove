@@ -527,12 +527,15 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Bulk-Upload: geht IMMER erst nach hinterlegter Zahlungsart zum Partner (auch bei PayPal/Wise-Wunsch).
   let payGate = isReviews && (bulk || !["wise", "paypal"].includes(String(b.payPref || ""))) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
-  // Profil-Löschung (10/2026): nicht deutschsprachige Kunden + alle Schweizer → gleicher Ablauf wie Einzelbewertungen:
+  // Profil-Löschung (10/2026, seit 25.11.2026 für ALLE Kunden): gleicher Ablauf wie Einzelbewertungen:
   // Konto + Dashboard (direkt nach der Bestellung), Zahlungsart hinterlegen, abgebucht wird erst bei „Löschung abgeschlossen"
   // (inkl. Schutz-Abo als echtes Abo). Wise/PayPal-Zahler (−10 %) zahlen weiter separat. Deutschsprachige DE/AT: unverändert.
   const isProfileOrder = !isReviews && !isPress;
   const profCH = ruleCountry === "CH" || /(schweiz|switzerland|suisse|svizzera)\s*$/i.test(String(b.addr || ""));
-  const profDash = isProfileOrder && !!email && (tlang !== "de" || profCH);
+  // Seit 25.11.2026 (Maximilian): auch deutschsprachige DE/AT-Kunden → Dashboard + Zahlungsart hinterlegen + Abbuchung bei Löschung
+  // (vorher: nur nicht deutschsprachige + Schweiz; DE/AT bekamen den Zahlungslink nach der Löschung). profCH bleibt nur als Info.
+  void profCH;
+  const profDash = isProfileOrder && !!email;
   const profAuto = profDash && !["wise", "paypal"].includes(String(b.payPref || "")) && autopayAvailable(email);
   let profGate = profAuto ? !(await hasSavedMethod(email).catch(() => false)) : false;
   if (profAuto) (b as Record<string, unknown>).payMethod = "auto";
