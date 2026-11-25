@@ -16,6 +16,8 @@ export function blockedOf(raw: Record<string, unknown> | null | undefined): { al
   let all = false;
   if (rs && rs.status === "pending") { why.push("Gründe"); if (Array.isArray(rs.keys)) rs.keys.forEach((k) => keys.add(k)); else all = true; }
   if (g && g.status === "pending") { why.push("Zahlungsart"); if (Array.isArray(g.keys)) g.keys.forEach((k) => keys.add(k)); else all = true; }
+  const pp = raw?.prepay as Gate;
+  if (pp && pp.status === "pending") { why.push("Vorauszahlung"); all = true; } // PayPal/Wise-Vorauszahlung (25.11.2026): erst nach Zahlungseingang
   if (v && v.status !== "ok") { why.push("Inhaber-Nachweis"); if (Array.isArray(v.keys)) v.keys.forEach((k) => keys.add(k)); else all = true; }
   return { all, keys, why };
 }

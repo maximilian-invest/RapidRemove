@@ -985,6 +985,45 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
     return si ? si : null;
   };
 
+  // Vorauszahlung PayPal/Wise → „Zahlen nach der Löschung" (25.11.2026, Maximilian): Kunde wechselt im Dashboard.
+  // Ohne Rabatt (regulärer Preis = amount), Zahlungsart hinterlegen, abgebucht wird bei „Löschung abgeschlossen".
+  // Zahlungsart schon da → Deckungsprüfung, dann Start; sonst payGate → Start nach dem Hinterlegen (releasePayGates).
+  app.post("/cust/prepay/switch", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const si = await auth(b);
+    if (!si || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (si.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
+    const id = String(b.orderId || "").slice(0, 40);
+    const email = si.email.toLowerCase();
+    const o = (await pool.query(`SELECT id, status, service, country, raw FROM orders WHERE id=$1 AND lower(email)=$2`, [id, email])).rows[0] as { id: string; status: string | null; service: string | null; country: string | null; raw: Record<string, any> | null } | undefined;
+    if (!o) return reply.code(404).send({ ok: false, error: "not_found" });
+    const raw = o.raw || {};
+    const pp = raw.prepay as { status?: string; method?: string; amount?: number; regular?: number; cur?: string } | undefined;
+    if (!pp || pp.status !== "pending" || o.status === "storniert") return reply.code(400).send({ ok: false, error: "not_pending" });
+    const now = new Date().toISOString();
+    const avail = autopayAvailable(email);
+    const saved = avail && await hasSavedMethod(email);
+    await setOrderRawField(id, "prepay", { ...pp, status: "switched", switchedAt: now });
+    await setOrderRawField(id, "payPref", "none");
+    if (avail) {
+      await setOrderRawField(id, "payMethod", "auto");
+      if (!saved) await setOrderRawField(id, "payGate", { status: "pending", at: now, prepaySwitch: true });
+    }
+    const via = pp.method === "wise" ? "Wise" : "PayPal";
+    await insertEvent({ orderId: id, email, type: "note", title: `Kunde zahlt doch nach der Löschung (statt ${via}-Vorauszahlung, ohne Rabatt)`, detail: avail ? (saved ? "Zahlungsart schon hinterlegt → Deckungsprüfung, dann Start · Abbuchung bei „Löschung abgeschlossen\"" : "Wartet auf Zahlungsart im Dashboard → startet danach automatisch · Abbuchung bei „Löschung abgeschlossen\"") : "Automatisch bezahlen nicht verfügbar → Zahlungslink nach der Löschung", auto: true }).catch(() => {});
+    void logCustEvent(email, "prepay_switch", `Vorauszahlung ${via} → Zahlung nach der Löschung`, { orderId: id });
+    void notifyTeam(`${isTestEmail(email) ? "TEST · " : ""}Kunde wechselt: Zahlung nach der Löschung`, `${email} · ${id} · statt ${via}-Vorauszahlung, regulärer Preis${avail && !saved ? " · wartet auf Zahlungsart" : ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(id)}`, { kind: "customer" });
+    let declined = false;
+    if (avail && saved) {
+      const cov = await coverageForNewOrder(email, 0, pp.cur || (o.country === "US" ? "usd" : "eur"), `sw-${id}`).catch(() => null);
+      await coverageForNewOrderDone(email, id, cov).catch(() => {});
+      declined = cov?.result === "declined";
+      if (declined) await setOrderRawField(id, "payGate", { status: "pending", at: now, cov: true, prepaySwitch: true });
+      else await startOrderIfReady(id).catch(() => 0);
+    } else if (!avail) await startOrderIfReady(id).catch(() => 0);
+    return { ok: true, needPm: avail && (!saved || declined), declined };
+  });
+
   // Schritt 1: Stripe Checkout (mode=setup) öffnen.
   app.post("/cust/autopay/start", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;

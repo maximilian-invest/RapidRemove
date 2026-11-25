@@ -17,7 +17,7 @@ function useCountUp(target, run) {
   return v;
 }
 
-export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regular, rows, ppUrl, ppHandle, wiseRef, showToast, pct = 10, prepay = false, lang = "en" }) {
+export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regular, rows, ppUrl, ppHandle, wiseRef, showToast, pct = 10, prepay = false, lang = "en", onSwitch }) {
   const p = ["en", "ja"].includes(lang) ? String(pct) : String(pct).replace(".", ","); // Rabatt: Altbestand 10 %, Vorauszahlung 12,5 %
   const [copied, setCopied] = React.useState("");
   const ref = React.useRef(null);
@@ -100,6 +100,7 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
               <span><Mail />{T("tr2")}</span>
               {!isPP ? <span><Lock />{T("tr3")}</span> : null}
             </div>
+            {prepay && onSwitch ? <button type="button" className="ps-switch" onClick={onSwitch} data-track="Vorauszahlung → nach Löschung" style={{ display: "block", margin: "14px auto 0", background: "none", border: 0, padding: "6px 8px", font: "inherit", fontSize: 13, color: "inherit", opacity: 0.7, textDecoration: "underline", cursor: "pointer" }}>{T("prepSwitch")}</button> : null}
             <p className="ps-legal">RapidRemove · Simple Solution OG · Salzgasse 2, 5400 Hallein, Österreich</p>
           </>
         ) : null}

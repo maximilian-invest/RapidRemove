@@ -1561,6 +1561,7 @@ export default function CustomerDashboard() {
   const [chatOpen, setChatOpen] = React.useState(false);
   const [wiseOpen, setWiseOpen] = React.useState(false);
   const [prepId, setPrepId] = React.useState(null); // Vorauszahlung PayPal/Wise: Zahl-Blatt für diesen Auftrag
+  const [swId, setSwId] = React.useState(null);     // „Zahlen nach der Löschung": Erklär-Blatt für diesen Auftrag
   const [payVia, setPayVia] = React.useState("");
   const [apArm, setApArm] = React.useState(false); // „Entfernen" zweimal tippen
   const [billOpen, setBillOpen] = React.useState(false); // Konto → Zahlung & Abrechnung
@@ -1753,6 +1754,21 @@ export default function CustomerDashboard() {
   // Vorauszahlung PayPal/Wise (25.11.2026): Profil-Auftrag startet erst nach Zahlungseingang → Hinweis + Zahl-Blatt.
   const prepNeed = orders.filter((o) => !o.cancelled && o.prepay && o.prepay.status === "pending" && o.prepay.amount > 0);
   const prepO = prepNeed.find((o) => o.id === prepId) || null;
+  const swO = orders.find((o) => o.id === swId && o.prepay && o.prepay.status === "pending") || null;
+  // Vorauszahlung → „Zahlen nach der Löschung" (ohne Rabatt, Zahlungsart hinterlegen, Abbuchung bei Löschung).
+  const doSwitch = async () => {
+    if (!swO || busy) return;
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy("sw");
+    try {
+      const r = await call("prepay/switch", { token, orderId: swO.id });
+      track("prepay_switch", "Vorauszahlung → nach Löschung · " + swO.id);
+      setSwId(null); setBusy("");
+      showToast(T("swOk"));
+      if (r.needPm) { await apStart(); return; } // gleich zum Hinterlegen der Zahlungsart (Stripe), startet danach automatisch
+      load(token);
+    } catch (e) { showToast(T("genericErr"), true); setBusy(""); load(token); }
+  };
   const openPrep = (o) => { track("payment_open", `Vorauszahlung ${o.prepay.method === "wise" ? "Wise" : "PayPal"} · ${o.prepay.amount} ${String(o.prepay.cur).toUpperCase()} · ${o.id}`, { via: o.prepay.method }); setPrepId(o.id); };
   const homeOrders = orders.filter((o) => ordActive(o, data.autopay));
   const doneOrders = orders.filter((o) => !ordActive(o, data.autopay));
@@ -2508,7 +2524,25 @@ export default function CustomerDashboard() {
       {repPrev ? <RepSearchSheet open={repSearch} initial={repGuess} rep={rep} showToast={showToast} onClose={() => setRepSearch(false)} onPicked={() => { setRepSearch(false); goTab("rep"); }} /> : null}
       <PaySheet open={!!prepO} onClose={() => setPrepId(null)} T={T} lang={LANG} via={prepO && prepO.prepay.method === "wise" ? "wise" : "paypal"} amountNum={prepO ? prepO.prepay.amount : 0} regular={prepO ? prepO.prepay.regular : 0}
         fmt={(v) => money(v, prepO ? prepO.prepay.cur : payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
-        ppUrl={prepO ? `https://www.paypal.me/${PAYPAL_ME}/${prepO.prepay.amount % 1 ? prepO.prepay.amount.toFixed(2) : prepO.prepay.amount}${String(prepO.prepay.cur).toUpperCase()}` : ""} ppHandle={PAYPAL_ME} wiseRef={prepO ? prepO.id : ""} showToast={showToast} pct={prepO ? prepO.prepay.pct : 12.5} prepay />
+        ppUrl={prepO ? `https://www.paypal.me/${PAYPAL_ME}/${prepO.prepay.amount % 1 ? prepO.prepay.amount.toFixed(2) : prepO.prepay.amount}${String(prepO.prepay.cur).toUpperCase()}` : ""} ppHandle={PAYPAL_ME} wiseRef={prepO ? prepO.id : ""} showToast={showToast} pct={prepO ? prepO.prepay.pct : 12.5} prepay
+        onSwitch={prepO ? () => { const id = prepO.id; setPrepId(null); setSwId(id); } : undefined} />
+      <div className={"bg" + (swO ? " show" : "")} onClick={() => setSwId(null)} />
+      <div className={"psheet" + (swO ? " show" : "")} aria-hidden={!swO} role="dialog" aria-label={T("swT")}>
+        {swO ? (
+          <>
+            <div className="grab" aria-hidden="true" />
+            <div className="ps-top"><span className="ps-via">{T("pTag")}</span><button type="button" className="ps-x" onClick={() => setSwId(null)} aria-label={T("close")}><X /></button></div>
+            <div className="ps-head"><b className="ps-amt" style={{ fontSize: 24 }}>{T("swT")}</b></div>
+            <ol className="ps-steps">
+              <li><i>1</i><span>{T("sw1", { amount: money(swO.prepay.regular || 0, swO.prepay.cur) })}</span></li>
+              <li><i>2</i><span>{T("sw2")}</span></li>
+              <li><i>3</i><span>{T("sw3")}</span></li>
+            </ol>
+            <button type="button" className="ps-cta" style={{ width: "100%", border: 0, cursor: "pointer" }} disabled={!!busy} onClick={doSwitch} data-track="Nach Löschung zahlen · bestätigt">{busy === "sw" || busy === "ap" ? <Loader className="spin" /> : null}{T("swGo")}</button>
+            <button type="button" className="ff-back" style={{ display: "block", margin: "10px auto 0" }} onClick={() => { const id = swO.id; setSwId(null); setPrepId(id); }}>{T("swBack")}</button>
+          </>
+        ) : null}
+      </div>
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
