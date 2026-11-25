@@ -3,7 +3,8 @@
 import * as React from "react";
 import { Column, Hr, Row, Section, Text } from "@react-email/components";
 import { EmailShell, P, CtaButton, NoteBox, brand } from "./components";
-import { VIA } from "./LoeschbestaetigungReviews";
+import { VIA, fmtPct } from "./LoeschbestaetigungReviews";
+import { PAID } from "./Prepay";
 
 export interface PaymentLinkProps {
   lang?: "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
@@ -28,6 +29,10 @@ export interface PaymentLinkProps {
   method?: "paypal" | "wise";
   /** Rabattierter Betrag, vorformatiert. */
   payTotal?: string;
+  /** Rabatt in % (Standard 10 = Altbestand). */
+  pct?: number;
+  /** Auftrag wurde VORAB per PayPal/Wise bezahlt (25.11.2026) → Löschbestätigung ohne Zahlungsaufforderung; total = bezahlter Betrag. */
+  paidVia?: "paypal" | "wise";
   /** PayPal.me-Link mit Betrag. */
   ppUrl?: string;
   /** Wise-Kontodaten, je Zeile „Bezeichnung: Wert". */
@@ -286,24 +291,25 @@ const RESET: Record<string, { preview: string; introBold: string; important: str
 };
 
 export function subject(p: PaymentLinkProps): string {
-  return (T[p.lang || "de"] || T.de).subject;
+  const t = T[p.lang || "de"] || T.de;
+  return p.paidVia ? t.title.replace(/\s*✓\s*$/, "") + " ✓" : t.subject; // vorausbezahlt: keine „Rechnung"
 }
 
-export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl, service, method, payTotal = "", ppUrl = "", bankLines = [] }: PaymentLinkProps) {
+export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl, service, method, payTotal = "", pct, ppUrl = "", bankLines = [], paidVia }: PaymentLinkProps) {
   const base = T[lang] || T.de;
   const v = VIA[lang] || VIA.en;
-  const via = (x: string) => x.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total);
+  const via = (x: string) => x.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{p}", fmtPct(lang, pct)).replace("{t}", payTotal || total);
   const t = service === "reset" ? { ...base, ...(RESET[lang] || RESET.de) } : base;
   const label = { fontSize: 14, fontWeight: 700, color: brand.text, margin: 0 } as const;
   const val = { fontSize: 14, color: brand.text, margin: 0 } as const;
   return (
-    <EmailShell preview={t.preview} title={t.title}>
+    <EmailShell preview={paidVia ? (PAID[lang] || PAID.en).note.replace("{m}", paidVia === "wise" ? "Wise" : "PayPal") : t.preview} title={t.title}>
       <P><strong>{t.greeting}</strong></P>
       <P>{t.intro}<strong>{t.introBold}</strong></P>
 
       <Hr style={{ borderColor: brand.hr, margin: "8px 0 4px" }} />
       <Row>
-        <Column><Text style={{ fontSize: 26, fontWeight: 700, color: brand.text, margin: "8px 0" }}>{t.total}</Text></Column>
+        <Column><Text style={{ fontSize: 26, fontWeight: 700, color: brand.text, margin: "8px 0" }}>{paidVia ? (PAID[lang] || PAID.en).total : t.total}</Text></Column>
         <Column style={{ textAlign: "right" }}><Text style={{ fontSize: 26, fontWeight: 700, color: brand.accent, margin: "8px 0" }}>{total}</Text></Column>
       </Row>
       <Hr style={{ borderColor: brand.hr, margin: "4px 0 14px" }} />
@@ -324,12 +330,16 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, expre
           </Text>
         </Column>
       </Row>
-      <Row>
-        <Column style={{ width: "42%", verticalAlign: "top" }}><Text style={label}>{t.due}</Text></Column>
-        <Column><Text style={val}>{due}</Text></Column>
-      </Row>
+      {paidVia ? null : (
+        <Row>
+          <Column style={{ width: "42%", verticalAlign: "top" }}><Text style={label}>{t.due}</Text></Column>
+          <Column><Text style={val}>{due}</Text></Column>
+        </Row>
+      )}
 
-      {method === "paypal" ? (
+      {paidVia ? (
+        <NoteBox><strong>{(PAID[lang] || PAID.en).note.replace("{m}", paidVia === "wise" ? "Wise" : "PayPal")}</strong></NoteBox>
+      ) : method === "paypal" ? (
         ppUrl ? (
           <>
             <P>{v.ppNow}</P>
@@ -354,7 +364,7 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, expre
         </Section>
       )}
 
-      <P><strong>{t.importantBold}</strong>{t.important}</P>
+      {paidVia ? null : <P><strong>{t.importantBold}</strong>{t.important}</P>}
     </EmailShell>
   );
 }

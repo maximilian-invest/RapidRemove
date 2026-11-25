@@ -1560,6 +1560,7 @@ export default function CustomerDashboard() {
   const [offerPk, setOfferPk] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
   const [wiseOpen, setWiseOpen] = React.useState(false);
+  const [prepId, setPrepId] = React.useState(null); // Vorauszahlung PayPal/Wise: Zahl-Blatt für diesen Auftrag
   const [payVia, setPayVia] = React.useState("");
   const [apArm, setApArm] = React.useState(false); // „Entfernen" zweimal tippen
   const [billOpen, setBillOpen] = React.useState(false); // Konto → Zahlung & Abrechnung
@@ -1749,6 +1750,10 @@ export default function CustomerDashboard() {
   const sheetG = payGroups.find((g) => g.via === payVia) || payGroups.find((g) => g.via !== "card") || null;
   const ppUrlOf = (g) => `https://www.paypal.me/${PAYPAL_ME}/${g ? g.amount : 0}${String(payCur).toUpperCase()}`;
   const deposits = orders.flatMap((o) => (o.deposits || []).map((d) => ({ ...d, o })));
+  // Vorauszahlung PayPal/Wise (25.11.2026): Profil-Auftrag startet erst nach Zahlungseingang → Hinweis + Zahl-Blatt.
+  const prepNeed = orders.filter((o) => !o.cancelled && o.prepay && o.prepay.status === "pending" && o.prepay.amount > 0);
+  const prepO = prepNeed.find((o) => o.id === prepId) || null;
+  const openPrep = (o) => { track("payment_open", `Vorauszahlung ${o.prepay.method === "wise" ? "Wise" : "PayPal"} · ${o.prepay.amount} ${String(o.prepay.cur).toUpperCase()} · ${o.id}`, { via: o.prepay.method }); setPrepId(o.id); };
   const homeOrders = orders.filter((o) => ordActive(o, data.autopay));
   const doneOrders = orders.filter((o) => !ordActive(o, data.autopay));
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
@@ -1873,7 +1878,7 @@ export default function CustomerDashboard() {
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
       <div className="v"><CountUp id={"hero-" + payCur} value={multiPay ? payTotal : swOnly ? g0.amount : viaWise || viaPaypal ? wiseAmount : toPay} fmt={(v) => money(v, payCur)} /></div>
-      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : swOnly ? T("st_swpay") : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}{" · " + vatNote(LANG)}</div>
+      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : swOnly ? T("st_swpay") : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc", { p: "10" })} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}{" · " + vatNote(LANG)}</div>
       {multiPay ? (
         <div className="pgrps">
           {payGroups.map((g) => (
@@ -1966,6 +1971,7 @@ export default function CustomerDashboard() {
       <div className="hg">
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
+          {prepNeed.map((o) => <AlertBtn key={"pp" + o.id} title={T("prepT", { amount: money(o.prepay.amount, o.prepay.cur) }) + " · " + (o.prepay.method === "wise" ? "Wise" : "PayPal")} sub={(prepNeed.length > 1 ? (o.business || "#" + o.id) + " · " : "") + T("prepS")} onClick={() => openPrep(o)} />)}
           {orders.filter((o) => o.priceHold).map((o) => <AlertBtn key={"ph" + o.id} title={T("phT")} sub={(orders.length > 1 ? (o.business || "#" + o.id) + " · " : "") + phTxt(o.priceHold)} onClick={() => setDetailId(o.id)} />)}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
@@ -2036,6 +2042,7 @@ export default function CustomerDashboard() {
       <div className="hg">
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
+          {prepNeed.map((o) => <AlertBtn key={"pp" + o.id} title={T("prepT", { amount: money(o.prepay.amount, o.prepay.cur) }) + " · " + (o.prepay.method === "wise" ? "Wise" : "PayPal")} sub={(prepNeed.length > 1 ? (o.business || "#" + o.id) + " · " : "") + T("prepS")} onClick={() => openPrep(o)} />)}
           {orders.filter((o) => o.priceHold).map((o) => <AlertBtn key={"ph" + o.id} title={T("phT")} sub={(orders.length > 1 ? (o.business || "#" + o.id) + " · " : "") + phTxt(o.priceHold)} onClick={() => setDetailId(o.id)} />)}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
@@ -2499,6 +2506,9 @@ export default function CustomerDashboard() {
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       {repPrev ? <RepSearchSheet open={repSearch} initial={repGuess} rep={rep} showToast={showToast} onClose={() => setRepSearch(false)} onPicked={() => { setRepSearch(false); goTab("rep"); }} /> : null}
+      <PaySheet open={!!prepO} onClose={() => setPrepId(null)} T={T} lang={LANG} via={prepO && prepO.prepay.method === "wise" ? "wise" : "paypal"} amountNum={prepO ? prepO.prepay.amount : 0} regular={prepO ? prepO.prepay.regular : 0}
+        fmt={(v) => money(v, prepO ? prepO.prepay.cur : payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
+        ppUrl={prepO ? `https://www.paypal.me/${PAYPAL_ME}/${prepO.prepay.amount % 1 ? prepO.prepay.amount.toFixed(2) : prepO.prepay.amount}${String(prepO.prepay.cur).toUpperCase()}` : ""} ppHandle={PAYPAL_ME} wiseRef={prepO ? prepO.id : ""} showToast={showToast} pct={prepO ? prepO.prepay.pct : 12.5} prepay />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />

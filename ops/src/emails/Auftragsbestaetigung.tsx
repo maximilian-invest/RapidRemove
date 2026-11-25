@@ -4,6 +4,7 @@ import * as React from "react";
 import { EmailShell, P, NoteBox, brand } from "./components";
 import { DashBox, type DashInfo } from "./DashBox";
 import { LegalSection } from "./legal";
+import { PrepayBox, prepayIntro, prepayPreview, type PrepayInfo } from "./Prepay";
 
 export interface AuftragsbestaetigungProps {
   lang?: "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
@@ -17,6 +18,8 @@ export interface AuftragsbestaetigungProps {
   profile?: boolean;
   /** Zahlungsart schon hinterlegt (Bezeichnung, z. B. „Visa •• 4242", oder "" ohne Bezeichnung) → Hinweis auf automatische Abbuchung */
   savedPm?: string;
+  /** Vorauszahlung PayPal/Wise (−12,5 %, 25.11.2026): Zahlungsdaten + „wir starten nach Zahlungseingang" */
+  prepay?: PrepayInfo;
 }
 
 /** Einleitung, wenn erst die Zahlungsart fehlt: NICHT „wir beginnen umgehend" (14.10.2026). [vor, fett, nach] */
@@ -202,12 +205,15 @@ export function subject(p: AuftragsbestaetigungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate, profile, savedPm }: AuftragsbestaetigungProps = {}) {
+export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate, profile, savedPm, prepay }: AuftragsbestaetigungProps = {}) {
   const t = T[lang] || T.de;
+  const pi = prepay ? prepayIntro(lang) : null;
   return (
-    <EmailShell preview={payGate ? (GATE_INTRO[lang] || GATE_INTRO.en)[1] + "." : t.preview} title={t.title} lang={lang}>
+    <EmailShell preview={prepay ? prepayPreview(lang, prepay) : payGate ? (GATE_INTRO[lang] || GATE_INTRO.en)[1] + "." : t.preview} title={t.title} lang={lang}>
       <P><strong>{anrede || t.greeting}</strong></P>
-      {payGate
+      {pi ? <P>{pi[0]}<strong>{pi[1]}</strong>{pi[2]}</P> : null}
+      {prepay ? <PrepayBox lang={lang} p={prepay} /> : null}
+      {prepay ? null : payGate
         ? <P>{(GATE_INTRO[lang] || GATE_INTRO.en)[0]}<strong>{(GATE_INTRO[lang] || GATE_INTRO.en)[1]}</strong>{(GATE_INTRO[lang] || GATE_INTRO.en)[2]}</P>
         : <P>{t.intro}<strong>{t.introBold}</strong>{t.introRest}</P>}
       {!payGate && savedPm !== undefined ? (

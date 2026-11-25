@@ -179,10 +179,15 @@ export function chatPctOf(raw: unknown): number {
   if (r.payPref === "wise" || r.payPref === "paypal") return 0;
   return Math.max(0, Math.min(10, Math.round(Number(r.chatPct) || 0)));
 }
-/** PayPal/Wise gewählt → −10 % ZUSÄTZLICH zum Mengenrabatt (09.10.2026, mit Maximilian: Rabatte addieren). */
+/** PayPal/Wise-Rabatt in Prozent (seit 25.11.2026 12,5 % + Vorauszahlung, vorher 10 %). */
+export const PAY_DISC_PCT = 12.5;
+/** PayPal/Wise gewählt → Rabatt ZUSÄTZLICH zum Mengenrabatt (09.10.2026, mit Maximilian: Rabatte addieren).
+ *  Aufträge vor dem 25.11.2026 behalten ihre 10 % (raw.payPct fehlt → 10). */
 export function payPctOf(raw: unknown): number {
   const r = (raw || {}) as Record<string, unknown>;
-  return r.payPref === "wise" || r.payPref === "paypal" ? 10 : 0;
+  if (r.payPref !== "wise" && r.payPref !== "paypal") return 0;
+  const p = Number(r.payPct);
+  return p > 0 ? p : 10;
 }
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0, payPct = 0) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
@@ -217,7 +222,7 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   }
   cpTotal = Math.round(cpTotal * 100) / 100;
   const subtotal = subStd + cpTotal + xTotal;
-  const pay = Math.max(0, Math.min(10, payPct || 0)); // PayPal/Wise: auf den Betrag nach Mengen-/Chat-Rabatt
+  const pay = Math.max(0, Math.min(PAY_DISC_PCT, payPct || 0)); // PayPal/Wise: auf den Betrag nach Mengen-/Chat-Rabatt
   const total = (pay ? Math.round(((Math.round((subStd * (100 - pct)) / 100) + cpTotal) * (100 - pay)) / 100) : Math.round((subStd * (100 - pct)) / 100) + cpTotal) + xTotal;
   // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
   const ntDeposit = Math.round(((Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw) * (100 - pay)) / 100);

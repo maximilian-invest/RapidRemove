@@ -228,7 +228,8 @@ export default function AdminNext() {
     if (!payPrefOf(o)) return oneTime; // Karte: Abo läuft separat über Stripe
     // PayPal/Wise wie im Angebot (computeOffer): Einmalbetrag −10 % + Schutz-Abo als Jahr zum Preis von 10 Monaten.
     const sub = (o.protection === "monthly" || o.protection === "monitor") ? (Number(o.protAmount) || 0) * 10 : o.protection === "yearly" ? (Number(o.protAmount) || 0) : 0; // Jahresabo = Jahrespreis
-    return Math.round((oneTime * 0.9 + sub) * 100) / 100;
+    if (o.prepay && o.prepay.amount) return Number(o.prepay.amount); // Vorauszahlung: genau der angefragte Betrag
+    return Math.round((oneTime * (100 - (o.payPct || 10)) / 100 + sub) * 100) / 100;
   };
   const markPaid = async (list, label) => {
     const ok = [];
@@ -310,7 +311,7 @@ export default function AdminNext() {
   };
   const setAuto = async (k, v) => {
     setAutoS((a) => ({ ...a, [k]: v }));
-    try { const r = await partnerSettings({ [k]: v }); setAutoS(r); toast(k.startsWith("disc") ? `PayPal/Wise −10 % · ${k === "discReviews" ? "Bewertungen" : "Profil-Löschungen"}: ${v ? "an" : "aus"}` : `${k === "autoReviews" ? "Bewertungen" : "Profile"}: Weiterleitung ${v ? "an" : "aus"}`); }
+    try { const r = await partnerSettings({ [k]: v }); setAutoS(r); toast(k.startsWith("disc") ? `PayPal/Wise −12,5 % (Vorauszahlung) · ${k === "discReviews" ? "Bewertungen" : "Profil-Löschungen"}: ${v ? "an" : "aus"}` : `${k === "autoReviews" ? "Bewertungen" : "Profile"}: Weiterleitung ${v ? "an" : "aus"}`); }
     catch (e) { toast("Fehler: " + e.message); partnerSettings().then(setAutoS).catch(() => {}); }
   };
   const logout = () => { try { localStorage.removeItem("rr_admin_token"); sessionStorage.removeItem("rr_admin_token"); localStorage.removeItem("rr_admin_faceid"); } catch (e) {} window.location.reload(); };

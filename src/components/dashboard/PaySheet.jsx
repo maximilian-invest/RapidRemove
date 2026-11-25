@@ -17,7 +17,8 @@ function useCountUp(target, run) {
   return v;
 }
 
-export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regular, rows, ppUrl, ppHandle, wiseRef, showToast }) {
+export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regular, rows, ppUrl, ppHandle, wiseRef, showToast, pct = 10, prepay = false, lang = "en" }) {
+  const p = ["en", "ja"].includes(lang) ? String(pct) : String(pct).replace(".", ","); // Rabatt: Altbestand 10 %, Vorauszahlung 12,5 %
   const [copied, setCopied] = React.useState("");
   const ref = React.useRef(null);
   useSwipeClose(ref, open, onClose);
@@ -53,7 +54,7 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
             <div className="ps-head">
               <span className="ps-k">{T("toPay")}</span>
               <b className="ps-amt">{fmt(shown)}</b>
-              <span className="ps-chip"><Sparkles />{isPP ? T("ppDisc") : T("wDisc")} · {T("wSave", { amount: save })}</span>
+              <span className="ps-chip"><Sparkles />{isPP ? T("ppDisc", { p }) : T("wDisc", { p })} · {T("wSave", { amount: save })}</span>
             </div>
 
             {/* Konto als Karte */}
@@ -95,7 +96,7 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
             )}
 
             <div className="ps-trust">
-              <span><ShieldCheck />{T("tr1")}</span>
+              <span><ShieldCheck />{prepay ? T("prepTr") : T("tr1")}</span>
               <span><Mail />{T("tr2")}</span>
               {!isPP ? <span><Lock />{T("tr3")}</span> : null}
             </div>
@@ -110,9 +111,9 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
           <>
             <span className="ff-ic"><Users /></span>
             <h4>{T("ffTitle")}</h4>
-            <p>{T("ffText")}</p>
+            <p>{T("ffText", { p })}</p>
             <div className="ff-opts">
-              <div className="ff-o on"><span className="ff-r"><Check /></span><b>{T("ffOpt1")}</b><em>−10 %</em></div>
+              <div className="ff-o on"><span className="ff-r"><Check /></span><b>{T("ffOpt1")}</b><em>−{p} %</em></div>
               <div className="ff-o off"><span className="ff-r"><Ban /></span><b>{T("ffOpt2")}</b></div>
             </div>
             <div className="ff-amt" onClick={() => copy("ffa", String(amountNum))}><span><small>{T("wAmount")}</small><b>{fmt(amountNum)}</b></span><CopyBtn k="ffa" v={String(amountNum)} /></div>

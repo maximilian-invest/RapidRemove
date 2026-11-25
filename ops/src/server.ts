@@ -25,7 +25,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
 import { registerExpressSwitch, expressOn } from "./expressSwitch";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, PROTECTION_PRICES, protectionInterval, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, PAY_DISC_PCT, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, PROTECTION_PRICES, protectionInterval, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -520,6 +520,10 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
   // PayPal/Wise −10 % in den Einstellungen für diese Kategorie aus → Wunsch ignorieren (normale Zahlung).
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
+  if (["wise", "paypal"].includes(String(b.payPref || "")) && ["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase())) (b as Record<string, unknown>).payPref = undefined; // nur außerhalb DACH
+  // PayPal/Wise seit 25.11.2026: 12,5 % Rabatt (im Auftrag festgehalten → spätere Abrechnung/Anzeige rechnet mit genau diesem Satz).
+  const ppPref = ["wise", "paypal"].includes(String(b.payPref || "")) ? (String(b.payPref) as "paypal" | "wise") : null;
+  if (ppPref) (b as Record<string, unknown>).payPct = PAY_DISC_PCT;
   // Bulk-Upload: geht IMMER erst nach hinterlegter Zahlungsart zum Partner (auch bei PayPal/Wise-Wunsch).
   let payGate = isReviews && (bulk || !["wise", "paypal"].includes(String(b.payPref || ""))) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
@@ -624,6 +628,21 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       profilePrice: { list, prem, legacy: !!profTier?.legacy, cur: pCur, ind: profTier?.ind || "", chatPct: cPct || undefined, at: new Date().toISOString() },
     });
   }
+  // Vorauszahlung (25.11.2026, Maximilian): Profil-Löschung/Neustart mit PayPal/Wise → Kunde zahlt VOR dem Start (−12,5 %).
+  // Auftrag steht auf „Pending", geht NICHT zum Partner, bis der Admin „Zahlung erhalten → Auftrag starten" drückt.
+  // Klappt die Löschung nicht → volle Rückerstattung (Wording in Mail/Dashboard/Website). Schutz-Monatsabo: 12 Monate zum Preis von 10
+  // (wie das bisherige PayPal-Angebot), Jahresabo 299, Lebenslang 990 (rabattiert wie die Löschung).
+  let prepay: { status: "pending"; method: "paypal" | "wise"; amount: number; regular: number; cur: string; pct: number; at: string } | null = null;
+  if (ppPref && isProfileOrder && ["remove", "reset", "express"].includes(service)) {
+    const r2 = (v: number) => Math.round(v * 100) / 100;
+    const amt = Number(b.amount) || 0, x = b.express === true || b.express === "true" ? Number(b.expressAmount) || 0 : 0;
+    const prot = String(b.protection || ""), pa = Number(b.protAmount) || 0;
+    const oneTime = amt + x + (prot === "lifetime" ? pa : 0);
+    const subPP = prot === "yearly" ? pa : prot === "monthly" || prot === "monitor" ? pa * 10 : 0;
+    const subReg = prot === "yearly" ? pa : prot === "monthly" || prot === "monitor" ? pa * 12 : 0;
+    prepay = { status: "pending", method: ppPref, amount: r2(oneTime * (100 - PAY_DISC_PCT) / 100 + subPP), regular: r2(oneTime + subReg), cur: clip(b.country, 6) === "US" ? "usd" : "eur", pct: PAY_DISC_PCT, at: new Date().toISOString() };
+    (b as Record<string, unknown>).prepay = prepay;
+  }
   if (isReviews && !bulk) {
     const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren
     let nx = 0;
@@ -665,7 +684,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // PayPal/Wise (nur außerhalb DACH): −10 % auf den Bewertungspreis; sonst ggf. Chat-Rabatt. Der höhere von Mengen-/Zahlungs-/Chat-Rabatt zählt.
   const revPayDisc = ["wise", "paypal"].includes(String(b.payPref)) && !["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase());
   const revChatPct = revPayDisc ? 0 : req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
-  const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct, revPayDisc ? 10 : 0); // PayPal/Wise −10 % zusätzlich zum Mengenrabatt
+  const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct, revPayDisc ? PAY_DISC_PCT : 0); // PayPal/Wise −12,5 % zusätzlich zum Mengenrabatt
   if (isReviews) (b as Record<string, unknown>).amount = revQ.total; // Server-Preis ist maßgeblich (inkl. PayPal/Wise-Rabatt)
   if (isReviews && !bulk && !pricing) (b as Record<string, unknown>).saleTotal = revQ.total; // Affiliate-Sale = Server-Preis (Land × Branche)
   const revPer = revQ.per;
@@ -707,7 +726,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   }
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
-    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}), ...(profAuto && !profGate ? { savedPm: profPm || "" } : {}) };
+    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}), ...(profAuto && !profGate ? { savedPm: profPm || "" } : {}),
+        ...(prepay ? { prepay: prepayMailProps(prepay, email, orderId) } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
@@ -764,7 +784,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     const dur = oldestMin < 60 ? `${Math.max(1, oldestMin)} Min.` : oldestMin < 2880 ? `${Math.round(oldestMin / 60)} Std.` : `${Math.round(oldestMin / 1440)} Tagen`;
     const heading = isPress ? "Neue Presse-Prüfung" : newN > 1 ? `${newN} neue Aufträge` : "Neuer Auftrag";
     const ptitle = isPress || newN <= 1 ? `${heading} · ${company || name || email}` : heading;
-    const payPrefTxt = b.payPref === "wise" ? "zahlt per Wise (−10 %)" : b.payPref === "paypal" ? "zahlt per PayPal (−10 %)" : "";
+    const payPrefTxt = b.payPref === "wise" ? "zahlt VORAB per Wise (−12,5 %)" : b.payPref === "paypal" ? "zahlt VORAB per PayPal (−12,5 %)" : "";
     const pbody = !isPress && newN > 1
       ? `Ältester wartet seit ${dur}. Neu: ${company || name || email}`
       : [service, payPrefTxt, affiliate ? "Affiliate " + affiliate : ""].filter(Boolean).join(" · ");
@@ -880,7 +900,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       // Profil-Bestellung (Löschung / Neustart / Express) → Profil als Partner-Aufgabe, falls in den Einstellungen aktiv.
       if (profGate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Profil-Löschung startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst bei „Löschung abgeschlossen\" (Schutz-Abo als Abo)", auto: true }).catch(() => {});
       else if (profAuto) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart schon hinterlegt – wird bei „Löschung abgeschlossen\" automatisch abgebucht", detail: "Kunde hat bereits eine Zahlungsart im Dashboard", auto: true }).catch(() => {});
-      if (["remove", "reset", "express"].includes(service) && !profGate && await partnerAutoEnabled("profiles").catch(() => false)) {
+      if (prepay) await insertEvent({ orderId: id, email, type: "note", title: `Wartet auf Vorauszahlung per ${prepay.method === "wise" ? "Wise" : "PayPal"} · ${fmtReviewMoney(prepay.amount, prepay.cur)} (−12,5 %)`, detail: `Statt ${fmtReviewMoney(prepay.regular, prepay.cur)} · Zahlungsdaten in der Auftragsbestätigung + im Dashboard · Auftrag startet erst nach „Zahlung erhalten" im Admin`, auto: true }).catch(() => {});
+      if (["remove", "reset", "express"].includes(service) && !profGate && !prepay && await partnerAutoEnabled("profiles").catch(() => false)) {
         const purl = (typeof b.mapsUri === "string" && b.mapsUri) || (/^https?:\/\//i.test(profile) ? profile : "");
         await partnerAutoSendProfile(id, profile || company || name, purl)
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Profil-Weiterleitung fehlgeschlagen"));
@@ -993,7 +1014,7 @@ app.post("/admin/orders/create", async (req, reply) => {
   const raw: Record<string, unknown> = {
     createdBy: "admin", service, orderId: id, name, email, phone, company, profile: company, country, lang,
     countryChoice: ctry, mapsUri, placeId, addr, amount,
-    payMethod: autoPay ? "auto" : pay === "auto" ? "link" : pay, payPref: pay === "paypal" ? "paypal" : "none",
+    payMethod: autoPay ? "auto" : pay === "auto" ? "link" : pay, payPref: pay === "paypal" ? "paypal" : "none", ...(pay === "paypal" ? { payPct: PAY_DISC_PCT } : {}),
     ...(gate ? { payGate: { status: "pending", at: new Date().toISOString() } } : {}),
     ...(type === "reviews" && askReasons ? { reasons: reasonsGateNew() } : {}),
     ...(type === "reviews" ? { reviewItems: items } : { reason }),
@@ -1973,7 +1994,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const count = removedItems.length;
   // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
   // PayPal/Wise (−10 %) steckt schon im Preis: Auftrag mit Wunsch (chatPctOf) bzw. Versand per PayPal/Wise.
-  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? 10 : await payPctForOrder(b.orderId));
+  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? ((await payPctForOrder(b.orderId)) || PAY_DISC_PCT) : await payPctForOrder(b.orderId));
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -2012,14 +2033,14 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, ppUrl, orderId, dashUrl: await dashLink(to, tlang) };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, pct: quote.payPct || PAY_DISC_PCT, bankLines, ppUrl, orderId, dashUrl: await dashLink(to, tlang) };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const viaName = method === "wise" ? "Wise" : "PayPal";
     await insertEvent({ orderId: orderId || undefined, email: to, type: "pay",
       title: method ? `Löschbestätigung (Bewertungen, ${viaName}) gesendet` : "Löschbestätigung + Rechnung (Bewertungen) gesendet",
       detail: method
-        ? `${count} von ${submittedCount} gelöscht · ${total} − 10 % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail (" + (bankLines[0] || "") + ")"} · an ${to}`
+        ? `${count} von ${submittedCount} gelöscht · ${total} − ${String(quote.payPct || PAY_DISC_PCT).replace(".", ",")} % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail (" + (bankLines[0] || "") + ")"} · an ${to}`
         : `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`,
       html, subject: t.subject(props as any) });
     // Welche Bewertungen abgerechnet wurden → Grundlage für die Mahnungen im Admin.
@@ -2076,7 +2097,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? 10 : await payPctForOrder(b.orderId));
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? ((await payPctForOrder(b.orderId)) || PAY_DISC_PCT) : await payPctForOrder(b.orderId));
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
@@ -2237,13 +2258,14 @@ app.post("/admin/paylink", async (req, reply) => {
     const stage = tplKey === "mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
     const dueDate = tplKey === "mahnung" ? clip(b.dueDate, 40) || undefined : undefined; // Zahlungsziel abgelaufen (automatisch)
     // PayPal/Wise: rabattierter Betrag (vom Admin, sonst Gesamt −10 %), paypal.me-Link bzw. Wise-Konto des Kunden.
-    const ppNum = ppMethod ? Math.round((Number(b.payTotal) > 0 ? Number(b.payTotal) : total * 0.9) * 100) / 100 : 0;
+    const ppPct = Number(b.payPct) > 0 ? Math.min(PAY_DISC_PCT, Number(b.payPct)) : 10; // Altbestand 10 %, ab 25.11.2026 12,5 %
+    const ppNum = ppMethod ? Math.round((Number(b.payTotal) > 0 ? Number(b.payTotal) : total * (100 - ppPct) / 100) * 100) / 100 : 0;
     const bankLines = ppMethod === "wise" ? wiseBankFor(to) : [];
     if (ppMethod === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
     const payTotal = ppMethod ? fmtReviewMoney(ppNum, currency === "usd" ? "usd" : "eur") : "";
     const ppUrl = ppMethod === "paypal" ? `https://www.paypal.me/${(process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "")}/${ppNum % 1 ? ppNum.toFixed(2) : ppNum}${currency === "usd" ? "USD" : "EUR"}` : "";
     const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage, dueDate,
-      ...(ppMethod ? { method: ppMethod, payTotal, ppUrl, bankLines } : {}) };
+      ...(ppMethod ? { method: ppMethod, payTotal, ppUrl, bankLines, pct: ppPct } : {}) };
     const html = await render(React.createElement(t.component, props as any));
     // Vorschau (Admin neu): genau die Mail, wie sie der Kunde bekäme – ohne Versand/Protokoll.
     if (b.preview === true) return { ok: true, preview: true, html, subject: t.subject(props as any), url };
@@ -2251,11 +2273,11 @@ app.post("/admin/paylink", async (req, reply) => {
     // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
     const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
     const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})${b.auto === true ? " · automatisch" : ""}`)
-      : ppMethod ? `Zahlungslink gesendet (${ppMethod === "wise" ? "Wise" : "PayPal"}, −10 %)` : "Zahlungslink gesendet";
+      : ppMethod ? `Zahlungslink gesendet (${ppMethod === "wise" ? "Wise" : "PayPal"}, −${String(ppPct).replace(".", ",")} %)` : "Zahlungslink gesendet";
     // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
     // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
     // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
-    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title, detail: ppMethod ? `${money} − 10 % = ${payTotal} via ${ppMethod === "wise" ? "Wise" : "PayPal"}${ppMethod === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail"} · ${service}${express ? "+express" : ""}|${protection} · an ${to}` : `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title, detail: ppMethod ? `${money} − ${String(ppPct).replace(".", ",")} % = ${payTotal} via ${ppMethod === "wise" ? "Wise" : "PayPal"}${ppMethod === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail"} · ${service}${express ? "+express" : ""}|${protection} · an ${to}` : `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
 
     // 🤑 Hype-Push fürs Team, wenn ein ECHTER Zahlungslink rausgeht (NICHT bei Mahnung/Storno).
     // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.
@@ -2423,6 +2445,87 @@ app.post("/admin/dun-pause", async (req, reply) => {
   await insertEvent({ orderId: o.id, email, type: "note", title: "Mahnlauf pausiert" + (pause && pause.until ? " bis " + fmt(pause.until) : " bis auf Weiteres"),
     detail: (reason ? "Grund: " + reason + " · " : "") + "keine automatischen Mahnungen für diesen Kunden (alle Aufträge), manuelle gehen weiter" }).catch(() => {});
   return { ok: true, pause };
+});
+
+/* ---- Vorauszahlung PayPal/Wise (25.11.2026, Maximilian) ----
+ * Profil-Auftrag mit PayPal/Wise-Wunsch: −12,5 %, Kunde zahlt VOR dem Start (raw.prepay.status "pending" → Admin-Kachel „Pending").
+ * /admin/prepay-paid: Zahlung eingegangen → Auftrag startet (Partner), Kunde bekommt „Zahlung erhalten – wir starten".
+ * /admin/prepay-done: Löschung abgeschlossen → Löschbestätigung OHNE Zahlungsaufforderung („Bereits per PayPal bezahlt"). */
+function prepayMailProps(p: { method: "paypal" | "wise"; amount: number; regular: number; cur: string; pct?: number }, email: string, ref?: string) {
+  const handle = (process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "").replace(/\/+$/, "");
+  const num = p.amount % 1 ? p.amount.toFixed(2) : String(p.amount);
+  return {
+    method: p.method, amount: fmtReviewMoney(p.amount, p.cur), regular: fmtReviewMoney(p.regular, p.cur), pct: p.pct || PAY_DISC_PCT, ref: ref || "",
+    ppUrl: p.method === "paypal" ? `https://www.paypal.me/${handle}/${num}${p.cur === "usd" ? "USD" : "EUR"}` : "",
+    bankLines: p.method === "wise" ? wiseBankFor(email) : [],
+  };
+}
+type PrepayRaw = { status?: string; method?: "paypal" | "wise"; amount?: number; regular?: number; cur?: string; pct?: number; at?: string; paidAt?: string };
+app.post("/admin/prepay-paid", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || b.token !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "Keine Datenbank" });
+  const id = clip(b.orderId, 40);
+  const o = (await pool.query(`SELECT id, email, name, lang, country, service, status, profile, company, raw FROM orders WHERE id=$1`, [id])).rows[0] as Record<string, any> | undefined;
+  if (!o) return reply.code(404).send({ ok: false, error: "Auftrag nicht gefunden" });
+  const raw = (o.raw || {}) as Record<string, any>;
+  const pp = raw.prepay as PrepayRaw | undefined;
+  if (!pp || pp.status !== "pending") return reply.code(400).send({ ok: false, error: "Keine offene Vorauszahlung bei diesem Auftrag" });
+  const via = pp.method === "wise" ? "Wise" : "PayPal";
+  const money = fmtReviewMoney(Number(pp.amount) || 0, pp.cur || "eur");
+  if (!(await setOrderRawField(id, "prepay", { ...pp, status: "paid", paidAt: new Date().toISOString() }))) return reply.code(500).send({ ok: false, error: "Speichern fehlgeschlagen" });
+  await updateOrderStatus(id, o.status === "storniert" || !o.status ? "new" : o.status, "paid");
+  await insertEvent({ orderId: id, email: o.email, type: "pay", title: `Vorauszahlung erhalten (${via}) · ${money} – Auftrag startet`, detail: "Im Admin bestätigt" }).catch(() => {});
+  // Kunde: „Zahlung erhalten – wir starten"
+  let mailed = false;
+  if (b.mail !== false && o.email) {
+    try {
+      const t = TEMPLATES["vorauszahlung-erhalten"];
+      const props = { lang: mailLang(o.lang), amount: money, method: pp.method || "paypal" };
+      const html = await render(React.createElement(t.component, props as any));
+      const subj = t.subject(props as any);
+      await sendMail({ to: o.email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
+      await insertEvent({ orderId: id, email: o.email, type: "mail", title: "„Zahlung erhalten – wir starten“ gesendet", detail: "an " + o.email, html, subject: subj }).catch(() => {});
+      mailed = true;
+    } catch (e) { app.log.error({ err: e, orderId: id }, "Mail „Vorauszahlung erhalten“ fehlgeschlagen"); }
+  }
+  // Partner: wie bei einer normalen Bestellung (Einstellung „Profile automatisch an Partner").
+  let partner = false;
+  if (["remove", "reset", "express"].includes(String(o.service)) && await partnerAutoEnabled("profiles").catch(() => false)) {
+    const purl = (typeof raw.mapsUri === "string" && raw.mapsUri) || (/^https?:\/\//i.test(String(o.profile || "")) ? String(o.profile) : "");
+    partner = !!(await partnerAutoSendProfile(id, o.profile || o.company || o.name, purl).catch((e) => { app.log.error({ err: e, orderId: id }, "Partner-Board: Profil-Weiterleitung (Vorauszahlung) fehlgeschlagen"); return null; }));
+  }
+  return { ok: true, mailed, partner };
+});
+app.post("/admin/prepay-done", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || b.token !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "Keine Datenbank" });
+  const id = clip(b.orderId, 40);
+  const o = (await pool.query(`SELECT id, email, name, lang, country, service, status, protection, raw FROM orders WHERE id=$1`, [id])).rows[0] as Record<string, any> | undefined;
+  if (!o) return reply.code(404).send({ ok: false, error: "Auftrag nicht gefunden" });
+  const raw = (o.raw || {}) as Record<string, any>;
+  const pp = raw.prepay as PrepayRaw | undefined;
+  if (!pp || pp.status !== "paid") return reply.code(400).send({ ok: false, error: "Vorauszahlung noch nicht als erhalten markiert" });
+  await updateOrderStatus(id, "done", "paid");
+  await insertEvent({ orderId: id, email: o.email, type: "status", title: "Profil gelöscht (vorausbezahlt)", detail: "Löschung abgeschlossen – Zahlung war schon da" }).catch(() => {});
+  let mailed = false;
+  if (b.mail !== false && o.email) {
+    try {
+      const t = TEMPLATES.zahlungslink;
+      const usd = o.country === "US";
+      const PL: Record<string, string> = { lifetime: "Lebenslanger Schutz", monthly: "Schutz · 12 Monate", monitor: "Schutz · 12 Monate", yearly: "Jahresschutz" };
+      const props = { lang: mailLang(o.lang), total: fmtReviewMoney(Number(pp.amount) || 0, pp.cur || (usd ? "usd" : "eur")), due: "", payUrl: "", service: o.service || undefined,
+        protectionLabel: o.protection && PL[o.protection] ? PL[o.protection] : undefined,
+        expressLabel: raw.express === true || raw.express === "true" ? "Express (≤6 h)" : undefined, paidVia: pp.method || "paypal" };
+      const html = await render(React.createElement(t.component, props as any));
+      const subj = t.subject(props as any);
+      await sendMail({ to: o.email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
+      await insertEvent({ orderId: id, email: o.email, type: "mail", title: "Löschbestätigung gesendet (vorausbezahlt)", detail: "an " + o.email, html, subject: subj }).catch(() => {});
+      mailed = true;
+    } catch (e) { app.log.error({ err: e, orderId: id }, "Löschbestätigung (vorausbezahlt) fehlgeschlagen"); }
+  }
+  return { ok: true, mailed };
 });
 
 async function payDunTick(): Promise<void> {

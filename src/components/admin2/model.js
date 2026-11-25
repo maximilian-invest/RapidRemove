@@ -80,7 +80,7 @@ export function revState(o, tasks) {
   };
   const prepaid = (k) => (dec[k] && dec[k].d === "accepted") || pays.some((p) => (p.kind === "software" || p.kind === "deposit") && p.paid && (!(p.keys && p.keys.length) || p.keys.includes(k)));
   // Wie im Backend: Mengen- oder Chat-Rabatt (der höhere); PayPal/Wise −10 % kommt ZUSÄTZLICH dazu (payPct).
-  const payPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : 0;
+  const payPct = o.payPref === "wise" || o.payPref === "paypal" ? (o.payPct || 10) : 0; // Altbestand 10 %, ab 25.11.2026 12,5 %
   const chatPct = payPct ? 0 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
   const pct = Math.max(reviewDiscountPct(items.length), chatPct);
   const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0, free: 0 };
@@ -132,6 +132,7 @@ export function pendingWhy(o) {
   const out = [];
   if (o.reasons && o.reasons.status === "pending") out.push("Gründe fehlen");
   if (o.payGate || o.pgStale) out.push("Zahlungsart fehlt");
+  if (o.prepay && o.prepay.status === "pending") out.push("Vorauszahlung " + (o.prepay.method === "wise" ? "Wise" : "PayPal") + " offen");
   if (o.rights && o.rights.status === "pending") out.push("Entscheidung Keine Rechte offen");
   if (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")) out.push(o.verify.status === "rejected" ? "Nachweis abgelehnt" : "Nachweis fehlt");
   return out;
@@ -139,7 +140,7 @@ export function pendingWhy(o) {
 /** Ganzer Auftrag steht still, bis der Kunde etwas tut. */
 const vWhole = (o) => o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")
   && (!Array.isArray(o.verify.keys) || (o.reviewItems || []).every((it) => o.verify.keys.includes(rvKey(it)))); // ohne keys bzw. nur 4–5 ★ bestellt → ganzer Auftrag wartet
-const pendingWhole = (o) => o && o.status !== "storniert" && ((o.rights && o.rights.status === "pending") || (o.reasons && o.reasons.status === "pending" && !Array.isArray(o.reasons.keys)) || (o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
+const pendingWhole = (o) => o && o.status !== "storniert" && ((o.prepay && o.prepay.status === "pending") || (o.rights && o.rights.status === "pending") || (o.reasons && o.reasons.status === "pending" && !Array.isArray(o.reasons.keys)) || (o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
 
 /** Alle Kacheln, in denen ein Auftrag steht. Bewertungen: „In Bearbeitung", solange beim Partner noch etwas offen ist,
  *  und zusätzlich „Zahlung offen", sobald eine gelöschte Bewertung noch nicht bezahlt ist. */
@@ -149,7 +150,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   // Pending = wartet auf den Kunden (Zahlungsart nicht hinterlegt oder Inhaber-Nachweis nicht hochgeladen/abgelehnt).
   // Ganzer Auftrag blockiert → nur „Pending"; nur Nachbestellung blockiert → zusätzlich zu den übrigen Kacheln.
   if (pendingWhole(o)) return ["nopm"];
-  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null, reasons: null, rights: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
+  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null, reasons: null, rights: null, prepay: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];
@@ -217,7 +218,7 @@ export const SERVICE_L = {
 export function computeOffer(o) {
   const c = cur(o);
   const oneTimeReg = (Number(o.amount) || 0) + (o.express && o.expressAmount ? Number(o.expressAmount) : 0) + (o.protection === "lifetime" && o.protAmount ? Number(o.protAmount) : 0);
-  const oneTimePP = Math.round(oneTimeReg * 90) / 100;
+  const oneTimePP = Math.round(oneTimeReg * (100 - (o.payPct || 10))) / 100; // Altbestand 10 %, ab 25.11.2026 12,5 %
   const isSub = o.protection === "monthly" || o.protection === "monitor" || o.protection === "yearly";
   const yearly = o.protection === "yearly";
   const monthly = isSub && o.protAmount ? (yearly ? Math.round((Number(o.protAmount) / 12) * 100) / 100 : Number(o.protAmount)) : 0; // Jahresabo: Monatsanteil (Anzeige)
@@ -225,7 +226,7 @@ export function computeOffer(o) {
   const subReg = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 12 * 100) / 100, subPP = yearly ? Number(o.protAmount) || 0 : Math.round(monthly * 10 * 100) / 100;
   const regTotal = Math.round((oneTimeReg + subReg) * 100) / 100, ppTotal = Math.round((oneTimePP + subPP) * 100) / 100;
   const m = (n) => money(n, c);
-  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub && !yearly ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null, regNum: regTotal, ppNum: ppTotal, monthlySub: isSub && !yearly }; // Jahresabo: keine „12 zum Preis von 10"-Zeile
+  return { regular: m(regTotal), paypal: m(ppTotal), savings: m(Math.round((regTotal - ppTotal) * 100) / 100), sub: isSub && !yearly ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null, regNum: regTotal, ppNum: ppTotal, monthlySub: isSub && !yearly, pct: o.payPct || 10 }; // Jahresabo: keine „12 zum Preis von 10"-Zeile
 }
 
 /** Vorlagen-Nutzung (gleicher Speicher wie das alte Admin → „Am häufigsten“ bleibt konsistent). */

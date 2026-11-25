@@ -15,6 +15,21 @@ const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.
 /** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – 199 bis 4 Wochen mit Text; ältere/ohne Text seit 05.11.2026 pausiert, zählen nicht),
  *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
 /** unit = Frisch-Preis je Bewertung für dieses Profil/diesen Kunden (Land × Branche, vom Server via /price-quote), Standard 199. */
+/* PayPal/Wise = Vorauszahlung (25.11.2026): Hinweis unter der Auswahl. [Profil, Bewertungen] */
+const PP_NOTE = {
+  de: ["Vorauszahlung: Wir starten, sobald Ihre Zahlung da ist. Klappt die Löschung nicht, bekommen Sie den vollen Betrag zurück.", "Vorauszahlung: Wir starten, sobald Ihre Zahlung da ist. Für jede nicht gelöschte Bewertung bekommen Sie den Betrag zurück."],
+  en: ["Advance payment: we start as soon as your payment arrives. If the removal isn't successful, you get the full amount back.", "Advance payment: we start as soon as your payment arrives. For every review that isn't removed, you get the amount back."],
+  es: ["Pago por adelantado: empezamos en cuanto llegue su pago. Si la eliminación no funciona, le devolvemos el importe completo.", "Pago por adelantado: empezamos en cuanto llegue su pago. Por cada reseña no eliminada le devolvemos el importe."],
+  fr: ["Paiement anticipé : nous commençons dès réception de votre paiement. Si la suppression n'aboutit pas, vous êtes intégralement remboursé.", "Paiement anticipé : nous commençons dès réception de votre paiement. Chaque avis non supprimé vous est remboursé."],
+  it: ["Pagamento anticipato: iniziamo appena arriva il pagamento. Se la rimozione non va a buon fine, ti rimborsiamo l'intero importo.", "Pagamento anticipato: iniziamo appena arriva il pagamento. Per ogni recensione non rimossa ti rimborsiamo l'importo."],
+  nl: ["Vooruitbetaling: we starten zodra uw betaling binnen is. Lukt de verwijdering niet, dan krijgt u het volledige bedrag terug.", "Vooruitbetaling: we starten zodra uw betaling binnen is. Voor elke niet-verwijderde review krijgt u het bedrag terug."],
+  pt: ["Pagamento antecipado: começamos assim que o pagamento chegar. Se a remoção não resultar, devolvemos o valor total.", "Pagamento antecipado: começamos assim que o pagamento chegar. Por cada avaliação não removida devolvemos o valor."],
+  ja: ["前払い：ご入金を確認次第、作業を開始します。削除できなかった場合は全額を返金いたします。", "前払い：ご入金を確認次第、作業を開始します。削除できなかった口コミの分は返金いたします。"],
+  sv: ["Förskottsbetalning: vi börjar så snart betalningen har kommit in. Lyckas inte borttagningen får du tillbaka hela beloppet.", "Förskottsbetalning: vi börjar så snart betalningen har kommit in. För varje omdöme som inte tas bort får du tillbaka beloppet."],
+  da: ["Forudbetaling: vi går i gang, så snart betalingen er modtaget. Lykkes sletningen ikke, får du hele beløbet tilbage.", "Forudbetaling: vi går i gang, så snart betalingen er modtaget. For hver anmeldelse, der ikke fjernes, får du beløbet tilbage."],
+  no: ["Forhåndsbetaling: vi starter så snart betalingen har kommet inn. Lykkes ikke slettingen, får du hele beløpet tilbake.", "Forhåndsbetaling: vi starter så snart betalingen har kommet inn. For hver anmeldelse som ikke fjernes, får du beløpet tilbake."],
+};
+
 export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none", unit = PRICE_V2_FRESH, prem = false }) {
   const usd = country === "US";
   const pp = payPref === "wise" || payPref === "paypal";
@@ -26,14 +41,14 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
-    const payD = pp ? Math.round(total * 0.1) : 0;
+    const payD = pp ? Math.round(total * 0.125) : 0; // PayPal/Wise seit 25.11.2026: −12,5 % bei Vorauszahlung
     total -= payD;
     return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit, nSw, n250, nPaused };
   }
   const base = profilePriceFor(service, usd ? "usd" : "eur", prem); // Premium-Branche (06.11.2026): Server bestätigt über /price-quote
   const cp = pp ? 0 : pct;
   let total = Math.round(base * (100 - cp)) / 100;
-  const payD = pp ? Math.round(base * 0.1 * 100) / 100 : 0;
+  const payD = pp ? Math.round(base * 0.125 * 100) / 100 : 0; // −12,5 % bei Vorauszahlung
   total = Math.round((total - payD) * 100) / 100;
   return { usd, sub: base, d: cp, dKind: cp ? "chat" : "", payD, total };
 }
@@ -159,7 +174,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
           {isRev ? <div className="cs-r"><span>{`${revs.length - p.nPaused} × ${fmt(p.unit, p.usd)}`}</span><span>{fmt(revs.length - p.nPaused ? p.sub : 0, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
-          {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
+          {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −{lang === "en" || lang === "ja" ? "12.5" : "12,5"} %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
           <div className="cs-n"><ShieldCheck />{c.note}</div>
         </div>
@@ -198,8 +213,9 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         {dach ? null : (<>
         <span className="co-l">{c.pay}</span>
         <div className="co-pay">
-          {[["none", c.card], ["paypal", "PayPal −10 %"], ["wise", "Wise −10 %"]].map(([k, l]) => <button key={k} type="button" className={f.payPref === k ? "on" : ""} onClick={() => set("payPref")(k)}>{l}</button>)}
+          {[["none", c.card], ["paypal", "PayPal −" + (lang === "en" || lang === "ja" ? "12.5" : "12,5") + " %"], ["wise", "Wise −" + (lang === "en" || lang === "ja" ? "12.5" : "12,5") + " %"]].map(([k, l]) => <button key={k} type="button" className={f.payPref === k ? "on" : ""} onClick={() => set("payPref")(k)}>{l}</button>)}
         </div>
+        {f.payPref === "paypal" || f.payPref === "wise" ? <p className="co-ppn" style={{ fontSize: 12, lineHeight: 1.45, margin: "6px 0 2px", opacity: 0.8 }}>{(PP_NOTE[lang] || PP_NOTE.en)[isRev ? 1 : 0]}</p> : null}
         </>)}
         <label className={"co-agb" + (bad.agb ? " bad" : "")}>
           <input type="checkbox" checked={f.agb} onChange={set("agb")} />

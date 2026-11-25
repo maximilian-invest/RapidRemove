@@ -133,6 +133,9 @@ function mapOrder(r) {
     // Rabatt-Wunsch (10 %): neu aus der Abfrage beim Absenden (raw.payPref = wise | paypal | none),
     // früher als PayPal-E-Mail im Fragebogen (form.paypal).
     payPref: (r.raw && typeof r.raw.payPref === "string") ? r.raw.payPref : "",
+    payPct: (r.raw && Number(r.raw.payPct) > 0) ? Number(r.raw.payPct) : 0, // PayPal/Wise-Rabatt dieses Auftrags (0 = Altbestand 10 %)
+    // Vorauszahlung PayPal/Wise (25.11.2026): pending = wartet auf Zahlung (Pending-Kachel), paid = bezahlt, Auftrag läuft
+    prepay: (r.raw && r.raw.prepay && ["pending", "paid"].includes(r.raw.prepay.status)) ? r.raw.prepay : null,
     paypal: (r.form && typeof r.form.paypal === "string" && r.form.paypal) ? r.form.paypal : ((r.raw && r.raw.payPref === "paypal") ? "ja" : ""),
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
@@ -288,12 +291,12 @@ export async function fetchPayLinks() {
 
 /** Verschickt einen BESTEHENDEN Stripe-Zahlungslink an den Kunden.
  *  Entweder direkt per `url` (aus der Liste) oder per Szenario (Betrag-Match). */
-export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express, expressLabel, template, lang, url, celebrate, stage, method, payTotal, preview }) {
+export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express, expressLabel, template, lang, url, celebrate, stage, method, payTotal, payPct, preview }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express: !!express, expressLabel, template, lang, url, celebrate: !!celebrate, stage: stage || undefined, method: method || undefined, payTotal: payTotal || undefined, preview: preview === true ? true : undefined }),
+    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, express: !!express, expressLabel, template, lang, url, celebrate: !!celebrate, stage: stage || undefined, method: method || undefined, payTotal: payTotal || undefined, payPct: payPct || undefined, preview: preview === true ? true : undefined }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
@@ -750,6 +753,10 @@ export const reviewsBillApi = (p) => adminPost("/admin/reviews/bill", p);
 export const reviewsChargeRetryApi = (orderId) => adminPost("/admin/reviews/charge-retry", { orderId });
 /** Deckungsprüfung der hinterlegten Zahlungsart jetzt (abgelehnt → Kunde bekommt Mail, muss neue Karte hinterlegen). */
 export const coverageCheckApi = (orderId) => adminPost("/admin/coverage-check", { orderId });
+/** Vorauszahlung PayPal/Wise eingegangen → Auftrag starten (Kunde bekommt „Zahlung erhalten – wir starten"). */
+export const prepayPaidApi = (orderId, mail = true) => adminPost("/admin/prepay-paid", { orderId, mail });
+/** Vorausbezahlter Auftrag: Löschung abgeschlossen → Löschbestätigung ohne Zahlungsaufforderung. */
+export const prepayDoneApi = (orderId, mail = true) => adminPost("/admin/prepay-done", { orderId, mail });
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */

@@ -75,7 +75,7 @@ export function PayLinkSheet({ o, ctx, close }) {
     try {
       if (via) {
         const p = autoPayload(o);
-        await sendPayLink({ ...p, total: off.regNum, protectionLabel: off.monthlySub ? p.protectionLabel + " · 12 Monate" : p.protectionLabel, method: via, payTotal: off.ppNum, celebrate: true });
+        await sendPayLink({ ...p, total: off.regNum, protectionLabel: off.monthlySub ? p.protectionLabel + " · 12 Monate" : p.protectionLabel, method: via, payTotal: off.ppNum, payPct: off.pct, celebrate: true });
       } else if (sel) await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: o.lang || "de", url: sel.url, celebrate: true });
       else await sendPayLink({ ...autoPayload(o), celebrate: true });
       // Zahlungslink erhalten → Profil gilt als gelöscht, Zahlung offen („Profil gelöscht" nur 1× protokollieren).
@@ -83,7 +83,7 @@ export function PayLinkSheet({ o, ctx, close }) {
         await setOrderStatus({ orderId: o.id, status: "done", pay: "sent", noEvent: o.status === "done" });
         patchOrder(o.id, { status: "done", pay: "sent", doneAt: o.doneAt || new Date().toISOString(), paylinkSent: true });
       } catch (e) { /* Link ist raus */ }
-      toast(via ? `${pref}-Mail (−10 %, ${off.paypal}) an ${o.name || o.email} gesendet` : `Zahlungslink an ${o.name || o.email} gesendet`);
+      toast(via ? `${pref}-Mail (−${String(off.pct).replace(".", ",")} %, ${off.paypal}) an ${o.name || o.email} gesendet` : `Zahlungslink an ${o.name || o.email} gesendet`);
       close();
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); setBusy(false); setArmed(false); }
   };
@@ -124,7 +124,7 @@ export function PayLinkSheet({ o, ctx, close }) {
         <>
           <p className="shl">Das bekommt der Kunde</p>
           <div className="plk-cur">
-            <span className="t"><b>{via === "paypal" ? "Löschbestätigung mit PayPal-Button" : "Löschbestätigung mit Wise-Kontodaten"}</b><span>{off.paypal} statt {off.regular} (−10 % {pref}){off.monthlySub ? " · inkl. 12 Monate Schutz" : ""}{via === "paypal" ? " · „Freunde & Familie“" : ""} · kein Stripe-Link</span></span>
+            <span className="t"><b>{via === "paypal" ? "Löschbestätigung mit PayPal-Button" : "Löschbestätigung mit Wise-Kontodaten"}</b><span>{off.paypal} statt {off.regular} (−{String(off.pct).replace(".", ",")} % {pref}){off.monthlySub ? " · inkl. 12 Monate Schutz" : ""}{via === "paypal" ? " · „Freunde & Familie“" : ""} · kein Stripe-Link</span></span>
           </div>
           <p className="shp" style={{ marginTop: 8 }}>Danach Auftrag = gelöscht, Zahlung offen. Die {pref}-Mahnungen laufen alle 48 h automatisch.</p>
           <div className="ctas2" style={{ marginTop: 16 }}>
@@ -138,7 +138,7 @@ export function PayLinkSheet({ o, ctx, close }) {
         </>
       ) : null}
       {via ? null : <>
-      {pref ? <p className="shn warn"><Lock />Kunde wollte per {pref} zahlen (10 % Rabatt) – trotzdem einen Stripe-Link senden? <button type="button" className="lnkb" style={{ margin: 0, display: "inline" }} onClick={() => { setArmed(false); setVia(ppm); }}>Zurück zu {pref}</button></p> : null}
+      {pref ? <p className="shn warn"><Lock />Kunde wollte per {pref} zahlen ({String(off.pct).replace(".", ",")} % Rabatt) – trotzdem einen Stripe-Link senden? <button type="button" className="lnkb" style={{ margin: 0, display: "inline" }} onClick={() => { setArmed(false); setVia(ppm); }}>Zurück zu {pref}</button></p> : null}
 
       <p className="shl">Dieser Link wird gesendet</p>
       <div className="plk-cur">

@@ -17,7 +17,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
 import { flatRows, SORTS, scannable, useReviewScan, ScanCard, FlatRow, OrderReviews, GoneList } from "./OpenReviews";
-import { custImpersonate, verifyDoc, verifySet, reasonsSet, payGateTransfer, reviewShotUrl, coverageCheckApi } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reasonsSet, payGateTransfer, reviewShotUrl, coverageCheckApi, prepayPaidApi, prepayDoneApi } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -157,7 +157,7 @@ export function OrdersList({ ctx }) {
           <button type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)}{bs.includes("nopm") ? <small className="pwhy"> ({pendingWhy(o).join(", ")})</small> : null} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
+              <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={(o.prepay ? "Vorauszahlung per " : "Will per ") + payPrefOf(o) + " zahlen"}>−{String(o.payPct || 10).replace(".", ",")} %{o.prepay ? " vorab" : ""}</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)}{bs.includes("nopm") ? <small className="pwhy"> ({pendingWhy(o).join(", ")})</small> : null} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span>
               {o.addr ? <span className="l3">{profLoc(o)}</span> : null}</span>
           </button>
@@ -201,8 +201,12 @@ export function OrderDetail({ ctx, id }) {
   const altHref = `/admin/alt?order=${encodeURIComponent(o.id)}`;
   const doneBtn = (lbl) => <button type="button" className="cta ok" onClick={() => { act.done(o); back(); }}><CheckCircle2 />{lbl}</button>;
   const primary =
+    // Vorauszahlung PayPal/Wise (25.11.2026): erst wenn das Geld da ist → „Zahlung erhalten" startet den Auftrag.
+    o.prepay && o.prepay.status === "pending" && o.status !== "storniert" ? <PrepayPaidBtn o={o} ctx={ctx} />
+    : o.prepay && o.prepay.status === "paid" && b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"} · vorausbezahlt</button>
+    : o.prepay && o.prepay.status === "paid" && b === "work" ? <PrepayDoneBtn o={o} ctx={ctx} back={back} />
     // Schon bezahlt, Status aber noch Neu/In Bearbeitung → einfach abschließen (kein Zahlungslink, keine Mahnung).
-    o.pay === "paid" && (b === "new" || b === "work") ? doneBtn("Als erledigt markieren · bereits bezahlt")
+    : o.pay === "paid" && (b === "new" || b === "work") ? doneBtn("Als erledigt markieren · bereits bezahlt")
     // Gelöscht, aber noch nicht abgerechnet → zuerst Löschbestätigung + Rechnung (sonst würde die Mahnung alle Bewertungen anmahnen).
     // Zahlung offen / Inkasso → eigener Block (PayActions: eskalierender Hauptbutton + „Zahlung bereits erhalten?").
     : payOpen(o, now, ptasks) && (b === "pay" || b === "inkasso") ? null
@@ -243,10 +247,11 @@ export function OrderDetail({ ctx, id }) {
             {r.unpaidN ? <span className="due"><b>{money(r.unpaidAmt, cur(o))}</b> offen · {r.unpaidN} Bew.{r.unbilledN ? ` · ${r.unbilledN} noch nicht abgerechnet` : ""}</span> : null}
           </div>
         ) : null}</div>
-      {payPrefOf(o) && o.status !== "storniert" ? (
+      {o.prepay && o.status !== "storniert" ? <PrepayBanner o={o} /> : null}
+      {payPrefOf(o) && !o.prepay && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><Percent /></span>
-          <span className="t"><b>Kunde möchte per {payPrefOf(o)} zahlen → 10 % Rabatt gewähren</b>
+          <span className="t"><b>Kunde möchte per {payPrefOf(o)} zahlen → {String(o.payPct || 10).replace(".", ",")} % Rabatt gewähren</b>
             <span>{isRev ? "Gilt auf die gelöschten Bewertungen" : <>Statt {computeOffer(o).regular} nur <b>{computeOffer(o).paypal}</b> · spart {computeOffer(o).savings}</>}{o.paypal && o.paypal !== "ja" ? <> · PayPal: {o.paypal}</> : null}</span>
             {isRev || (o.lang || "de") !== "de" ? <span>Mahnungen gehen deshalb als {payPrefOf(o)}-Text ohne Stripe-Link raus.</span> : null}</span>
         </div>
@@ -680,6 +685,70 @@ function CovCheckRow({ o, ctx }) {
       <span className="ico"><ShieldCheck /></span>
       <span className="t"><span>Deckungsprüfung</span><b>{busy ? "Prüft …" : arm ? "Nochmal tippen – Karte jetzt prüfen" : last || "Karte jetzt prüfen · offener Betrag wird kurz reserviert"}</b></span>
       {busy ? <Loader className="spin" /> : <ChevronRight />}
+    </button>
+  );
+}
+
+/* Vorauszahlung PayPal/Wise (25.11.2026): Banner + Knöpfe im Auftrag. */
+const ppVia = (p) => (p && p.method === "wise" ? "Wise" : "PayPal");
+const ppMoney = (o, v) => money(Number(v) || 0, (o.prepay && o.prepay.cur) === "usd" || o.country === "US" ? "$" : "€");
+function PrepayBanner({ o }) {
+  const p = o.prepay;
+  const at = (iso) => (iso ? new Date(iso).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
+  return p.status === "pending" ? (
+    <div className="disc due">
+      <span className="di"><Percent /></span>
+      <span className="t"><b>Vorauszahlung per {ppVia(p)} offen · {ppMoney(o, p.amount)} (−{String(p.pct || 12.5).replace(".", ",")} %)</b>
+        <span>Statt {ppMoney(o, p.regular)}. Zahlungsdaten hat der Kunde in der Auftragsbestätigung{o.lang !== "de" ? " und im Dashboard" : ""}. Der Auftrag geht erst zum Partner, wenn du unten „Zahlung erhalten“ drückst.</span></span>
+    </div>
+  ) : (
+    <div className="disc">
+      <span className="di"><Percent /></span>
+      <span className="t"><b>Vorausbezahlt per {ppVia(p)} · {ppMoney(o, p.amount)}</b>
+        <span>Zahlung bestätigt{p.paidAt ? " am " + at(p.paidAt) : ""}. Kein Zahlungslink, keine Mahnung. Klappt die Löschung nicht: Betrag per {ppVia(p)} zurückerstatten, dann stornieren.</span></span>
+    </div>
+  );
+}
+function PrepayPaidBtn({ o, ctx }) {
+  const [arm, setArm] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { if (!arm) return undefined; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  const go = async () => {
+    if (busy) return;
+    if (!arm) { setArm(true); return; }
+    setArm(false); setBusy(true);
+    try {
+      const r = await prepayPaidApi(o.id);
+      ctx.patchOrder(o.id, { prepay: { ...o.prepay, status: "paid", paidAt: new Date().toISOString() }, pay: "paid" });
+      ctx.toast(`Zahlung bestätigt · ${r.mailed ? "Kunde informiert" : "Mail NICHT raus"} · ${r.partner ? "Auftrag an Partner" : "Auftrag kann starten"}`);
+      if (ctx.refresh) ctx.refresh(true);
+    } catch (e) { ctx.toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
+  return (
+    <button type="button" className={"cta" + (arm ? " red" : " ok")} disabled={busy} onClick={go}>
+      {busy ? <Loader className="spin" /> : <CheckCircle2 />}{busy ? "Bestätigt …" : arm ? `Sicher? ${ppMoney(o, o.prepay.amount)} per ${ppVia(o.prepay)} da – nochmal tippen` : `Zahlung erhalten → Auftrag starten`}
+    </button>
+  );
+}
+function PrepayDoneBtn({ o, ctx, back }) {
+  const [arm, setArm] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { if (!arm) return undefined; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  const go = async () => {
+    if (busy) return;
+    if (!arm) { setArm(true); return; }
+    setArm(false); setBusy(true);
+    try {
+      const r = await prepayDoneApi(o.id);
+      ctx.patchOrder(o.id, { status: "done", pay: "paid", doneAt: o.doneAt || new Date().toISOString() });
+      ctx.toast(r.mailed ? "Erledigt · Kunde hat die Löschbestätigung (bereits bezahlt)" : "Erledigt · Mail NICHT raus");
+      back();
+    } catch (e) { ctx.toast("Fehler: " + e.message); setBusy(false); }
+  };
+  return (
+    <button type="button" className={"cta" + (arm ? " red" : " ok")} disabled={busy} onClick={go}>
+      {busy ? <Loader className="spin" /> : <CheckCircle2 />}{busy ? "Sendet …" : arm ? "Nochmal tippen – Löschbestätigung senden" : "Löschung abgeschlossen · vorausbezahlt"}
     </button>
   );
 }

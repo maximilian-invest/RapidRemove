@@ -25,7 +25,7 @@ const REASONS = [["closed", "Dauerhaft geschlossen", Store], ["fake", "Fake / ni
 const PAYS = [
   ["auto", "Zahlungsdaten hinterlegen – automatische Abbuchung bei Löschung", CreditCard],
   ["link", "Kunde zahlt selbst („Pay“ im Dashboard / Zahlungslink)", Send],
-  ["paypal", "PayPal (−10 %)", Wallet], ["invoice", "Rechnung", FileText],
+  ["paypal", "PayPal (−12,5 %)", Wallet], ["invoice", "Rechnung", FileText],
 ];
 const LANGS = [["de", "Deutsch"], ["en", "English"], ["es", "Español"], ["fr", "Français"], ["it", "Italiano"], ["nl", "Nederlands"], ["pt", "Português"], ["sv", "Svenska"], ["da", "Dansk"], ["no", "Norsk"], ["ja", "日本語"]];
 const PROFILE_PRICE = { "€": 450, $: 495 };

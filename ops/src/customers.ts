@@ -635,6 +635,11 @@ function rightsOf(raw: Record<string, unknown>, cancelled: boolean, cur: string)
   if (!r || cancelled || !["pending", "accepted"].includes(String(r.status))) return null;
   return { status: String(r.status), extra: Number(r.extra) || 290, cur };
 }
+function prepayOf(raw: Record<string, unknown>, cancelled: boolean, cur: string): { status: string; method: string; amount: number; regular: number; cur: string; pct: number } | null {
+  const p = raw.prepay as { status?: string; method?: string; amount?: number; regular?: number; cur?: string; pct?: number } | undefined;
+  if (!p || cancelled || !["pending", "paid"].includes(String(p.status))) return null;
+  return { status: String(p.status), method: p.method === "wise" ? "wise" : "paypal", amount: Number(p.amount) || 0, regular: Number(p.regular) || 0, cur: p.cur || cur, pct: Number(p.pct) || 12.5 };
+}
 function profileView(o: ProfileRow): OrderView {
   const raw = (o.raw || {}) as Record<string, unknown>;
   const cur = o.country === "US" ? "usd" : "eur";
@@ -655,12 +660,15 @@ function profileView(o: ProfileRow): OrderView {
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.profile || o.company || "", cancelled: st === "cancelled",
     pct: 0, swPrice: 0, swDeposit: 0, toPay: 0, items: [],
-    history: paid && total ? [{ id: "p-" + o.id, kind: "profile" as never, amount: total, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
+    history: paid && total ? [{ id: "p-" + o.id, kind: "profile" as never, amount: (raw.prepay as { status?: string; amount?: number } | undefined)?.status === "paid" ? Number((raw.prepay as { amount?: number }).amount) || total : total, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
     deposits: [], kind: "profile", profileOrder: info,
     payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
     // „Keine Rechte" (10/2026): Kunde entscheidet im Dashboard – fortfahren (+Aufpreis bei Erfolg, Zahlungsart hinterlegen) oder stornieren.
     rights: rightsOf(raw, st === "cancelled", cur),
     autoPay: raw.payMethod === "auto", // wird bei „Löschung abgeschlossen" automatisch abgebucht
+    // Vorauszahlung PayPal/Wise (25.11.2026): offen → Dashboard zeigt Betrag + PayPal/Wise; Auftrag startet nach Zahlungseingang.
+    prepay: prepayOf(raw, st === "cancelled", cur),
+    payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null,
   } as unknown as OrderView;
 }
 

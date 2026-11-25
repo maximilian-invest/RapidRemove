@@ -42,6 +42,7 @@ import MahnungReviews, { subject as mahnungReviewsSubject, T as mahnungReviewsTe
 import NeueBewertung, { subject as neueBewertungSubject } from "./NeueBewertung";
 import StornoReviewEdited, { subject as stornoReviewEditedSubject } from "./StornoReviewEdited";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
+import VorauszahlungErhalten, { vorauszahlungErhaltenSubject } from "./Prepay";
 
 export interface TemplateEntry {
   label: string;
@@ -110,8 +111,15 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: verzoegerungSubject,
     sample: de,
   },
+  "vorauszahlung-erhalten": {
+    label: "Vorauszahlung erhalten – Auftrag startet (PayPal/Wise −12,5 %)",
+    group: "Bestellung",
+    component: VorauszahlungErhalten,
+    subject: vorauszahlungErhaltenSubject,
+    sample: { lang: "en", amount: "$433.13", method: "paypal" },
+  },
   "paypal-angebot": {
-    label: "PayPal-Vorteil · 10 % (außerhalb DACH)",
+    label: "PayPal-Vorteil · 10 % (außerhalb DACH, Altbestand)",
     group: "Bestellung",
     component: PaypalAngebot,
     subject: paypalAngebotSubject,
