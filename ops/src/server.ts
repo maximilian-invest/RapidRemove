@@ -1401,7 +1401,9 @@ app.post("/mail/send", async (req, reply) => {
 app.post("/admin/data", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
-  const [orders, checks] = await Promise.all([listOrders(200), listChecks(200)]);
+  // Optional größere Abfrage (z. B. Auswertungen über das ganze Jahr): limit 1–5000, Standard 200 wie bisher.
+  const lim = Math.max(1, Math.min(5000, Math.round(Number(b.limit) || 200)));
+  const [orders, checks] = await Promise.all([listOrders(lim), listChecks(lim)]);
   // Test-Flag (Inhaber-Adresse, „+test", TEST_EMAILS): Admin markiert diese Aufträge und lässt sie aus allen Zahlen raus.
   const flag = <T extends Record<string, unknown>>(r: T) => ({ ...r, test: isTestEmail(r.email) });
   const fo = orders.map(flag);
