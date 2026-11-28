@@ -9,6 +9,7 @@ import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { registerOffers, initOffers, offerTick, offerForOrder, markOfferAccepted } from "./offers";
+import { registerCampaign, campaignTick } from "./campaign";
 import { initDb, dbReady, insertOrder, upsertCheck, setCheckExit, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats, changeVersion } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
@@ -2984,6 +2985,7 @@ app.post("/admin/paygate-transfer", async (req, reply) => {
 registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 // Schriftliches Angebot aus dem Bestellprozess (09.11.2026), Routen in offers.tsx.
 registerOffers(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
+registerCampaign(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
@@ -3002,6 +3004,8 @@ async function start() {
     void initOffers().catch((e) => app.log.error({ err: e }, "Angebote: Init fehlgeschlagen"));
     setTimeout(() => void offerTick((o, m) => app.log.info(o, m)).catch((e) => app.log.error({ err: e }, "Angebote: Erinnerungen fehlgeschlagen")), 90_000);
     setInterval(() => void offerTick((o, m) => app.log.info(o, m)).catch((e) => app.log.error({ err: e }, "Angebote: Erinnerungen fehlgeschlagen")), 10 * 60_000);
+    // Aktions-Mails in Chargen (28.11.2026): alle 10 Min. höchstens eine Charge (CAMPAIGN_BATCH, Standard 25) der fälligen Mails.
+    setInterval(() => void campaignTick((o, m) => app.log.info(o, m)).catch((e) => app.log.error({ err: e }, "Aktions-Mails fehlgeschlagen")), 10 * 60_000);
     // Kunden-Dashboard: Sammel-Mails („Neuigkeiten im Dashboard") 5 Min. nach der letzten Partner-Änderung.
     setInterval(async () => {
       try {
