@@ -11,7 +11,7 @@
  *  - Leistungs-Preis netto (tax_behavior "exclusive") auf dem Produkt der Vorlage (Löschung bzw. Neustart, € bzw. $).
  *  - Idempotent über metadata rapidremove_profile = "<service>[+x]|<cent>|<schutz>|<währung>".
  */
-import { PROFILE_LIST_PRICES, PROFILE_EXPRESS_FEE } from "./reviewsPricing";
+import { PROFILE_KNOWN_PRICES, PROFILE_EXPRESS_FEE } from "./reviewsPricing";
 
 const API = "https://api.stripe.com/v1/";
 const MARK = "rapidremove_profile";
@@ -84,7 +84,9 @@ export async function ensureProfileLink(o: { service: string; currency: string; 
   const protCents = prot === "none" ? 0 : (Number(o.protAmount) > 0 ? Math.round(Number(o.protAmount) * 100) : PROT_DEFAULT[prot]);
   const ps = prot === "none" ? null : { cents: protCents, interval: PROT_IV[prot] };
   const base = Math.round((o.oneTime - (o.express ? PROFILE_EXPRESS_FEE : 0)) * 100) / 100;
-  if (!svc || !PROFILE_LIST_PRICES.includes(base) || (o.express && svc !== "remove")) return { error: `kein Listenpreis (${svc || o.service} ${o.oneTime} ${cur})` };
+  // Listenpreise + Black-Friday-Preise (28.11.2026) – weiterhin keine frei erfundenen Beträge.
+  const okBase = PROFILE_KNOWN_PRICES.includes(base);
+  if (!svc || !okBase || (o.express && svc !== "remove")) return { error: `kein Listenpreis (${svc || o.service} ${o.oneTime} ${cur})` };
   const cents = Math.round(o.oneTime * 100);
   // Marker wie die vorab angelegten Links: alte Schutz-Preise „monthly", neue „monthly2990" / „yearly29900".
   const protTag = prot === "none" ? "none" : protCents === PROT_DEFAULT[prot] && prot !== "yearly" ? prot : `${prot}${protCents}`;

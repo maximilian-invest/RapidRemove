@@ -9,7 +9,7 @@
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { hasSecretKey, listPaymentLinks } from "./integrations/stripe";
-import { PROFILE_LIST_PRICES, PROFILE_EXPRESS_FEE, PROTECTION_PRICES } from "./reviewsPricing";
+import { PROFILE_KNOWN_PRICES, PROFILE_EXPRESS_FEE, PROTECTION_PRICES } from "./reviewsPricing";
 
 export type LinkItem = { amount: number; currency?: string; interval: string };
 export type LinkApply = { currency: "eur" | "usd"; amount: number; protection: string; protAmount: number; express: boolean; expressAmount: number };
@@ -38,7 +38,7 @@ export function orderFromLink(items: LinkItem[]): LinkApply | { error: string } 
   const oneTime = r2(once.reduce((s, v) => s + v, 0));
   // Express steckt im Einmalbetrag (Listenpreis + 149) → wie bei neuen Bestellungen getrennt speichern.
   const base = r2(oneTime - PROFILE_EXPRESS_FEE);
-  if (PROFILE_LIST_PRICES.includes(base)) return { currency, amount: base, protection, protAmount, express: true, expressAmount: PROFILE_EXPRESS_FEE };
+  if (PROFILE_KNOWN_PRICES.includes(base)) return { currency, amount: base, protection, protAmount, express: true, expressAmount: PROFILE_EXPRESS_FEE };
   return { currency, amount: oneTime, protection, protAmount, express: false, expressAmount: 0 };
 }
 

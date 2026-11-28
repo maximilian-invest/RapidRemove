@@ -8,6 +8,7 @@ import { HUB_PATH } from "@/lib/articles/hubs";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, vatNote, fromPrice } from "@/lib/pricing";
+import { BlackFridayBanner, BfPrice, BfFrom } from "@/components/BlackFriday";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
 import { getResumeProfile } from "@/lib/resume";
@@ -208,6 +209,7 @@ function Hero({ onStart }) {
     <section className="hero">
       <div className="hero-glow"></div>
       <div className="hero-mesh"></div>
+      <div className="container"><BlackFridayBanner lang={lang} onStart={() => onStart()} /></div>
       <div className="container hero-grid">
         <div>
           <h1 className="hs hs2">{(adsHero || t.hero).h1a} <span className="hl">{(adsHero || t.hero).h1b}</span></h1>
@@ -216,9 +218,9 @@ function Hero({ onStart }) {
             <span>
               {dual
                 ? (lang === "ja"
-                  ? <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b>〜<span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b>〜</>
-                  : <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b><span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b></>)
-                : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>}
+                  ? <>{dual.rev} <BfPrice lang={lang} amount={profileFor(lang).review} />〜<span className="sep">·</span>{dual.prof} <BfPrice lang={lang} amount={profileFor(lang).deletion} />〜</>
+                  : <>{dual.rev} <BfPrice lang={lang} amount={profileFor(lang).review} /><span className="sep">·</span>{dual.prof} <BfPrice lang={lang} amount={profileFor(lang).deletion} /></>)
+                : <>{HERO_PRICE_FROM[lang] || "from"} <BfPrice lang={lang} amount={profileFor(lang).deletion} /><span className="vat-n">{vatNote(lang)}</span></>}
               <span className="pay-after"><span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}</span>
             </span>
           </div>
@@ -554,7 +556,7 @@ function Pricing({ id, onStart }) {
               {c.feat && <span className="tag">{c.tag}</span>}
               <div className="pname">{c.name}</div>
               <div className="pdesc">{c.desc}</div>
-              <div className="price">{fromPrice(lang, money(lang, c.price))} <small>{vatNote(lang)}</small></div>{/* „ab": Premium-Branchen +25 % (06.11.2026) */}
+              <div className="price"><BfFrom lang={lang} amount={c.price} fromPrice={fromPrice} /> <small>{vatNote(lang)}</small></div>{/* „ab": Premium-Branchen +25 % (06.11.2026) */}
               <ul>
                 {c.feats.map((f, j) => <li key={j}><Icon.check /> {f}</li>)}
               </ul>

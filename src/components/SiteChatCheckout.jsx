@@ -5,7 +5,7 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { vatNote, PRICE_V2_FRESH, fromPrice, profilePriceFor, reviewPauseText, reviewPauseErr } from "@/lib/pricing";
+import { vatNote, PRICE_V2_FRESH, fromPrice, profilePriceFor, reviewPauseText, reviewPauseErr, bfActive, bfPrice, BF_PCT, ppPaused } from "@/lib/pricing";
 import { fetchPayDiscount, findReviewByLink, fetchFreshPrice, fetchPriceQuote } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
@@ -38,6 +38,7 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     const n250 = 0, nSw = 0;
     const n = Math.max(1, reviews.length - nPaused);
     const sub = n * unit;
+    if (bfActive()) { const total = n * bfPrice(unit); return { usd, sub, d: BF_PCT, dKind: "bf", payD: 0, total, unit, nSw, n250, nPaused }; } // Black Friday (wie Server: cp je Bewertung)
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
@@ -46,6 +47,7 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit, nSw, n250, nPaused };
   }
   const base = profilePriceFor(service, usd ? "usd" : "eur", prem); // Premium-Branche (06.11.2026): Server bestätigt über /price-quote
+  if (bfActive()) return { usd, sub: base, d: BF_PCT, dKind: "bf", payD: 0, total: bfPrice(base) }; // Black Friday −25 %
   const cp = pp ? 0 : pct;
   let total = Math.round(base * (100 - cp)) / 100;
   const payD = pp ? Math.round(base * 0.125 * 100) / 100 : 0; // −12,5 % bei Vorauszahlung
@@ -106,7 +108,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   React.useEffect(() => { fetchPayDiscount().then(setDisc).catch(() => {}); }, []);
   const discOff = !(isRev ? disc.reviews : disc.profiles);
   const dach = discOff || ["DE", "AT", "CH"].includes(f.country) || ["DE", "AT", "CH"].includes(co.placeCountry || ""); // dach = keine PayPal/Wise-Auswahl
-  const payPref = dach ? "none" : f.payPref;
+  const payPref = dach || ppPaused() ? "none" : f.payPref; // Black Friday: PayPal/Wise bis Mo. 30.11. 20:00 aus
   // Preis nach Land × Branche: der Server nennt den Frisch-Preis für dieses Profil (+ E-Mail: Bestandskunden 199).
   const [unit, setUnit] = React.useState(PRICE_V2_FRESH);
   const emOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim()) ? f.email.trim().toLowerCase() : "";
@@ -173,7 +175,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
           {isRev ? <div className="cs-r"><span>{`${revs.length - p.nPaused} × ${fmt(p.unit, p.usd)}`}</span><span>{fmt(revs.length - p.nPaused ? p.sub : 0, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
-          {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
+          {p.d ? <div className="cs-r dc"><span>{p.dKind === "bf" ? "Black Friday" : p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −{lang === "en" || lang === "ja" ? "12.5" : "12,5"} %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
           <div className="cs-n"><ShieldCheck />{c.note}</div>
@@ -210,7 +212,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         {F("name", c.name, { autoComplete: "name" })}
         {F("email", c.email, { type: "email", autoComplete: "email", inputMode: "email" })}
         {F("phone", c.phone, { type: "tel", autoComplete: "tel" })}
-        {dach ? null : (<>
+        {dach || ppPaused() ? null : (<>
         <span className="co-l">{c.pay}</span>
         <div className="co-pay">
           {[["none", c.card], ["paypal", "PayPal −" + (lang === "en" || lang === "ja" ? "12.5" : "12,5") + " %"], ["wise", "Wise −" + (lang === "en" || lang === "ja" ? "12.5" : "12,5") + " %"]].map(([k, l]) => <button key={k} type="button" className={f.payPref === k ? "on" : ""} onClick={() => set("payPref")(k)}>{l}</button>)}

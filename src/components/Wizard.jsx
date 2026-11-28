@@ -4,7 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, freshPriceFor, fromPrice, profilePricesStr, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { money, profileFor, bfProfileStr, ppPaused, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, isPausedReview, reviewPauseText, reviewPauseErr, PRICE_V2_FRESH, PRICE_V2_OTHER, freshPriceFor, fromPrice, profilePricesStr, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
 import { useExpressOn, useDurations } from "@/lib/express-status";
 import { maxDays } from "@/lib/durations";
@@ -1915,7 +1915,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const nil = NOT_IN_LIST[t.code] || NOT_IN_LIST.en;
   const conv = convFor(t.code);
   const p0 = profileFor(lang);
-  let p = p0; // Profil-Preise: nach der Profil-Auswahl ggf. Premium-Branche (siehe unten, profPrem)
+  let p = bfProfileStr(p0); // Black Friday −25 % (nur bis 29.11.). Profil-Preise: nach der Profil-Auswahl ggf. Premium-Branche (siehe unten, profPrem)
   // „Weitermachen": gespeicherter Stand (geprüftes Profil + Schritt + Auswahlen +
   // Kontaktdaten). Ist er gesetzt, startet der Wizard GENAU dort wieder.
   const R = (initialResume && initialResume.placeId) ? initialResume : null;
@@ -2168,7 +2168,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     return () => { live = false; clearTimeout(tm); };
   }, [selPid, selPtype, emP]); // eslint-disable-line react-hooks/exhaustive-deps
   const profPrem = profPremSrv == null ? profPremGuess : profPremSrv;
-  p = profPrem ? { ...p0, ...profilePricesStr(lang, true) } : p0;
+  p = profPrem ? { ...p0, ...profilePricesStr(lang, true) } : bfProfileStr(p0);
   // Land des Google-Profils (Adresse) → Verfahren je Bewertung (alte US-Bewertungen mit Text = Software).
   const revPlace = pickPlace || selected || null;
   const revCountry = (revPlace && revPlace.cc) || addrCountry((revPlace && revPlace.addr) || "");
@@ -2367,7 +2367,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     return () => { live = false; clearTimeout(tm); };
   }, [revFlow, revPid, revPtype, revCountry, emQ]); // eslint-disable-line react-hooks/exhaustive-deps
   const freshUnit = freshSrv || freshGuess;
-  const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail, fresh: freshUnit });
+  const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail, fresh: freshUnit, bf: true });
   const hasX = rq.n250 > 0; // Express nur, wenn mindestens eine 250er-Bewertung im Warenkorb ist
   const servicePriceNum = revFlow
     ? rq.total
@@ -2532,7 +2532,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // Land des Google-Profils (nicht die Website-Sprache); unbekannt → deutschsprachig gilt als DACH.
     const bizCc = revPlace ? String(revPlace.cc || addrCountry(revPlace.addr || "") || "").toUpperCase() : "";
     const dach = bizCc ? ["DE", "AT", "CH"].includes(bizCc) : lang === "de";
-    if (!dach && (revFlow ? payDisc.reviews : payDisc.profiles)) { setPayAsk(true); return; }
+    if (!dach && !ppPaused() && (revFlow ? payDisc.reviews : payDisc.profiles)) { setPayAsk(true); return; } // Black Friday: PayPal/Wise bis Mo. 30.11. 20:00 aus
     doSubmit("");
   };
   const validateCheckout = () => {
@@ -2866,6 +2866,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {rq.nOld ? <div className="sum-row"><span className="sl">{rq.nOld} × {money(rl, rq.oldPrice)} · {pk.old}</span><span className="sv">{fmtMoney(rl, rq.nOld * rq.oldPrice)}</span></div> : null}
         {rq.nNt ? <div className="sum-row"><span className="sl">{rq.nNt} × {money(rl, rq.ntPrice)} · {pk.rowNt} <button type="button" className="rv-sw-i" aria-label={pk.swInfo} onClick={() => setSwInfo(true)}><Icon.info size={14} /></button></span><span className="sv">{fmtMoney(rl, rq.nNt * rq.ntPrice)}</span></div> : null}
         {rq.pct ? <div className="sum-row"><span className="sl">{pk.discLbl} −{rq.pct} %</span><span className="sv">−{fmtMoney(rl, rq.discount)}</span></div> : null}
+        {rq.bf ? <div className="sum-row"><span className="sl">Black Friday −{rq.bf} %</span><span className="sv">−{fmtMoney(rl, rq.discount)}</span></div> : null}
         {!rq.n ? <div className="sum-row"><span className="sl">{money(rl, rq.base)} {rv.per}</span><span className="sv">0 ×</span></div> : null}
       </React.Fragment>
     );
@@ -3961,6 +3962,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                   {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, freshUnit)}<small>{xp.fresh} · {xp.tf99}</small></span><b>{fmtMoney(cur, rq.n99 * freshUnit)}</b></div> : null}
                   {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}{rvx ? "" : " · " + xp.stdD}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
+                  {rq.bf ? <div className="ln dc"><span>Black Friday −{rq.bf} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
                   {hasX && !xAvail ? (
                     <div className="ln xo na"><span><LZap className="bpx-z" />{xp.row}<small>{xp.na}</small></span><b className="na">{xp.naS}</b></div>
                   ) : hasX ? (
@@ -4187,6 +4189,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 {n ? (<React.Fragment>
                   <div><span>{bp.subtotal}</span><b>{fmtMoney(rl, rq.subtotal)}</b></div>
                   {rq.pct ? <div className="dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(rl, rq.discount)}</b></div> : null}
+                  {rq.bf ? <div className="dc"><span>Black Friday −{rq.bf} %</span><b>−{fmtMoney(rl, rq.discount)}</b></div> : null}
                   {rq.nX ? <div className="xo"><span>{xpCopy(t.code).line(rq.nX, money(rl, EXPRESS_FEE))}</span><b>+{fmtMoney(rl, rq.xTotal)}</b></div> : null}
                 </React.Fragment>) : <div><span>{bp.pickOne}</span></div>}
               </div>

@@ -63,14 +63,28 @@ export function profilePriceFor(service: string, cur: string, premium: boolean):
   const b = PROFILE_BASE[(service === "reset" ? "reset" : "remove") as ProfileService][cur === "usd" ? "usd" : "eur"];
   return premium ? round9((b * (100 + PREMIUM_PCT)) / 100) : b;
 }
+/* ---- Black Friday (28.11.2026, Maximilian): −25 % auf alles Einmalige bis So. 29.11.2026 23:59 Wiener Zeit ----
+ *  Gilt für NEUE Bestellungen in diesem Zeitraum: Profil-Löschung/Neustart (orders.amount) und Einzelbewertungen (cp je Bewertung).
+ *  Express-Aufschlag und Schutz bleiben beim normalen Preis (Zahlungslink-Erkennung hängt an 149 / 990).
+ *  PayPal/Wise-Vorauszahlung ist bis Mo. 30.11.2026 20:00 Wiener Zeit ausgesetzt (Rabatte nicht stapeln). Synchron mit src/lib/pricing.js. */
+export const BF_PCT = 25;
+export const BF_END_MS = Date.parse("2026-11-29T22:59:59Z");      // So. 29.11.2026 23:59:59 Wien (MEZ = UTC+1)
+export const PP_PAUSE_END_MS = Date.parse("2026-11-30T19:00:00Z"); // Mo. 30.11.2026 20:00 Wien
+export const bfActive = (now = Date.now()): boolean => now <= BF_END_MS;
+export const ppPaused = (now = Date.now()): boolean => now <= PP_PAUSE_END_MS;
+export const bfPrice = (v: number): number => Math.round((Number(v) || 0) * (100 - BF_PCT) / 100);
 /** Alle Listenpreise der Profil-Leistungen (Standard + Premium, € und $). */
 export const PROFILE_LIST_PRICES: readonly number[] = [...new Set((["remove", "reset"] as const).flatMap((s) => (["eur", "usd"] as const).flatMap((c) => [profilePriceFor(s, c, false), profilePriceFor(s, c, true)])))];
+/** Black-Friday-Preise der Profil-Leistungen (Listenpreis −25 %, gerundet) – bleiben dauerhaft „bekannt“, damit Zahlungslinks/Erkennung
+ *  auch für spätere Mahnungen dieser Aufträge funktionieren. */
+export const PROFILE_PROMO_PRICES: readonly number[] = PROFILE_LIST_PRICES.map(bfPrice);
+export const PROFILE_KNOWN_PRICES: readonly number[] = [...PROFILE_LIST_PRICES, ...PROFILE_PROMO_PRICES];
 /** Einmalbetrag einer Profil-Bestellung (Leistung + Express). Ältere Bestellungen speicherten amount schon INKL. Express
  *  (Wizard bis 06.11.2026) → dann nicht doppelt zählen. */
 export function profileOneTime(amount: number, express: boolean, expressAmount: number): number {
   const a = Number(amount) || 0, x = express ? Number(expressAmount) || 0 : 0;
   if (!x) return a;
-  if (!PROFILE_LIST_PRICES.includes(a) && PROFILE_LIST_PRICES.includes(Math.round((a - x) * 100) / 100)) return a; // Altbestand: Express schon drin
+  if (!PROFILE_KNOWN_PRICES.includes(a) && PROFILE_KNOWN_PRICES.includes(Math.round((a - x) * 100) / 100)) return a; // Altbestand: Express schon drin
   return Math.round((a + x) * 100) / 100;
 }
 /* Pause (05.11.2026, Maximilian): Bewertungen älter als 4 Wochen und ohne Text (= alle 250er, damit auch Express) werden

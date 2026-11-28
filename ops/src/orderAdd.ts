@@ -15,7 +15,7 @@ import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { expressOn } from "./expressSwitch";
-import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, bfActive, bfPrice, BF_PCT } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -88,6 +88,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (opts.by === "customer" && raw.bulk !== true && REVIEWS_OTHER_PAUSED && isPausedReview(it)) return { ok: false, error: "reviews_paused" };
     // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 199 (frisch, seit 05.11.2026; davor 179 bzw. 99) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
     if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
+    if (!it.cp && it.lp && raw.bulk !== true && opts.by === "customer" && bfActive()) { it.cp = bfPrice(it.lp); (it as Record<string, unknown>).bf = BF_PCT; } // Black Friday (28.11.2026)
     if (xAllowed && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
     clean.push(it);
   }

@@ -107,6 +107,18 @@ export function freshPriceFor(country, premium) {
   return premium ? round9((base * (100 + PREMIUM_PCT)) / 100) : base;
 }
 export const PRICE_V2_FRESH_TIERS = [...new Set([PRICE_V2_FRESH, freshPriceFor("US", false), freshPriceFor("AT", true), freshPriceFor("US", true)])];
+/* Black Friday (28.11.2026, Maximilian) – synchron mit ops/src/reviewsPricing.ts: −25 % auf alles Einmalige
+   (Profil-Löschung, Neustart, Einzelbewertungen) bis So. 29.11.2026 23:59 Wiener Zeit. Express + Schutz unverändert.
+   PayPal/Wise-Vorauszahlung bis Mo. 30.11.2026 20:00 Wien ausgesetzt. Den Preis legt der Server fest – das hier ist nur Anzeige. */
+export const BF_PCT = 25;
+export const BF_END_MS = Date.parse("2026-11-29T22:59:59Z");
+export const PP_PAUSE_END_MS = Date.parse("2026-11-30T19:00:00Z");
+export const bfActive = (now = Date.now()) => now <= BF_END_MS;
+export const ppPaused = (now = Date.now()) => now <= PP_PAUSE_END_MS;
+export const bfPrice = (v) => Math.round((Number(v) || 0) * (100 - BF_PCT) / 100);
+/** Preis-Strings (deletion/reset) während Black Friday auf −25 % setzen; *Was = Listenpreis für Durchstreichen. */
+export const bfProfileStr = (p) => (bfActive() && p ? { ...p, deletion: String(bfPrice(p.deletion)), reset: String(bfPrice(p.reset)), deletionWas: p.deletion, resetWas: p.reset } : p);
+
 /* Profil-Löschung nach Branche (06.11.2026) – synchron mit ops/src/reviewsPricing.ts: Premium-Branche +25 % auf 9 gerundet
    (450 → 559 €, $495 → $619, 850 → 1.059 €, $950 → $1.189). Kein Länderaufschlag. Bestandskunden: alter Preis. */
 export const PROFILE_BASE = { remove: { eur: 450, usd: 495 }, reset: { eur: 850, usd: 950 } };
@@ -115,7 +127,7 @@ export function profilePriceFor(service, cur, premium) {
   return premium ? round9((b * (100 + PREMIUM_PCT)) / 100) : b;
 }
 /** Preis-Strings wie PRICES (deletion/reset) für die Anzeige: "559" bzw. "1059" – Tausender-Punkt macht money() nicht, wie bisher "850". */
-export const profilePricesStr = (lang, premium) => { const cur = lang === "en" || lang === "ja" ? "usd" : "eur"; return { deletion: String(profilePriceFor("remove", cur, premium)), reset: String(profilePriceFor("reset", cur, premium)) }; };
+export const profilePricesStr = (lang, premium) => { const cur = lang === "en" || lang === "ja" ? "usd" : "eur"; return bfProfileStr({ deletion: String(profilePriceFor("remove", cur, premium)), reset: String(profilePriceFor("reset", cur, premium)) }); };
 /** Schutz-Preise je Art (netto, gleicher Zahlenwert in € und $) – synchron mit ops/src/reviewsPricing.ts (PROTECTION_PRICES). */
 export const PROTECTION_PRICES = { monthly: 29.9, yearly: 299, lifetime: 990, monitor: 69.9 };
 /** „ab 199" je Sprache (Preis steht erst fest, wenn Profil-Land + Branche bekannt sind). */
@@ -189,10 +201,21 @@ export const lpOf = (it) => { const v = Number(it && it.lp); return isFreshLp(v)
 /** Bestellung (neu): Preismodell 2. items: [{ old?, nt?, sw?, days?, cp?, lp?, x? }]. opts.legacy = Bestandsauftrag:
  *  Bewertungen ohne lp nach Preismodell 1 rechnen (179/+50/300). opts.express = Express für alle 250er (Bestellprozess). */
 export function reviewQuote(items, lang, opts = {}) {
+  const q = reviewQuoteBase(items, lang, opts);
+  // Black Friday (nur Wizard, opts.bf): je Bewertung fester Preis Listenpreis −25 % wie der Server (cp), statt Mengenrabatt.
+  if (!opts.bf || !bfActive() || opts.legacy || !q || !q.v2) return q;
+  const fresh = PRICE_V2_FRESH_TIERS.includes(Number(opts.fresh)) ? Number(opts.fresh) : PRICE_V2_FRESH;
+  const lst = (Array.isArray(items) ? items : []).filter((it) => !cpOf(it));
+  const bfSum = lst.reduce((a, it) => a + bfPrice(lpOf(it) || listPriceV2(it, fresh)), 0) + (Array.isArray(items) ? items : []).reduce((a, it) => a + cpOf(it), 0);
+  const total = bfSum + (q.xTotal || 0);
+  return { ...q, pct: 0, total, discount: Math.round(((q.subtotal || 0) - total) * 100) / 100, bf: BF_PCT };
+}
+function reviewQuoteBase(items, lang, opts = {}) {
   const list0 = Array.isArray(items) ? items : [];
   // opts.fresh = Frisch-Preis für diesen Kunden/dieses Profil (Land × Branche, vom Server bestätigt) – Standard 199.
   const fresh = PRICE_V2_FRESH_TIERS.includes(Number(opts.fresh)) ? Number(opts.fresh) : PRICE_V2_FRESH;
   const list = opts.legacy ? list0 : list0.map((it) => (cpOf(it) || lpOf(it) ? it : { ...it, lp: listPriceV2(it, fresh) }));
+
   const v2 = list.filter((it) => !cpOf(it) && lpOf(it));
   if (!v2.length) return reviewQuoteV1(list, lang);
   const v1 = reviewQuoteV1(list.filter((it) => cpOf(it) || !lpOf(it)), lang);

@@ -26,7 +26,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
 import { registerExpressSwitch, expressOn } from "./expressSwitch";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, PAY_DISC_PCT, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, PROTECTION_PRICES, protectionInterval, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, PAY_DISC_PCT, reviewMethod, cpOf, listPriceV2, lpOf, isPausedReview, REVIEWS_OTHER_PAUSED, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, profilePriceFor, PROFILE_EXPRESS_FEE, PROFILE_BASE, PROFILE_LIST_PRICES, PROFILE_KNOWN_PRICES, PROTECTION_PRICES, protectionInterval, bfActive, bfPrice, ppPaused, BF_PCT, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -522,6 +522,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // PayPal/Wise −10 % in den Einstellungen für diese Kategorie aus → Wunsch ignorieren (normale Zahlung).
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
   if (["wise", "paypal"].includes(String(b.payPref || "")) && ["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase())) (b as Record<string, unknown>).payPref = undefined; // nur außerhalb DACH
+  // Black Friday (28.11.2026): PayPal/Wise-Vorauszahlung bis Mo. 30.11. 20:00 Wien ausgesetzt – Rabatte nicht stapeln.
+  if (["wise", "paypal"].includes(String(b.payPref || "")) && ppPaused()) (b as Record<string, unknown>).payPref = "none";
   // PayPal/Wise seit 25.11.2026: 12,5 % Rabatt (im Auftrag festgehalten → spätere Abrechnung/Anzeige rechnet mit genau diesem Satz).
   const ppPref = ["wise", "paypal"].includes(String(b.payPref || "")) ? (String(b.payPref) as "paypal" | "wise") : null;
   if (ppPref) (b as Record<string, unknown>).payPct = PAY_DISC_PCT;
@@ -619,6 +621,9 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     // Schriftliches Angebot (09.11.2026): Preis 14 Tage festgehalten – nie teurer als der aktuelle Listenpreis.
     const offerHit = b.offerId ? await offerForOrder(b.offerId, b.placeId, service).catch(() => null) : null;
     if (offerHit && Number(offerHit.amount) > 0 && Number(offerHit.amount) < amt) amt = Number(offerHit.amount);
+    // Black Friday (28.11.2026): −25 % auf die Leistung (Listenpreis), solange die Aktion läuft – nie teurer als Angebot/Chat-Preis.
+    const bfOn = bfActive();
+    if (bfOn && bfPrice(list) < amt) amt = bfPrice(list);
     if (!offerHit) delete (b as Record<string, unknown>).offerId;
     const wantX = service === "remove" && (b.express === true || b.express === "true");
     const xAmt = wantX ? PROFILE_EXPRESS_FEE : 0;
@@ -629,7 +634,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     Object.assign(b as Record<string, unknown>, {
       amount: amt, express: wantX, expressAmount: xAmt,
       saleTotal: Math.round((amt + xAmt + (prot === "lifetime" ? Number(b.protAmount) || 0 : 0)) * 100) / 100,
-      profilePrice: { list, prem, legacy: !!profTier?.legacy, cur: pCur, ind: profTier?.ind || "", chatPct: cPct || undefined, at: new Date().toISOString() },
+      profilePrice: { list, prem, legacy: !!profTier?.legacy, cur: pCur, ind: profTier?.ind || "", chatPct: cPct || undefined, bf: bfOn ? BF_PCT : undefined, at: new Date().toISOString() },
     });
   }
   // Vorauszahlung (25.11.2026, Maximilian): Profil-Löschung/Neustart mit PayPal/Wise → Kunde zahlt VOR dem Start (−12,5 %).
@@ -654,6 +659,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       if (cpOf(it)) continue;
       it.lp = listPriceV2(it, tier ? tier.fresh : undefined);
       if (wantX && it.lp === PRICE_V2_OTHER) { it.x = true; nx++; }
+      // Black Friday (28.11.2026): −25 % je Bewertung als fester Preis (cp) – Listenpreis (lp) bleibt für Partner/Statistik stehen.
+      if (bfActive() && it.lp) { it.cp = bfPrice(it.lp); (it as Record<string, unknown>).bf = BF_PCT; }
     }
     (b as Record<string, unknown>).priceV = 2;
     if (nx) (b as Record<string, unknown>).revExpress = { n: nx, fee: EXPRESS_FEE, h: EXPRESS_CUSTOMER_H, at: new Date().toISOString() };
@@ -2186,8 +2193,8 @@ async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: strin
   const svcKey = service === "express" ? "remove" : service;
   let oneTime = serviceAmount;
   if (express && serviceAmount > 0) {
-    if (PROFILE_LIST_PRICES.includes(serviceAmount)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
-    else if (!PROFILE_LIST_PRICES.includes(Math.round((serviceAmount - PROFILE_EXPRESS_FEE) * 100) / 100)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
+    if (PROFILE_KNOWN_PRICES.includes(serviceAmount)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
+    else if (!PROFILE_KNOWN_PRICES.includes(Math.round((serviceAmount - PROFILE_EXPRESS_FEE) * 100) / 100)) oneTime = Math.round((serviceAmount + PROFILE_EXPRESS_FEE) * 100) / 100;
   }
   // Feste Express-Links gelten nur für den Standardpreis (450 € / $495 + 149).
   const stdExpress = PROFILE_BASE.remove[currency === "usd" ? "usd" : "eur"] + PROFILE_EXPRESS_FEE;
@@ -2246,7 +2253,7 @@ app.post("/admin/paylink", async (req, reply) => {
   let total = Number(b.total) || 0;
   // Ab 06.11.2026 ist orders.amount OHNE Express → Express in die genannte Summe aufnehmen (Altbestand hatte ihn schon drin).
   { const sa = Number(b.serviceAmount) || 0, pa = Number(b.protAmount) || 0;
-    if (express && PROFILE_LIST_PRICES.includes(sa) && Math.abs(total - (sa + pa)) < 0.01) total = Math.round((total + PROFILE_EXPRESS_FEE) * 100) / 100; }
+    if (express && PROFILE_KNOWN_PRICES.includes(sa) && Math.abs(total - (sa + pa)) < 0.01) total = Math.round((total + PROFILE_EXPRESS_FEE) * 100) / 100; }
   try {
     const tplKey = clip(b.template, 40) || "zahlungslink";
     // Schutz gegen Doppelklick/Parallel-Lauf (06.11.2026, RR-701686: Stufe 1 + 2 im Abstand von 4 s): pro Auftrag max. 1 Mahnung je 2 Min.

@@ -724,3 +724,30 @@ a.tb-item:hover{color:var(--primary);}
 /* Mobil: „Zahlung erst nach Erfolg" fällt weg (steht in der Check-Karte), damit beide Preise in eine Zeile passen */
 @media(max-width:920px){.hero-pricetag.one-line{font-size:clamp(11.5px,3.5vw,14px);padding:6px 12px;gap:7px;}.hero-pricetag.one-line .sep{margin:0 6px;}.hero-pricetag.one-line .pay-after{display:none;}}
 .value-anchor .va-new .vat-n{display:block;margin-top:2px;}
+
+/* ---- Black Friday (28.11.2026, nur bis 29.11.2026 23:59 Wien) ---- */
+.bf-banner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 30px;padding:20px 24px;border-radius:22px;background:#111;color:#fff;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);overflow:hidden;}
+.bf-banner::after{content:"";position:absolute;inset:auto -60px -80px auto;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,128,0,.55),rgba(255,128,0,0) 70%);pointer-events:none;}
+.bf-l{min-width:0;position:relative;z-index:1;}
+.bf-tag{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--orange-500,#ff8000);color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.bf-h{margin:8px 0 4px;font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.8px;}
+.bf-d{margin:0;font-size:14.5px;line-height:1.5;color:rgba(255,255,255,.78);max-width:560px;}
+.bf-r{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:none;position:relative;z-index:1;}
+.bf-ends{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em;}
+.bf-cd{display:flex;gap:8px;}
+.bf-u{display:flex;flex-direction:column;align-items:center;min-width:58px;padding:8px 6px;border-radius:12px;background:rgba(255,255,255,.1);}
+.bf-u b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;}
+.bf-u small{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+.bf-cta{appearance:none;border:0;cursor:pointer;padding:11px 18px;border-radius:999px;background:var(--orange-500,#ff8000);color:#fff;font-weight:800;font-size:15px;}
+.bf-cta:hover{background:var(--orange-600,#e67000);}
+.bf-was{color:var(--fg-muted,#8a8a8a);font-weight:600;text-decoration:line-through;}
+.bf-now{color:var(--orange-600,#e67000) !important;}
+@media (max-width:860px){
+  .bf-banner{flex-direction:column;align-items:stretch;padding:18px;gap:14px;margin-bottom:22px;}
+  .bf-r{align-items:stretch;}
+  .bf-cd{justify-content:space-between;}
+  .bf-u{flex:1;min-width:0;}
+  .bf-h{font-size:25px;}
+  .bf-cta{width:100%;}
+}
+@media (max-width:520px){.hero-pricetag.one-line .bf-was{display:none;}}
